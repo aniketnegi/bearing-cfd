@@ -49,8 +49,6 @@ mesh.  Only a live Fluent audit may produce =FLUENT_IMPORT_PASS=.
 - [[file:../../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
 - [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
 - [[file:../../tests/test_solver_neutral_interchange.py][interchange regression tests]]
-- [[file:../../SOLVER_INTERCHANGE.md][compact interchange handoff]] and
-  [[file:../../interchange/FLUENT_IMPORT.md][manual Fluent operator checklist]]
 
 * Scope boundary
 

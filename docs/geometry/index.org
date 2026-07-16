@@ -23,6 +23,7 @@ run CFD.
 | [[file:clearance-mathematics.org][Clearance mathematics]] | What does radial clearance mean, and why is it not the normal gap? |
 | [[file:cad-construction.org][CAD construction]] | How do profiles, revolutions, overlaps, Booleans, and splits create the fluid? |
 | [[file:cad-validation.org][CAD validation]] | Which independent checks make a geometry result trustworthy? |
+| [[file:acceptance-results.org][Acceptance results]] | What did the two strict CAD runs measure, and which exchange checks failed? |
 | [[file:interchange.org][Interchange]] | Why are native BREP and STEP audited separately, and what is published? |
 
 * Geometry contract

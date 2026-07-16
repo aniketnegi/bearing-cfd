@@ -6,8 +6,7 @@
 [[file:index.org][Meshing index]] · [[file:structured-hex-no-port.org][No-port Hex8 baseline]] ·
 [[file:topology-and-quality.org][Topology and quality]] ·
 [[file:../geometry/clearance-mathematics.org][Clearance mathematics]] ·
-[[file:../operations/index.org][Operations manual]] ·
-[[file:../../PORTED_PRISM_MESH.md][Engineering summary]]
+[[file:../operations/index.org][Operations manual]]
 
 * Why Prism6 is the production ported topology
 
@@ -24,7 +23,8 @@ The validated all-Hex case remains unchanged as the reference described in
 The developed conical-surface idea has literature context in
 [[file:../references/literature.org][the project paper index]], but the port, periodic-node collapse, and explicit
 Prism6 topology are implementation decisions made and validated in this
-repository.
+repository.  The cited paper solves a developed-surface Reynolds-equation FEM
+model; it does not resolve the three-dimensional feed passage.
 
 The implementation is
 [[file:../../meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]].
@@ -114,7 +114,14 @@ u = Rm theta.
 Each rim curve is forced to one Line2 between its intended endpoints.  The
 vertices are exact cylinder/bore intersections, but the first-order edge
 between them is a chord.  The report separates nodal residual from the
-between-node sagitta =rh[1-cos(pi/Nrim)]= and regular-polygon area error.
+between-node sagitta =rh[1-cos(pi/Nrim)]= and regular-polygon area
+
+\[
+A_N=\frac{1}{2}N_{rim}r_h^2\sin\left(\frac{2\pi}{N_{rim}}\right).
+\]
+
+Increasing =--rim-segments= reduces chord and polygon-area error while
+increasing master triangles, feed prisms, memory, and format size.
 
 ** Periodic seam
 
@@ -270,6 +277,13 @@ delete an already validated mesh family.
 
 The solver-neutral continuation from =mesh_arrays.npz= is documented in
 [[file:../interchange/index.org][Solver-neutral interchange]].
+
+* Extension boundary
+
+A future quad-dominant branch could recombine suitable master triangles into a
+Hex8/Prism6 hybrid.  It must preserve the same mouth node identity, two-incident
+cell interface proof, connected cell graph, and external physical boundaries;
+it is not required by the current robust Prism6 pipeline.
 
 * Regression links
 

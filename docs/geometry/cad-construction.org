@@ -53,6 +53,11 @@ expected circular area, centre, and =+Y= normal, then requires one circular
 edge.  This catches an axis, alignment, or length mistake before any Boolean
 can obscure the inlet.
 
+The external extension also separates the future supply boundary from the
+conical wall transition.  Its remote planar disk can receive pressure, mass
+flow, or velocity data without ambiguous face selection; this CAD stage assigns
+none of those values.
+
 ** Boolean order
 
 Let =B= be the bore blank, =F= the feed cylinder, and =J= the extended journal.
@@ -107,9 +112,19 @@ exporter or downstream tool from mistaking metal for a second fluid region.
 
 * Full model and optional half
 
-The production body is always 360 degrees.  Even when static geometry appears
-mirror-symmetric, a rotating journal wall has a vector velocity field that is
-not represented by an ordinary diametral symmetry boundary.
+The production body is always 360 degrees.  For rotation =Omega= about the
+displaced journal axis,
+
+\[
+\mathbf{u}_w=\Omega\hat{\mathbf z}\times
+\left[(x-e_x)\hat{\mathbf x}+(y-e_y)\hat{\mathbf y}\right]
+=\left[-\Omega(y-e_y),\ \Omega(x-e_x),\ 0\right].
+\]
+
+Even when the static default geometry is mirror-symmetric, this vector field is
+not represented by an ordinary diametral symmetry boundary.  The physical
+interpretation is developed in
+[[file:../physics/lubrication-context.org][Lubrication physics and model boundary]].
 
 =--export-debug-half= creates an explicitly labelled inspection artifact only.
 [[file:../../bearing_film.py::def export_all][export_all()]] prints

@@ -129,6 +129,26 @@ An optional import-only =.cas.h5= may be saved manually after the same audit,
 but it must remain explicitly marked as having no material model, boundary
 values, initialization, or solution.
 
+* Manual Fluent audit
+
+When automation is unavailable, the equivalent import-only review is:
+
+1. launch Fluent in 3-D, double precision;
+2. import =bearing_prism.cgns= through *File > Import > CGNS > Mesh* rather
+   than *Mesh & Data*;
+3. run *Mesh > Check* at maximum verbosity;
+4. require one =fluid= zone containing only wedge/Prism6 cells and exactly the
+   six canonical external zones with report-matching counts;
+5. reject any mouth, default, unknown, or merged boundary zone;
+6. compare nodes, faces, cells, bounds, volume, minimum cell volume, skewness,
+   and connected-region count with =interchange_report.json=;
+7. inspect the full mesh, the feed boundaries, the bore opening, and an =x=0=
+   clipped section through the film/feed junction;
+8. save =bearing_prism_imported.msh.h5= only after all checks pass.
+
+Generic roles may then be assigned without values—walls, =pressure-inlet=, and
+=pressure-outlet=—but that is outside the interchange acceptance state.
+
 * Manual visual proof
 
 When Fluent is available, retain screenshots or a documented display record of:

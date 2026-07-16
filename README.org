@@ -1,0 +1,73 @@
+#+TITLE: Eccentric Conical Journal Bearing
+#+SUBTITLE: Exact fluid CAD, layered volume meshes, and solver-neutral interchange
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Scope
+
+This repository constructs and validates the lubricant-fluid domain of an
+eccentric conical journal bearing with a radial central feed.  It contains:
+
+- exact build123d/OCCT B-rep construction of the film and feed passage;
+- native-BREP assurance inside Gmsh/OpenCASCADE;
+- a full-360 no-port structured Hex8 regression mesh;
+- a conformal central-feed layered Prism6 production mesh;
+- clean MSH 4.1, MSH 2.2, and CGNS interchange from canonical NumPy arrays;
+- optional OpenFOAM and Fluent import audits.
+
+It does not configure or run a CFD solution.  Rotation rate, lubricant model,
+supply/outlet conditions, cavitation, turbulence, thermal coupling, and solver
+selection remain separate decisions.
+
+* Current state
+
+| Stage | State |
+|-------+-------|
+| Native OCCT CAD and BREP round trip | PASS |
+| STEP exchange at =1e-6= relative-volume tolerance | FAIL at the feed intersection |
+| Gmsh OCC import, fragmentation, and SI round trip | PASS |
+| Surface-only Tri3 smoke mesh | PASS |
+| No-port structured Hex8 mesh | PASS |
+| Central-feed layered Prism6 mesh | PASS |
+| Clean MSH/CGNS static interchange | PASS |
+| Live Fluent import | NOT RUN |
+| OpenFOAM conversion | optional; tool-dependent |
+
+The STEP failure is isolated to neutral-format translation; native BREP is the
+accepted CAD handoff to the open-source mesh pipeline.
+
+* Pipeline
+
+| Stage | Entry point | Principal contract |
+|-------+-------------+--------------------|
+| CAD | [[file:bearing_film.py][bearing_film.py]] | one connected fluid B-rep plus zoned and context geometry |
+| OCC preflight | [[file:meshing/gmsh_brep_preflight.py][gmsh_brep_preflight.py]] | native geometry, conformal zone interfaces, explicit units |
+| Surface smoke | [[file:meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]] | classified first-order boundary triangulation; no volume cells |
+| Hex8 baseline | [[file:meshing/structured_hex_no_port.py][structured_hex_no_port.py]] | analytic full-360 no-feed reference |
+| Prism6 mesh | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
+| Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]] | clean MSH/CGNS files reconstructed from canonical arrays |
+| Fluent audit | [[file:interchange/fluent_import_check.py][fluent_import_check.py]] | live import, zone/count/quality checks, guarded native save |
+
+* Environment and regression
+
+#+begin_src sh
+uv sync --locked
+uv run pytest -q
+#+end_src
+
+Production commands and output contracts are maintained in
+[[file:docs/operations/running-and-testing.org][Running and testing]] and
+[[file:docs/operations/outputs-and-reports.org][Outputs and reports]].
+
+* Documentation
+
+- [[file:docs/index.org][Engineering notebook and subsystem map]]
+- [[file:docs/physics/lubrication-context.org][Lubrication physics and model boundary]]
+- [[file:docs/geometry/index.org][CAD geometry and validation]]
+- [[file:docs/meshing/index.org][Mesh construction and topology]]
+- [[file:docs/interchange/index.org][Solver-neutral interchange]]
+- [[file:docs/project/decisions.org][Decision register]]
+- [[file:docs/references/literature.org][Literature]]
+
+Generated geometry, meshes, reports, and solver handoff artifacts are written
+under =out/= and are intentionally excluded from version control.

@@ -27,6 +27,22 @@ uv run python bearing_film.py --outdir out/preview --preview
 The strict STEP audit can still make the CAD command exit nonzero after the
 preview is shown.  That is an exchange-format result, not a viewer failure.
 
+The thickness map uses bearing-frame angle on the horizontal axis, axial
+coordinate =z= on the vertical axis, and exact same-=z= radial thickness as
+colour.  For the default case the eccentricity/minimum-gap meridian is 270
+degrees and the =+Y= feed/maximum-gap direction is 90 degrees.  Slight axial
+variation away from those extrema comes from the changing conical journal
+radius in the exact square-root intersection expression; the map is not a
+pressure or CFD result.
+
+** Artix Fontconfig diagnostics
+
+The OCP wheel can load an older bundled Fontconfig library against newer Artix
+XML configuration, producing =xsi:nil= and generic-family warnings.  These are
+cosmetic when B-rep construction, in-memory validation, and native round trips
+pass.  They are not grounds for modifying =/etc/fonts=; a compatible OCP/
+Fontconfig build is the appropriate eventual fix.
+
 * Gmsh geometry and surface smoke
 
 Fragmented millimetre BREP after preflight:

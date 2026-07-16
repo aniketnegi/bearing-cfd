@@ -86,6 +86,11 @@ envelope to =0.001 mm=.  The allowed =+Y= feed changes only the positive
 =y= bound, which must equal =max(R_b(0),y_feed_end)=.  A preceding radius guard
 proves that the feed cannot change =x_min=, =x_max=, or =y_min=.
 
+OCCT bounding boxes may extend roughly =1e-7 mm= beyond nominal analytic
+coordinates because they include default topological tolerance.  This is
+several orders below the =0.001 mm= bound gate and does not indicate that the
+modelling tolerance was relaxed.
+
 The validator finds the inlet by geometry rather than face index.  Exactly one
 face must have:
 

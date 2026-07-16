@@ -43,10 +43,12 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 
 ** Geometry and mathematics
 
+- [[file:physics/lubrication-context.org][Lubrication physics and model boundary]]
 - [[file:geometry/coordinates-and-parameters.org][Coordinates, parameters, and cone laws]]
 - [[file:geometry/clearance-mathematics.org][Radial and surface-normal clearance]]
 - [[file:geometry/cad-construction.org][Exact B-rep construction]]
 - [[file:geometry/cad-validation.org][CAD validation and invariants]]
+- [[file:geometry/acceptance-results.org][Strict CAD acceptance snapshot]]
 - [[file:geometry/interchange.org][BREP, STEP, and round trips]]
 
 ** Meshing

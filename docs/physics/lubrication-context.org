@@ -1,0 +1,88 @@
+#+TITLE: Lubrication Physics and Model Boundary
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Hydrodynamic film mechanism
+
+Journal rotation imposes no-slip tangential motion on the lubricant at the
+journal surface.  Eccentricity creates circumferentially converging and
+diverging film regions.  Viscous transport into the converging region generates
+a pressure rise whose surface integral produces the load-carrying force.
+
+The thin-film velocity field is commonly interpreted as a superposition of:
+
+- Couette flow driven by the moving journal wall;
+- Poiseuille flow driven by pressure gradients.
+
+Under steady, incompressible, cylindrical thin-film assumptions, one common
+Reynolds-equation convention is
+
+\[
+\frac{1}{R^2}\frac{\partial}{\partial\theta}
+\left(h^3\frac{\partial p}{\partial\theta}\right)
++\frac{\partial}{\partial z}
+\left(h^3\frac{\partial p}{\partial z}\right)
+=6\mu\Omega\frac{\partial h}{\partial\theta}.
+\]
+
+Signs and numerical factors depend on coordinate and wall-velocity conventions.
+The equation is context for the bearing physics, not an equation solved by this
+repository.
+
+* Conical surface coordinates
+
+Parameterising the coaxial bore by =(theta,z)= gives orthogonal metric factors
+
+\[
+h_\theta=R_b(z), \qquad h_z=\sqrt{1+\left(\frac{dR_b}{dz}\right)^2}
+=\sec\gamma.
+\]
+
+A reduced Reynolds model on the developed cone must retain the changing
+circumferential length scale and the generator-length factor.  The present 3-D
+mesh instead represents the physical fluid volume directly, including the
+local disturbance introduced by the feed passage.
+
+The developed-surface model in [[file:../references/literature.org][the conical-bearing
+paper]] motivates the circumferential/axial parameterisation but does not
+validate this project's three-dimensional port geometry or mesh.
+
+* Rotating-wall kinematics and the full circumference
+
+For journal angular velocity =Omega= about the displaced axis =(e_x,e_y)=,
+
+\[
+\mathbf{u}_w=\Omega\hat{\mathbf z}\times
+\left[(x-e_x)\hat{\mathbf x}+(y-e_y)\hat{\mathbf y}\right]
+=\left[-\Omega(y-e_y),\ \Omega(x-e_x),\ 0\right].
+\]
+
+Although the default static geometry is mirror-symmetric about =x=0=, this
+vector field is not represented by an ordinary diametral symmetry boundary.
+The solver-eligible domain is therefore full 360 degrees; half and cutaway
+artifacts are diagnostic only.
+
+* Eccentricity direction versus hydrodynamic load
+
+The eccentricity vector fixes the geometric minimum-gap meridian.  The pressure
+maximum occurs downstream in the converging wedge, and the integrated force
+also depends on speed, viscosity, feed conditions, axial leakage, cavitation,
+and cone geometry.  The eccentricity line is consequently not assumed to be
+the external or hydrodynamic load direction.
+
+* Feed boundary role
+
+The external tube extension terminates in a planar circular disk beyond the
+context bushing.  This produces an unambiguous future boundary for supply
+pressure, mass flow, or velocity without treating the curved wall transition as
+the inlet.  =pressure_feed= is only a geometric/mesh role in the present stage;
+no value or solver condition is assigned.
+
+* Quantities not predicted here
+
+The repository defines geometry, topology, cell quality, named patches, and
+format transfer.  Without a lubricant constitutive model, density, journal
+speed, supply and outlet conditions, cavitation treatment, and thermal model,
+it cannot predict pressure, load, attitude angle, torque, leakage, temperature,
+or stability.  Those choices belong to the later CFD model and its verification
+plan.

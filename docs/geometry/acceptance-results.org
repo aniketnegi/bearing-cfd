@@ -1,0 +1,70 @@
+#+TITLE: CAD Acceptance Snapshot
+#+DATE: <2026-07-16>
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Evidence boundary
+
+This snapshot preserves the two strict CAD acceptance runs produced with
+Python 3.12.12, build123d 0.11.1, and cadquery-ocp-novtk 7.9.3.1.1.  The full
+machine-readable records remain:
+
+- =out/strict_default/params.json=;
+- =out/strict_case_e03_g20/params.json=.
+
+Both runs contain 80 validation records: 42 in-memory geometry checks and 8
+native-BREP round-trip checks pass; 3 of 30 STEP records fail on volume.  The
+truthful result is =77/80 PASS= and =OVERALL: FAIL=, isolated to STEP exchange.
+
+* Cases and primary measurements
+
+| Quantity | Default | =epsilon=0.3=, =gamma=20 deg= |
+|----------+---------+-------------------------------|
+| semi-cone angle | 10 deg | 20 deg |
+| eccentricity | 0.030 mm | 0.015 mm |
+| radial gap min/max | 0.020 / 0.080 mm | 0.035 / 0.065 mm |
+| normal minimum target | 0.019696155060 mm | 0.032889241728 mm |
+| OCCT normal minimum | 0.019696155060 mm | 0.032889241727 mm |
+| feed inlet =y= | 63.402653961 mm | 63.777940469 mm |
+| exact base-film volume | 942.949034975 mm^3 | 942.949034975 mm^3 |
+| feed-added volume | 167.922786887 mm^3 | 172.640532984 mm^3 |
+| total fluid volume | 1110.871821862 mm^3 | 1115.589567959 mm^3 |
+
+The five same-=z= stations in each case reproduce their radial targets to
+floating-point noise.  Split-volume relative errors are =5.12e-15= and
+=3.14e-14=.
+
+* Native BREP round trip
+
+| File | Default relative error | 20-degree relative error | Gate |
+|------+------------------------+--------------------------+------|
+| =film_unsplit.brep= | =1.373e-13= | =6.563e-14= | =<=1e-12= |
+| =film_zones.brep= | =2.419e-13= | =9.844e-14= | =<=1e-12= |
+
+Every imported solid retains the expected count, validity, and manifoldness.
+
+* STEP round trip
+
+All STEP files use =PrecisionMode.GREATEST=.
+
+| File | Default relative error | 20-degree relative error | Gate |
+|------+------------------------+--------------------------+------|
+| =film_unsplit.step= | =2.800e-5= | =5.962e-5= | =<=1e-6= |
+| =hole_band.step= | =1.059e-4= | =2.229e-4= | =<=1e-6= |
+| =film_zones.step= | =2.800e-5= | =5.962e-5= | =<=1e-6= |
+| =ring_A.step= | =5.544e-13= | =4.532e-12= | =<=1e-6= |
+| =ring_B.step= | =7.577e-13= | =4.470e-12= | =<=1e-6= |
+| =context_assembly.step= | =3.219e-8= | =1.228e-7= | =<=1e-6= |
+
+The absolute full-fluid losses are 0.0311089 mm^3 and 0.0665082 mm^3.  The
+passing annular lands and failing feed-containing bodies localise the measured
+translation error to the cone/cylinder intersection rather than the base film.
+No STEP files are published in the strict output directories.
+
+* Interpretation
+
+The native geometry is accepted for BREP-based Gmsh/OpenCASCADE work.  STEP
+remains an engineering exchange target for external CAD tools, but these files
+do not satisfy the project's strict thin-film regression gate on the recorded
+software stack.  The gate is not relaxed to convert a format-specific failure
+into a geometry PASS.

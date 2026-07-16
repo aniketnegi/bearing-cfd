@@ -107,6 +107,10 @@ bad cases before OCCT sees them.  Important guards include:
 - the complete feed-start disk at =y=0= being inside the journal cutter;
 - a remote feed endpoint outside the context bushing.
 
+The validator accumulates all detected parameter errors and raises one
+=ParameterValidationError=, so a case is corrected from a complete diagnostic
+rather than one failing scalar at a time.
+
 The start-disk proof uses a conservative maximum transverse distance
 
 \[

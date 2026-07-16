@@ -65,11 +65,11 @@ precision.  Neither option can guarantee that a receiving STEP importer
 reconstructs every cone/cylinder intersection identically.  The only defensible
 acceptance test is re-import followed by topology and measurement checks.
 
-The strict runs recorded in [[file:../../EXPLANATION.md][EXPLANATION.md]] found
-native BREP volume errors near numerical noise while STEP errors were larger in
-bodies containing the feed intersection.  Treat =params.json= from the actual
-run as the current evidence; do not generalise those measured values into a
-universal STEP tolerance claim.
+The [[file:acceptance-results.org][strict CAD acceptance snapshot]] records native
+BREP volume errors near numerical noise and larger STEP errors in bodies
+containing the feed intersection.  Treat =params.json= from the actual run as
+the current evidence; the measured values are not a universal STEP tolerance
+claim.
 
 * Export set
 

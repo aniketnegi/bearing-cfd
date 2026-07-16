@@ -123,7 +123,7 @@ connectivity, and the geometry summary used by every later comparison.
 
 ** Clean model and format writes
 
-4. [[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+4. [@4] [[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
 5. reused [[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]]
 
 Read these together: the first controls clean/no-view writer state; the second
@@ -131,7 +131,7 @@ owns the single tested Tri3/Quad4/Prism6 entity registration.
 
 ** Renumbering-independent round trips
 
-6. [[file:../../interchange/export_solver_neutral.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
+6. [@6] [[file:../../interchange/export_solver_neutral.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
 7. [[file:../../interchange/export_solver_neutral.py::def _signature_mapping][_signature_mapping]]
 8. [[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
 
@@ -141,7 +141,7 @@ and outward-normal checks.
 
 ** Optional live Fluent boundary
 
-9. [[file:../../interchange/fluent_import_check.py::def fluent_capability][fluent_capability]]
+9. [@9] [[file:../../interchange/fluent_import_check.py::def fluent_capability][fluent_capability]]
 10. [[file:../../interchange/fluent_import_check.py::def parse_fluent_transcript][parse_fluent_transcript]]
 11. [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
 12. [[file:../../tests/test_solver_neutral_interchange.py][interchange tests]]
