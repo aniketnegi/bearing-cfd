@@ -1,0 +1,122 @@
+#+TITLE: Gmsh 2D Surface-Mesh Smoke Test
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :eval never
+
+[[file:index.org][Meshing index]] · [[file:brep-preflight.org][Previous: BREP preflight]] ·
+[[file:topology-and-quality.org][Topology and quality]] ·
+[[file:../operations/index.org][Operations manual]]
+
+* Purpose and boundary
+
+[[file:../../meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]] answers a
+narrow question: can Gmsh produce a valid first-order triangular mesh on every
+classified boundary and shared axial interface of the fragmented BREP?
+
+It calls =gmsh.model.mesh.generate(2)= exactly once.  It never calls
+=generate(3)=, and it asserts that the final model contains zero 3D elements.
+The output is therefore a boundary-mesh smoke test, not a CFD volume mesh.
+
+* Consuming the preflight contract
+
+[[file:../../meshing/gmsh_surface_smoke.py::def load_preflight_contract][load_preflight_contract]]
+requires:
+
+- a preflight report with =overall: PASS=;
+- a SHA-256 match for =film_zones_fragmented.brep=;
+- an explicit millimetre coordinate contract;
+- a manifest saying that the downstream scale-to-metres factor is =0.001=.
+
+The BREP is imported with =Geometry.OCCScaling=0.001=.  Geometry, nodes, and
+mesh sizes inside the Gmsh model are consequently SI.  User-facing size
+arguments stay in millimetres and are converted once in
+[[file:../../meshing/gmsh_surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
+
+* Geometry and physical-group reuse
+
+The script reuses the preflight's geometry classifiers instead of inventing a
+second tag convention.  [[file:../../meshing/gmsh_surface_smoke.py::def _run_mesh][_run_mesh]]
+imports the BREP and calls
+[[file:../../meshing/gmsh_brep_preflight.py::def validate_zone_model][validate_zone_model]]
+before any mesh is generated.
+
+[[file:../../meshing/gmsh_surface_smoke.py::def create_physical_groups][create_physical_groups]]
+then creates external diagnostic groups:
+
+| Group | Meaning |
+|-------+---------|
+| =journal_wall= | all three zoned journal surface entities |
+| =stationary_wall= | bore and feed-passage wall entities |
+| =pressure_feed= | remote circular inlet |
+| =axial_end_z0= / =axial_end_zL= | axial fluid ends |
+| =ring_A= / =hole_band= / =ring_B= | the three material volumes |
+
+The two axial split surfaces are also named
+=internal_interface_z1= and =internal_interface_z2= for inspection.  Their
+manifest flag says =internal: true=.  They are not future OpenFOAM wall
+patches; a conformal volume mesh must keep them internal.
+
+* Explicit mesh sizing
+
+The default global length is 0.75 mm and the port length is 0.20 mm.  Both are
+converted to metres before being passed to Gmsh.  A Distance field samples the
+feed-cylinder surface and inlet/feed boundary curves.  A Threshold field blends
+from the port size to the global size over the requested refinement radius.
+
+Implicit point, curvature, and boundary-extension sizing are disabled.  This
+makes the field, rather than hidden defaults, responsible for the size
+transition.  See
+[[file:../../meshing/gmsh_surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
+
+* What is validated
+
+[[file:../../meshing/gmsh_surface_smoke.py::def collect_surface_elements][collect_surface_elements]]
+walks each classified surface entity and accepts only first-order three-node
+triangles.  [[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]]
+then checks:
+
+- every classified surface has elements;
+- element tags are unique across surfaces;
+- every =minSICN= is finite and positive;
+- every triangle has positive finite area;
+- Gmsh reports no duplicate nodes;
+- every 2D element belongs to the classified surface inventory;
+- no 3D elements exist;
+- total element count stays below the user gate;
+- node bounding box is in metres;
+- every physical group is nonempty;
+- each axial interface is one meshed surface adjacent to two volumes;
+- the inlet circle has at least 48 Line2 segments;
+- triangulated inlet area is within 0.5 percent of the OCC area.
+
+Quality statistics are deliberately descriptive: minimum, first percentile,
+fifth percentile, median, and mean =minSICN= are recorded per boundary group.
+The narrow annular faces can produce anisotropic triangles, so this stage uses
+strict positivity rather than an arbitrary high isotropic-quality threshold.
+
+* Outputs
+
+[[file:../../meshing/gmsh_surface_smoke.py::def export_surface_meshes][export_surface_meshes]]
+writes:
+
+- =surface_mesh.msh=: Gmsh 4.1 binary;
+- =surface_mesh_ascii.msh=: Gmsh 2.2 ASCII;
+- =surface_mesh.vtk=;
+- =physical_groups.json=;
+- =surface_quality.csv=;
+- =surface_mesh_report.json= and =gmsh_surface_mesh.log=.
+
+Publication follows the same staging/atomic-replacement discipline as the
+preflight.  See
+[[file:../../meshing/gmsh_surface_smoke.py::def _publish_smoke_success][_publish_smoke_success]]
+and [[file:../../meshing/gmsh_surface_smoke.py::def _publish_failure][_publish_failure]].
+
+* PASS scope
+
+PASS covers boundary triangulation, shared split entities, inlet resolution,
+naming, and SI scaling.  It does not establish 3-D connectivity, through-gap
+layers, or the film/feed mouth.
+
+The end-to-end regression is
+[[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight]];
+the CLI path is [[file:../../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]].

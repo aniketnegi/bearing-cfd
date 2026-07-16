@@ -1,0 +1,116 @@
+#+TITLE: Meshing Manual — Eccentric Conical Bearing
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :eval never
+
+* Purpose
+
+This directory explains the meshing stages that sit between the validated CAD
+fluid volume and any later CFD case.  The stages deliberately answer different
+questions:
+
+1. Does Gmsh/OpenCASCADE import the native BREP without changing its geometry?
+2. Can Gmsh create a sound first-order boundary triangulation on that BREP?
+3. Can the no-port film be represented by an analytic, periodic Hex8 mesh?
+4. Can the real central feed be represented by one conformal, connected Prism6
+   mesh with an open film/tube junction?
+
+No file in this directory defines viscosity, rotation speed, cavitation,
+turbulence, pressure boundary values, or a CFD solver.
+
+* Pipeline map
+
+| Stage | Input | What Gmsh creates | What Python creates | Principal result |
+|-------+-------+-------------------+---------------------+------------------|
+| [[file:brep-preflight.org][BREP preflight]] | native unsplit/zoned BREP | no mesh | validation records | trusted OCC import and conformal zones |
+| [[file:surface-smoke.org][Surface smoke]] | fragmented millimetre BREP | 2D Tri3 boundary mesh | classification and audits | boundary-mesh feasibility, no volume cells |
+| [[file:structured-hex-no-port.org][Structured Hex8]] | =params.json= | no generated mesh | all nodes, Hex8 and Quad4 connectivity | all-Hex no-feed regression baseline |
+| [[file:layered-prism-central-feed.org][Layered Prism6]] | =params.json= plus native unsplit BREP | 2D unwrapped Tri3 master only | all 3D nodes, Prism6 and boundary connectivity | full ported fluid mesh |
+
+The distinction between “Gmsh stores a mesh” and “Gmsh generates a mesh” is
+important.  The two 3D pipelines register already-complete NumPy arrays as
+Gmsh discrete entities.  Neither calls =gmsh.model.mesh.generate(3)=.
+
+* Invariants shared by the pipelines
+
+** Geometry and coordinates
+
+- The bearing axis is global =Z=.
+- The model is full 360 degrees.  A diametral symmetry mesh is not a valid
+  rotating-journal CFD replacement.
+- CAD and analytic construction parameters are millimetres.
+- Solver mesh coordinates are metres.  The factor =0.001= is applied exactly
+  once and recorded in reports/manifests.
+- Film thickness means same-=z= radial clearance along a bearing-centred ray,
+  not shortest surface-normal distance.
+- The circumferential coordinate starts at the =-Y= minimum-gap ray.  The
+  final circumferential cell connects directly to index zero; no duplicate
+  =2*pi= node or seam boundary is retained.
+
+See [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]]
+and [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]].
+
+** Trust and provenance
+
+- Input paths, hashes, coordinate units, volumes, and bounding boxes are
+  checked before downstream work.
+- Entity tags and return order are never treated as semantic names.  Geometry,
+  centre of mass, bounding boxes, support type, and adjacency classify bodies
+  and faces.
+- Validation failures raise and publish a failure report.  They do not relax
+  OCC tolerances or silently substitute approximate geometry.
+- Solver-eligible artifacts are staged and atomically replace the old output
+  directory only after all mandatory checks pass.
+
+The common implementation is in
+[[file:../../meshing/gmsh_brep_preflight.py::def require][require]],
+[[file:../../meshing/gmsh_brep_preflight.py::def make_staging_directory][make_staging_directory]],
+and [[file:../../meshing/gmsh_brep_preflight.py::def atomic_replace_directory][atomic_replace_directory]].
+
+* Master data models
+
+| Type | Owner | Meaning |
+|------+-------+---------|
+| =CadReference= | BREP preflight | frozen CAD measurements used to classify and validate OCC entities |
+| =VolumeRecord= / =SurfaceRecord= | BREP preflight | geometry-derived OCC inventory, independent of imported tag order |
+| =MeshData= | no-port Hex8 | immutable canonical points, Hex8, boundary quads, logical indices, metrics and metadata |
+| =MasterMesh= | ported Prism6 | immutable unwrapped =(u,z)= Tri3 mesh, disk mask, rim/seam/partition edges |
+| =PrismMesh= | ported Prism6 | immutable SI points, Prism6, external faces, mouth faces, fields and provenance |
+
+Source links:
+
+- [[file:../../meshing/gmsh_brep_preflight.py::class CadReference][CadReference]]
+- [[file:../../meshing/gmsh_brep_preflight.py::class SurfaceRecord][SurfaceRecord]]
+- [[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]]
+- [[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
+- [[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
+
+Arrays in the two production mesh data models are made read-only.  Canonical
+connectivity is one-based because the same arrays are registered with Gmsh;
+VTU writers subtract one when handing connectivity to =meshio=.
+
+* Choosing the mesh
+
+Use the structured Hex8 mesh when studying the film without the feed port.  It
+is regular in =theta=, =z=, and through-gap index and is a valuable regression
+and convergence reference.
+
+Use the layered Prism6 mesh for the actual central feed.  The circular mouth
+is naturally represented by an unstructured Tri3 master mesh.  Sweeping that
+master creates layered prisms without forcing a fragile all-Hex block topology
+around a branching circular passage.  The no-port baseline is retained rather
+than being weakened or repurposed.
+
+Once a ported =mesh_arrays.npz= has passed, continue with
+[[file:../interchange/index.org][Solver-neutral interchange]] to construct clean
+MSH/CGNS files.  That stage transfers the existing mesh; it does not belong in
+the mesh-generation choice itself.
+
+* Implementation chains
+
+| Pipeline | Function chain | Regression |
+|----------+----------------+------------|
+| BREP preflight | [[file:../../meshing/gmsh_brep_preflight.py::def load_reference][load_reference]] → [[file:../../meshing/gmsh_brep_preflight.py::def _run_occ_checks][_run_occ_checks]] | [[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][native BREP test]] |
+| Surface smoke | [[file:../../meshing/gmsh_surface_smoke.py::def _run_mesh][_run_mesh]] → [[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]] | [[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][surface-smoke integration]] |
+| No-port Hex8 | [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]] → [[file:../../meshing/structured_hex_no_port.py::def validate_analytic_mesh][validate_analytic_mesh]] → [[file:../../meshing/structured_hex_no_port.py::def add_discrete_model][add_discrete_model]] | [[file:../../tests/test_structured_hex_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][analytic/topology test]] |
+| Ported Prism6 | [[file:../../meshing/layered_prism_central_feed.py::def rim_coordinates][rim_coordinates]] → [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]] → [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]] → [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]] | [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][mouth/topology test]] |

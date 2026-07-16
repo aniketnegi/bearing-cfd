@@ -1,0 +1,238 @@
+#+TITLE: Topology, Quality, Round Trips, and Publication
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :eval never
+
+[[file:index.org][Meshing index]] · [[file:structured-hex-no-port.org][Hex8 pipeline]] ·
+[[file:layered-prism-central-feed.org][Prism6 pipeline]] ·
+[[file:../geometry/cad-validation.org][CAD validation]] ·
+[[file:../operations/outputs-and-reports.org][Outputs and reports]]
+
+* Why validation is layered
+
+The repository keeps four claims separate:
+
+1. Native BREP geometry is valid and imports faithfully.
+2. BREP surfaces can be triangulated by Gmsh.
+3. Canonical 3D arrays have correct analytic geometry and topology.
+4. Exported files reproduce those arrays and names.
+
+A PASS at an earlier stage does not imply a PASS later.  Conversely, the known
+strict STEP exchange failure does not invalidate native BREP or analytic mesh
+results.  The stage map is in [[file:index.org][the meshing index]].
+
+* Canonical face census
+
+Connectivity is the source of truth for volume-mesh topology.
+
+For each volume cell, local faces are extracted and converted to canonical
+unordered node keys.  A Prism6 key begins with the face arity before its
+sorted node tags, so a three-node face can never collide with a four-node
+face.  Incidence counts then mean:
+
+| Incident cells | Interpretation |
+|----------------+----------------|
+| 1 | exterior boundary face |
+| 2 | conformal internal face shared by two cells |
+| 0 | missing/disconnected declaration |
+| >2 | non-manifold overlap |
+
+Hex8 implementation:
+[[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]].
+Prism6 helpers and implementation:
+[[file:../../meshing/layered_prism_central_feed.py::def _face_census][_face_census]]
+and [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]].
+
+* Boundary completeness
+
+The declared boundary groups must be pairwise disjoint.  Their canonical keys
+must equal the complete set of one-incident-cell volume faces.  This one equality
+detects several common failures at once:
+
+- a missing patch face;
+- an accidental internal cap exported as a wall;
+- the same face assigned to two patches;
+- an undeclared =defaultFaces=-like remainder;
+- a hanging/nonmatching interface that appears as exterior faces.
+
+Boundary winding is checked separately.  For Hex8, each area vector must point
+away from the incident cell and agree with the analytic cone/end direction.
+For Prism6, [[file:../../meshing/layered_prism_central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]]
+requires every external Tri3 and Quad4 normal to point from its sole incident
+cell centroid toward the face centroid.  The signed exterior-boundary volume
+remains a global conservation check, but it cannot hide locally reversed faces.
+
+* Connectivity and periodicity
+
+** Hex8 tensor-product graph
+
+The no-port mesh computes the complete expected neighbour list from logical
+=(theta,z,xi)= indices.  Actual two-incident-cell face pairs must match it exactly.
+The final theta block must share its circumferential face with block zero, and
+those seam keys must not occur in any external patch.
+
+Relevant functions:
+[[file:../../meshing/structured_hex_no_port.py::def expected_neighbour_pairs][expected_neighbour_pairs]]
+and [[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]].
+
+** Prism6 generic graph
+
+The ported mesh builds cell adjacency from every two-incident-cell triangular and
+quadrilateral face.  A union-find pass in
+[[file:../../meshing/layered_prism_central_feed.py::def _component_count][_component_count]]
+must return one connected component.  Extruded master edges prove that the
+collapsed theta seam and the =z1/z2= partitions remain internal owner-neighbour
+faces through every gap layer.
+
+The pressure-inlet owners must be feed cells in the same component as film
+cells.  Thus “the inlet exists” and “the inlet communicates with the film” are
+different checks, and both are required.
+
+* The shared-mouth owner-neighbour proof
+
+The film/tube mouth is the most important local topology in the ported mesh.
+Each mouth Tri3 must:
+
+- be found in the volume-face census;
+- have exactly two incident cells;
+- have one incident cell with =region_id= 0 and one with =region_id= 1;
+- use the same node tags on both cells;
+- be absent from all one-incident-cell boundary groups.
+
+This proves an open, conformal fluid connection.  The triangle is a shared
+internal owner-neighbour face, not a cap.  A cap would have one incident cell and would appear in an
+external boundary group.  The code and focused test are:
+
+- [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][Prism validate_topology]]
+- [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][test_mouth_nodes_faces_and_continuous_journal]]
+
+The same validation proves the journal remains continuous: =journal_wall=
+contains one triangle for every complete master triangle, including the feed
+disk footprint.
+
+* Geometry metrics and quality gates
+
+** Surface smoke Tri3
+
+The smoke stage computes Euclidean triangle area and asks Gmsh for =minSICN=.
+Every area and =minSICN= must be finite and positive.  It reports distribution
+statistics rather than imposing a high isotropic threshold.  See
+[[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]].
+
+** Hex8
+
+[[file:../../meshing/structured_hex_no_port.py::def compute_custom_metrics][compute_custom_metrics]]
+uses oriented face area vectors and a 2x2x2 Gauss rule.  Hard gates are:
+
+- positive face-based signed volume;
+- positive Gauss volume and minimum determinant;
+- agreement between the two total-volume calculations;
+- positive minimum face-pyramid volume;
+- maximum non-orthogonality at most 45 degrees;
+- maximum skewness at most 4;
+- finite Gmsh =minSICN=;
+- positive Gmsh =minDetJac= and element volume.
+
+Aspect ratio is reported, not capped, because the film is intentionally thin.
+
+** Prism6
+
+[[file:../../meshing/layered_prism_central_feed.py::def _prism_gauss_metrics][_prism_gauss_metrics]]
+evaluates the Jacobian at three triangle points and two through-prism Gauss
+points.  Every custom determinant and integrated volume must be positive.
+Gmsh independently supplies =minSICN=, =minDetJac=, and volume for every
+Prism6.
+
+Quality statistics include minimum, p01, p05, median, p95, and maximum for:
+
+- all cells;
+- film prisms;
+- feed-tube prisms;
+- cells touching mouth nodes.
+
+Again, =minSICN= must be positive but need not exceed 0.1.  A thin layered
+film can be valid and strongly anisotropic.
+
+* Volume comparisons
+
+Different comparisons answer different questions:
+
+| Comparison | Purpose |
+|------------+---------|
+| canonical cell sum vs Gmsh element sum | independent implementation check |
+| canonical cell sum vs oriented exterior boundary | connectivity/orientation conservation |
+| linear mesh vs analytic no-port volume | circumferential faceting convergence |
+| linear ported mesh vs native BREP | complete curved-domain approximation error |
+| gap-level family volumes | subdivision invariance |
+
+The ported mesh also separates node-to-BREP closest-point residuals from rim
+sagitta.  Closest point verifies analytic vertices; sagitta quantifies the
+linear chord between exact vertices.  One must not be used to disguise the
+other.
+
+* Gmsh discrete entities
+
+In the analytic 3D pipelines, Gmsh discrete entities attach topology and names
+to an already-complete mesh:
+
+- =addDiscreteEntity= creates curves/surfaces/volume;
+- =addNodes= receives canonical point tags and SI coordinates;
+- =addElementsByType= receives Line2/Quad4/Hex8 or Tri3/Quad4/Prism6 arrays;
+- =reclassifyNodes= assigns nodes to the lowest-dimensional discrete entities;
+- stable physical groups are then added.
+
+* Round-trip strategy
+
+** Gmsh MSH
+
+Both production pipelines write Gmsh 4.1 binary and OpenFOAM-compatible Gmsh
+2.2 ASCII.  Fresh models reopen both files.  Node tags may be renumbered, so
+coordinates establish a canonical node mapping.  Oriented connectivity is
+then compared after geometric mapping, not by assuming imported tags/order.
+
+The audit checks element types/counts, physical IDs, names, entity membership,
+coordinates, connectivity, SI bounding box, and positive determinants/volumes.
+The ported audit also reconstructs mouth ownership and verifies the =region_id=
+ElementData view.
+
+** VTU
+
+=meshio= rereads the volume and boundary VTUs.  Coordinates, cell type,
+connectivity, field lengths/values, and patch IDs must match canonical arrays.
+Prism6 is represented by meshio/VTK's =wedge= cell name.
+
+** NPZ
+
+The NPZ archive is the label-independent provenance copy.  It is reloaded with
+=allow_pickle=False= and every array plus JSON metadata must be exactly equal.
+
+** Diagnostic formats
+
+Visualization-only meshes are validated separately and carry non-solver
+markers.  In the ported pipeline, the binary Gmsh 2.2 cutaway and feed-boundary
+files are reopened and their element counts and =solve_eligible= flag are
+checked.  In the Hex8 pipeline, cutaway connectivity and exaggerated-file
+markers are round-tripped independently.
+
+* Atomic publication
+
+Each top-level run creates a sibling staging directory.  All requested gap
+levels, format round trips, plots, reports, and optional external audits are
+completed there.  A successful stage replaces the old output directory using
+=os.replace=.  If replacement fails, the previous directory is restored.
+
+Failure behavior is tested after solver-like artifacts already exist in the
+staging tree:
+
+- [[file:../../tests/test_structured_hex_no_port.py::def test_failure_atomically_removes_staged_solver_outputs][Hex8 atomic failure test]]
+- [[file:../../tests/test_layered_prism_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][Prism6 atomic failure test]]
+
+The published failure directory contains no stale solve-eligible MSH, VTU, or
+NPZ.  The ported path retains diagnostic logs under their relative gap-level
+paths.
+
+* Report semantics
+
+=overall= is stage-scoped.  Interpret it with the recorded units, topology
+counts, quality minima/distributions, round-trip records, manifest, and
+OpenFOAM status; =SKIPPED= is valid when external tools are unavailable.

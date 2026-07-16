@@ -1,0 +1,148 @@
+#+TITLE: Native BREP Preflight in Gmsh/OpenCASCADE
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :eval never
+
+[[file:index.org][Meshing index]] · [[file:surface-smoke.org][Next: surface smoke]] ·
+[[file:../geometry/index.org][Geometry manual]] · [[file:../operations/index.org][Operations manual]]
+
+* Question answered by this stage
+
+The preflight proves that Gmsh's OpenCASCADE kernel sees the native OCCT BREP
+as the same geometry that the CAD program validated.  It does not generate any
+mesh.  Its canonical implementation is
+[[file:../../meshing/gmsh_brep_preflight.py][gmsh_brep_preflight.py]], entered
+through [[file:../../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]].
+
+The inputs are the one-solid fluid BREP, the three-zone BREP, and =params.json=.
+[[file:../../meshing/gmsh_brep_preflight.py::class PreflightInputs][PreflightInputs]]
+defines their defaults.  [[file:../../meshing/gmsh_brep_preflight.py::def load_reference][load_reference]]
+converts the CAD record into an immutable
+[[file:../../meshing/gmsh_brep_preflight.py::class CadReference][CadReference]].
+
+* Import contract and strict OCC settings
+
+Before import, the code checks:
+
+- each BREP SHA-256 agrees with =params.json=;
+- the CAD-side BREP round-trip record reports the expected solid count,
+  validity, manifold status, and essentially exact native volume;
+- coordinate units are known.
+
+Every OCC option that could heal, sew, simplify, or fuzzy-match geometry is set
+explicitly to zero.  =Geometry.OCCScaling= is the only intentional transform.
+See [[file:../../meshing/gmsh_brep_preflight.py::def configure_occ_options][configure_occ_options]]
+and the =STRICT_OCC_OPTIONS= table near the top of the source.
+
+This matters because a preflight is evidence, not a repair operation.  A model
+that needs automatic fixing must fail here rather than appear trustworthy after
+an undocumented topology change.
+
+* Geometry-derived classification
+
+Imported entity tags are incidental.  The classifier uses geometric facts.
+
+** Volumes
+
+[[file:../../meshing/gmsh_brep_preflight.py::def inventory_volumes][inventory_volumes]]
+records OCC mass, centre of mass, and bounding box.  Then
+[[file:../../meshing/gmsh_brep_preflight.py::def classify_volumes][classify_volumes]]
+assigns =ring_A=, =hole_band=, and =ring_B= from centre-of-mass =z= and expected
+axial spans.  It demands exactly one body in each interval and checks the
+per-zone native volumes.
+
+** Surfaces
+
+[[file:../../meshing/gmsh_brep_preflight.py::def inventory_surfaces][inventory_surfaces]]
+adds support type, area, centre, bounding box, adjacent volumes, boundary-curve
+types, and OCC support properties.  [[file:../../meshing/gmsh_brep_preflight.py::def classify_surfaces][classify_surfaces]]
+then identifies:
+
+- the two shared axial interfaces at =z1= and =z2= from plane position and
+  two-volume adjacency;
+- axial outlets from plane position;
+- the pressure inlet from its centre and support plane;
+- the journal, bore, and feed walls from support axis, centre, and radius.
+
+The final boundary audit is
+[[file:../../meshing/gmsh_brep_preflight.py::def validate_boundaries][validate_boundaries]].
+The inlet normal is not inferred only from plane coefficients: an inside/outside
+probe verifies that the =-Y= side is fluid and the =+Y= side is exterior.
+
+* Fragmentation and conformal zone interfaces
+
+The imported zone bodies are passed to =gmsh.model.occ.fragment=.  Both return
+objects are used:
+
+- output dimension/tags;
+- source-to-output mapping.
+
+[[file:../../meshing/gmsh_brep_preflight.py::def validate_fragment_mapping][validate_fragment_mapping]]
+requires each source zone to map to exactly one final 3D body, requires the
+three mapped bodies to be distinct, and rejects any extra intersection/sliver
+volume.
+
+After synchronization,
+[[file:../../meshing/gmsh_brep_preflight.py::def validate_zone_model][validate_zone_model]]
+reclassifies the bodies and surfaces.  Each internal axial plane must be one
+surface adjacent to exactly the two expected zones.  That is the OCC topology
+needed for a later conformal mesh; three touching volumes without shared
+subshapes would not be sufficient.
+
+The code also runs a non-production comparison with
+=Geometry.OCCBooleanSimplify=1=.  Any topology difference is reported, while
+the published model remains the strict simplify-off result.
+
+* Disk round trips and unit scaling
+
+The preflight writes =film_zones_fragmented.brep= in millimetres, clears to a
+fresh model, reimports the file with =Geometry.OCCScaling=1=, and repeats
+volume, surface, classification, adjacency, and topology checks.
+
+It then creates an SI copy by importing the millimetre file with
+=Geometry.OCCScaling=0.001=.  Length, area, and volume must scale as
+=1e-3=, =1e-6=, and =1e-9=.  The SI BREP is itself written, reimported with
+scaling reset to one, and checked again.  This proves that the file contains SI
+numeric coordinates and prevents accidental double scaling downstream.
+
+The complete sequence is in
+[[file:../../meshing/gmsh_brep_preflight.py::def _run_occ_checks][_run_occ_checks]].
+
+* Independent OCP validation
+
+[[file:../../meshing/gmsh_brep_preflight.py::def validate_brep_with_ocp][validate_brep_with_ocp]]
+reimports both Gmsh-written BREPs through build123d/OCP.  It checks three valid,
+manifold solids, total and per-zone volumes, and maximum OCCT vertex/edge/face
+tolerances.  Tolerances are converted back to millimetres and compared with
+the minimum radial gap, rather than accepted merely because OCC can load the
+file.
+
+* Outputs and failure semantics
+
+Successful output includes:
+
+- =film_zones_fragmented.brep= in millimetres;
+- =film_zones_SI.brep= in metres;
+- =brep_manifest.json= with explicit units and hashes;
+- volume and surface CSV inventories;
+- =preflight_report.json= and the Gmsh log.
+
+The stage writes into a sibling staging directory.  Only
+[[file:../../meshing/gmsh_brep_preflight.py::def _publish_preflight_success][_publish_preflight_success]]
+atomically publishes a successful bundle.  The failure path publishes only a
+failure report/log bundle through
+[[file:../../meshing/gmsh_brep_preflight.py::def _publish_failure_bundle][_publish_failure_bundle]].
+
+* Test evidence
+
+[[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight]]
+runs both strict parameter cases.  It asserts that no mesh was generated, the
+fragmented model has three bodies, SI area/volume scaling is correct, and all
+expected files exist.  The same test immediately feeds the published BREP into
+the surface-smoke stage, making the BREP/report/hash contract executable.
+
+* Scope
+
+Preflight establishes native-BREP import and shared OCC topology.  It does not
+establish mesh feasibility, volume-cell quality, CFD boundary conditions, or an
+all-Hex decomposition.
