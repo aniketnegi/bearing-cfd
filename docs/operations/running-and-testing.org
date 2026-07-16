@@ -1,0 +1,215 @@
+#+TITLE: Running and Testing
+#+OPTIONS: toc:2 num:nil
+#+STARTUP: content
+
+* Environment
+
+#+begin_src sh
+uv sync --locked
+#+end_src
+
+Python selection and dependency pins are in [[file:../../.python-version][=.python-version=]],
+[[file:../../pyproject.toml][=pyproject.toml=]], [[file:../../uv.lock][=uv.lock=]],
+and [[file:../../requirements.txt][=requirements.txt=]].
+
+All geometry source dimensions are millimetres.  The volume-mesh pipelines
+convert solver coordinates to metres exactly once.
+
+* Stage order and status semantics
+
+The stages have independent status records.  A failure in one exchange format
+does not rewrite the result of another stage.
+
+| Stage | Canonical command | Current recorded status | Meaning |
+|-------+-------------------+-------------------------+---------|
+| CAD construction | =bearing_film.py= | =FAIL= at strict STEP gate | Native geometry and BREP checks pass; STEP volume round trip exceeds =1e-6=. |
+| Native BREP preflight | =gmsh_brep_preflight.py= | =PASS= | One unsplit OCC volume and three conformal fragmented zones survive import and SI scaling. |
+| Boundary smoke mesh | =gmsh_surface_smoke.py= | =PASS= | Valid Tri3 surface mesh only; zero 3-D elements. |
+| No-port Hex8 baseline | =structured_hex_no_port.py= | =PASS= | Full-360 analytic structured mesh with no feed passage. |
+| Ported Prism6 mesh | =layered_prism_central_feed.py= | =PASS= | Full-360 conformal film plus open central feed passage. |
+| Solver-neutral export | =export_solver_neutral.py= | =STATIC_PASS_FLUENT_NOT_RUN= | Clean MSH/CGNS round trips match canonical nGap_04 and nGap_08 arrays. |
+| Fluent import | =fluent_import_check.py= | =NOT_RUN= | PyFluent/Fluent unavailable; no import acceptance or native Fluent mesh. |
+| OpenFOAM audit | optional | =SKIPPED= in current production reports | The mesh utilities were disabled with =--openfoam skip=; no solver was run. |
+
+The strict CAD command is therefore expected to return nonzero on the currently
+recorded build.  Inspect its =params.json= rather than changing the tolerance or
+using the rejected STEP.  The trusted native BREP files remain published for
+the downstream open-source path.
+
+* Generate the default geometry contracts
+
+** CAD and native BREP
+
+#+begin_src sh
+uv run python bearing_film.py --outdir out/strict_default
+#+end_src
+
+The current strict report records the STEP failure and retains:
+=film_unsplit.brep=, =film_zones.brep=, =film_thickness_map.png=,
+=requirements.txt=, and =params.json=.  The nonzero exit is part of the STEP
+acceptance contract.
+
+The second parameter case is generated independently:
+
+#+begin_src sh
+uv run python bearing_film.py \
+  --eccentricity-ratio 0.3 \
+  --semicone-angle-deg 20 \
+  --outdir out/strict_case_e03_g20
+#+end_src
+
+** Native BREP preflight
+
+Default paths are encoded in the CLI, so the default case is:
+
+#+begin_src sh
+uv run python meshing/gmsh_brep_preflight.py --no-gui
+#+end_src
+
+Second case:
+
+#+begin_src sh
+uv run python meshing/gmsh_brep_preflight.py \
+  --unsplit out/strict_case_e03_g20/film_unsplit.brep \
+  --zones out/strict_case_e03_g20/film_zones.brep \
+  --params out/strict_case_e03_g20/params.json \
+  --outdir out/gmsh_preflight_e03_g20 \
+  --no-gui
+#+end_src
+
+Downstream consumers require =overall: PASS= and verify the recorded BREP
+SHA-256.
+
+** Two-dimensional surface smoke test
+
+#+begin_src sh
+uv run python meshing/gmsh_surface_smoke.py --no-gui
+
+uv run python meshing/gmsh_surface_smoke.py \
+  --brep out/gmsh_preflight_e03_g20/film_zones_fragmented.brep \
+  --preflight-report out/gmsh_preflight_e03_g20/preflight_report.json \
+  --outdir out/gmsh_surface_smoke_e03_g20 \
+  --no-gui
+#+end_src
+
+This stage deliberately calls only =gmsh.model.mesh.generate(2)=.  It proves
+boundary classification and shared interfaces, not volume-mesh quality.
+
+* Generate volume meshes
+
+** Frozen no-port Hex8 reference
+
+Default case:
+
+#+begin_src sh
+uv run python meshing/structured_hex_no_port.py \
+  --params out/strict_default/params.json \
+  --outdir out/structured_no_port_default \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --openfoam skip --no-gui
+#+end_src
+
+Second case:
+
+#+begin_src sh
+uv run python meshing/structured_hex_no_port.py \
+  --params out/strict_case_e03_g20/params.json \
+  --outdir out/structured_no_port_e03_g20 \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --openfoam skip --no-gui
+#+end_src
+
+This is a regression baseline without the feed passage.  It must not be used
+as the ported CFD domain.
+
+** Conformal central-feed Prism6 production mesh
+
+Default case:
+
+#+begin_src sh
+uv run python meshing/layered_prism_central_feed.py \
+  --params out/strict_default/params.json \
+  --brep out/strict_default/film_unsplit.brep \
+  --preflight out/gmsh_preflight/preflight_report.json \
+  --outdir out/ported_prism_default \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --rim-segments 128 --tube-layers 48 --tube-grading 1.0 \
+  --openfoam skip --no-gui
+#+end_src
+
+Second case:
+
+#+begin_src sh
+uv run python meshing/layered_prism_central_feed.py \
+  --params out/strict_case_e03_g20/params.json \
+  --brep out/strict_case_e03_g20/film_unsplit.brep \
+  --preflight out/gmsh_preflight_e03_g20/preflight_report.json \
+  --outdir out/ported_prism_e03_g20 \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --rim-segments 128 --tube-layers 48 --tube-grading 1.0 \
+  --openfoam skip --no-gui
+#+end_src
+
+Gmsh generates the two-dimensional master Tri3 mesh.  Python constructs the
+three-dimensional Prism6 connectivity; the program never asks Gmsh to generate
+the 3-D volume mesh.  See [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][=build_master_mesh=]],
+[[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][=build_prism_mesh=]], and
+[[file:../../meshing/layered_prism_central_feed.py::def validate_topology][=validate_topology=]].
+
+* Export solver-neutral MSH and CGNS
+
+The four-layer and eight-layer production cases are independent export runs:
+
+#+begin_src sh
+uv run python interchange/export_solver_neutral.py \
+  --case-dir out/ported_prism_default/nGap_04 \
+  --outdir out/interchange_default/nGap_04 \
+  --fluent skip
+
+uv run python interchange/export_solver_neutral.py \
+  --case-dir out/ported_prism_default/nGap_08 \
+  --outdir out/interchange_default/nGap_08 \
+  --fluent skip
+#+end_src
+
+Use =--fluent auto= to attempt a live import only when PyFluent and a license
+are available; use =required= when absence or import failure must make the
+command nonzero.  Full semantics are in
+[[file:../interchange/operations-and-reports.org][Interchange commands and reports]].
+
+* Tests
+
+Run the complete regression set:
+
+#+begin_src sh
+uv run pytest -q
+#+end_src
+
+Run focused suites while developing one stage:
+
+#+begin_src sh
+uv run pytest -q tests/test_gmsh_brep_preflight.py
+uv run pytest -q tests/test_structured_hex_no_port.py
+uv run pytest -q tests/test_layered_prism_central_feed.py
+uv run pytest -q tests/test_solver_neutral_interchange.py
+#+end_src
+
+The BREP test also runs the surface-smoke stage.  The no-port suite is frozen
+regression coverage and must stay green when the ported pipeline changes.
+
+* Report queries
+
+#+begin_src sh
+uv run python meshing/layered_prism_central_feed.py --help
+jq -r '.overall' out/gmsh_preflight/preflight_report.json
+jq -r '.overall' out/gmsh_surface_smoke/surface_mesh_report.json
+jq -r '.overall' out/structured_no_port_default/run_report.json
+jq -r '.overall' out/ported_prism_default/run_report.json
+jq -r '.overall' out/interchange_default/nGap_04/interchange_report.json
+jq -r '.cases[] | [.n_gap,.total_prisms,.topology_status,.overall] | @tsv' \
+  out/ported_prism_default/run_report.json
+#+end_src

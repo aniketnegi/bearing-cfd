@@ -1,0 +1,91 @@
+#+TITLE: Maintaining the Org Documentation
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Maintenance contract
+
+These files are a shared engineering notebook, not generated API prose.  A
+useful change should make a physical assumption, algorithm, trust boundary, or
+failure mode easier to inspect alongside the code.
+
+Keep documents focused.  Add a new file when a topic has its own construction
+method or validation contract; do not grow =index.org= into the manual itself.
+
+* File and link conventions
+
+- Use lowercase hyphenated filenames.
+- Give every file =#+TITLE=, =#+STARTUP=, and =#+OPTIONS= headers.
+- Use relative =file:= links so the tree remains relocatable.
+- Prefer a source anchor over a bare filename:
+
+#+begin_src org
+[[file:../bearing_film.py::def make_full_film][make_full_film]]
+#+end_src
+
+- Link a test when describing a regression contract.
+- Link a generated report only as evidence; reports are not source files.
+- Use =mm= for CAD derivations and explicitly mark the one =0.001= conversion
+  into solver-space metres.
+
+* Claim discipline
+
+Evidence requirements by claim type:
+
+| Kind | Required support |
+|------+------------------|
+| geometry definition | formula plus construction-function link |
+| implementation behavior | exact source-function link |
+| mandatory invariant | validator and test link |
+| current run status | named JSON report and date/case |
+| literature statement | paper citation and precise scope |
+| future proposal | label as proposed; do not write as implemented |
+
+Do not transfer claims between pipeline stages.  A native-BREP PASS is not a
+STEP PASS; a topology PASS is not a quality PASS; a =checkMesh= PASS is not a
+validated CFD model.  Likewise, writing and reopening CGNS proves a static
+interchange round trip, not Fluent acceptance.  Use
+=STATICALLY_VALIDATED_NOT_IMPORTED= until the live checks in
+[[file:interchange/fluent-import-audit.org][the Fluent import audit]] pass against the canonical source.
+
+* Decision changes
+
+For a geometry-meaning or topology change:
+
+1. add or update an entry in [[file:project/decisions.org][the decision register]];
+2. update the detailed subsystem chapter;
+3. link the implementation and regression test;
+4. update [[file:index.org][the trust-state table]] only after a recorded run;
+5. preserve rejected alternatives and consequences so later readers understand
+   why the code is shaped this way.
+
+* Literature and conversational sources
+
+Papers motivate physics and numerical approaches, but they do not prove this
+implementation.  State exactly which part of a paper is being used.  Project
+conversation links belong in [[file:references/provenance.org][provenance]];
+when their content is unavailable, record that fact rather than reconstructing
+it from memory.
+
+* Documentation check
+
+#+begin_src sh
+emacs --batch -Q --eval '(require (quote org))' \
+  --eval '(setq org-confirm-babel-evaluate nil)' \
+  --eval '(mapc (lambda (f) (with-current-buffer (find-file-noselect f) (org-lint))) (directory-files-recursively "docs" "\\.org$"))'
+#+end_src
+
+=org-lint= checks structure; source-anchor resolution remains a separate check.
+
+* Updating commands and output layouts
+
+CLI defaults are defined in each =parse_args= function, and output names are
+defined in the corresponding export/generation function.  Verify both before
+editing command examples.  Do not document a manually created diagnostic file
+as a reproducible pipeline output unless the source now creates it.
+
+* Style
+
+Prefer equations, small code excerpts, and explicit failure examples over
+decorative prose.  Explain why a line or invariant exists; readers can inspect
+obvious Python mechanics in the linked source.  Keep visualization subsets
+clearly marked non-solver and never use their coordinates as validation data.

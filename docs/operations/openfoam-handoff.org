@@ -1,0 +1,135 @@
+#+TITLE: OpenFOAM Mesh Handoff
+#+OPTIONS: toc:2 num:nil
+#+STARTUP: content
+
+This stage audits mesh conversion only.  It does not create CFD boundary
+conditions, material properties, journal rotation, cavitation, turbulence, or
+a solver run.
+
+* Modes
+
+Both volume-mesh CLIs support:
+
+- =--openfoam auto= :: run conversion and =checkMesh= when both utilities are
+  found; otherwise record =SKIPPED= without failing mesh generation.
+- =--openfoam required= :: absence of either utility, a conversion warning, or
+  a failed audit is fatal.
+- =--openfoam skip= :: do not attempt conversion; record =SKIPPED=.
+
+The current production reports were generated with =--openfoam skip=, so their
+OpenFOAM status is intentionally =SKIPPED=.  That does not weaken the native
+mesh PASS, but it is not evidence that OpenFOAM accepted the mesh.
+
+Check availability first:
+
+#+begin_src sh
+command -v gmshToFoam
+command -v checkMesh
+command -v foamVersion || true
+#+end_src
+
+* Canonical conversion inputs
+
+Use only the Gmsh 2.2 ASCII files written for conversion:
+
+- no-port reference: =nGap_XX/structured_hex_openfoam.msh=;
+- central-feed production mesh: =nGap_XX/ported_prism_openfoam.msh=.
+
+Do not convert the Gmsh 4.1 binary visualization file, VTU, surface-smoke
+mesh, cutaway, section, mouth diagnostic, or exaggerated visualization.
+
+The MSH2 files include exterior surface elements aligned with volume-cell
+faces and stable physical groups.  =Mesh.SaveAll= is not enabled because it
+can discard physical definitions in MSH2.
+
+* Audited command
+
+#+begin_src sh
+uv run python meshing/layered_prism_central_feed.py \
+  --params out/strict_default/params.json \
+  --brep out/strict_default/film_unsplit.brep \
+  --preflight out/gmsh_preflight/preflight_report.json \
+  --outdir out/ported_prism_default \
+  --openfoam required --no-gui
+#+end_src
+
+For a machine where OpenFOAM is optional, replace =required= with =auto=.
+The implementation captures executable paths, help/version output, stdout,
+stderr, conversion logs, =checkMesh= logs, cell count, connected-region count,
+and patch inventory in =mesh_report.json=.
+
+The corresponding code is:
+
+- [[file:../../meshing/layered_prism_central_feed.py::def audit_openfoam][ported Prism6 =audit_openfoam=]];
+- [[file:../../meshing/structured_hex_no_port.py::def audit_openfoam][no-port Hex8 =audit_openfoam=]];
+- [[file:../../tests/test_layered_prism_central_feed.py::def test_openfoam_auto_skips_when_utilities_are_absent][auto-skip regression]].
+
+* Underlying utilities
+
+#+begin_src sh
+gmshToFoam -case CASE ported_prism_openfoam.msh
+checkMesh -case CASE -allTopology -allGeometry
+#+end_src
+
+Required audit evidence includes:
+
+- =gmshToFoam= return code zero;
+- no unhandled, inverted, undefined, unmatched, fatal, or dropped-element
+  diagnostic;
+- =checkMesh= return code zero and an explicit =Mesh OK.= line;
+- expected cell count and exactly one connected fluid region;
+- no negative-volume, illegal, or inverted cells;
+- exact patch set and no =defaultFaces=.
+
+If the installed =gmshToFoam= cannot convert Prism6 cells, =required= mode
+fails clearly.  The pipeline must not tetrahedralize or omit cells as a
+fallback.
+
+* Expected physical groups
+
+** No-port Hex8 reference
+
+| ID | Name | Role |
+|----+------+------|
+| 101 | =journal_wall= | moving wall in a future CFD case |
+| 102 | =stationary_wall= | stationary bore wall |
+| 103 | =axial_end_z0= | axial opening |
+| 104 | =axial_end_zL= | axial opening |
+| 201 | =fluid= | one volume region, not a boundary patch |
+
+There is no =pressure_feed= because the reference geometry has no feed port.
+
+** Central-feed Prism6 production mesh
+
+| ID | Name | Role |
+|----+------+------|
+| 101 | =journal_wall= | moving wall; continuous under the feed |
+| 102 | =bushing_bore_wall= | stationary bore outside the mouth |
+| 103 | =axial_end_z0= | axial opening |
+| 104 | =axial_end_zL= | axial opening |
+| 105 | =feed_tube_wall= | stationary feed wall |
+| 106 | =pressure_feed= | external inlet disk |
+| 201 | =fluid= | one connected volume region, not a patch |
+
+The feed mouth is a shared internal owner-neighbour interface with two incident
+cells.  It must not appear as
+=feed_mouth=, =mouth_cap=, =internal_feed=, or =defaultFaces=.  There must be
+no symmetry, cyclic, or circumferential seam patch.
+
+* Reading the result
+
+#+begin_src sh
+jq '.openfoam' out/ported_prism_default/nGap_08/mesh_report.json
+jq '.gmsh.physical_groups' out/ported_prism_default/nGap_08/mesh_report.json
+find out/ported_prism_default/nGap_08 -maxdepth 1 \
+  -name 'openfoam_*.log' -print
+#+end_src
+
+A =PASS= here means format conversion and mesh topology/geometry passed the
+installed OpenFOAM utilities.  It still does not mean that a physically valid
+CFD problem has been configured or solved.
+
+* External documentation
+
+- OpenFOAM Foundation source guide: [[https://cpp.openfoam.org/v13/dir_70ca48d6efc076aae6c126917cb7ccc1.html][=gmshToFoam= directory reference]]
+- Gmsh 4.15.2 reference: [[https://gmsh.info/doc/texinfo/][mesh formats and physical groups]]

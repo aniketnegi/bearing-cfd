@@ -1,0 +1,38 @@
+#+TITLE: Literature
+#+OPTIONS: toc:2 num:nil
+#+STARTUP: content
+
+* Project literature index
+
+The parent BTP survey is maintained in
+[[file:../../../../docs/papers_sorted/index.org][=docs/papers_sorted/index.org=]].  This project uses one local conical-bearing paper
+as limited geometric and thin-film-method context.
+
+* Gangrade, Phalle, and Mantha
+
+Ajay Kumar Gangrade, Vikas M. Phalle, and S. S. Mantha,
+“Performance Analysis of a Conical Hydrodynamic Journal Bearing,” /Iranian
+Journal of Science and Technology, Transactions of Mechanical Engineering/,
+volume 43, pages 559--573; published online in 2018.
+
+- DOI: [[https://doi.org/10.1007/s40997-018-0217-2][10.1007/s40997-018-0217-2]]
+- Local author copy:
+  [[file:../../../../docs/papers_sorted/conical-journal-bearing/cfd/Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf][Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf]]
+
+** Relevance to this project
+
+The paper analyzes the lubricant clearance using a modified Reynolds equation
+in a conical/spherical-coordinate formulation and solves the resulting
+thin-film problem by finite elements on a developed conical surface.  It
+motivates the periodic circumferential/axial master coordinates and the
+thin-film context.  It does not validate this project's three-dimensional feed,
+native-BREP assurance, or Tri3-to-Prism6 construction; those are local design
+decisions implemented in
+[[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][the local master-surface construction]] and
+[[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][explicit Prism6 construction]].
+
+* Clearance terminology
+
+The project's same-=z= radial-clearance definition and its distinction from
+surface-normal distance are derived in
+[[file:../geometry/clearance-mathematics.org][Clearance mathematics]].

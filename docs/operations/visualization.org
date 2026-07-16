@@ -1,0 +1,201 @@
+#+TITLE: Visualization
+#+OPTIONS: toc:2 num:nil
+#+STARTUP: content
+
+Visualization is an inspection layer; solver eligibility comes from
+=manifest.json= and =mesh_report.json=.
+
+* CAD and native BREP
+
+Native OCCT files for the strict default case:
+
+- =out/strict_default/film_unsplit.brep= :: one connected full fluid solid;
+- =out/strict_default/film_zones.brep= :: three coincident axial bodies.
+
+The journal and bushing are context solids in non-strict/legacy STEP exports,
+not part of the CFD fluid.  Close surfaces can produce z-fighting stripes in a
+viewer; hide context bodies before diagnosing grooves or discontinuities.
+
+The optional browser preview is provided by
+[[file:../../bearing_film.py::def _parse_args][=bearing_film.py --preview=]]:
+
+#+begin_src sh
+uv run python -m ocp_vscode
+uv run python bearing_film.py --outdir out/preview --preview
+#+end_src
+
+The strict STEP audit can still make the CAD command exit nonzero after the
+preview is shown.  That is an exchange-format result, not a viewer failure.
+
+* Gmsh geometry and surface smoke
+
+Fragmented millimetre BREP after preflight:
+
+#+begin_src sh
+uv run python meshing/gmsh_brep_preflight.py --gui
+#+end_src
+
+Validated surface-only mesh:
+
+#+begin_src sh
+uv run gmsh out/gmsh_surface_smoke/surface_mesh.msh
+#+end_src
+
+The surface-smoke file contains Tri3 boundary elements and no 3-D volume
+elements.  It is not a solver volume mesh.
+
+* No-port Hex8 visualization
+
+Exact full mesh and exact cutaway:
+
+#+begin_src sh
+uv run gmsh out/structured_no_port_default/nGap_08/structured_hex.msh
+uv run gmsh out/structured_no_port_default/nGap_08/viz/cutaway_exact.msh
+#+end_src
+
+Quality view:
+
+#+begin_src sh
+uv run gmsh \
+  out/structured_no_port_default/nGap_08/viz/cutaway_minSICN.pos
+#+end_src
+
+The =.pos= file embeds the exact cutaway cells together with the =minSICN=
+view, so it does not need the =.msh= as a second positional argument.  This is
+the reliable inspection command when loading both files together produces an
+empty Gmsh window.
+
+Gap-exaggerated files under =viz/= are permanently marked
+=VISUALIZATION_ONLY_DO_NOT_SOLVE=.  They are distorted geometry and must never
+be converted to OpenFOAM:
+
+#+begin_src sh
+uv run gmsh \
+  out/structured_no_port_default/nGap_08/viz/gap_x100_VISUALIZATION_ONLY_DO_NOT_SOLVE.msh
+#+end_src
+
+The generator-side GUI modes are =exact=, =cutaway=, =quality=, and
+=exaggerated=; see [[file:../../meshing/structured_hex_no_port.py::def open_gui][=open_gui=]].
+
+* Ported Prism6 visualization
+
+Canonical solver-eligible mesh:
+
+#+begin_src sh
+uv run gmsh out/ported_prism_default/nGap_08/ported_prism.msh
+#+end_src
+
+Exact-coordinate feed subsets:
+
+#+begin_src sh
+uv run gmsh out/ported_prism_default/nGap_08/viz/feed_cutaway_exact.msh
+uv run gmsh out/ported_prism_default/nGap_08/viz/feed_boundary_only.msh
+#+end_src
+
+The cutaway must show all gap layers, continuous film below the feed, the open
+tube-to-film connection, and the pressure-inlet disk.  Its cells retain their
+true coordinates but it is a subset, so =solve_eligible= is false.
+
+The internal mouth can be inspected in:
+
+=out/ported_prism_default/nGap_08/viz/mouth_interface_DIAGNOSTIC_ONLY.vtu=
+
+It records =solve_eligible=0= and =diagnostic_only=1= and is displayed as a
+translucent red wireframe by default.  The canonical solver boundary model does
+not contain a mouth patch or cap.  Visualization creation is implemented in
+[[file:../../meshing/layered_prism_central_feed.py::def write_visualizations][=write_visualizations=]].
+
+** Gmsh responsiveness and the apparently missing hole
+
+Use =nGap_04= for interactive inspection:
+
+#+begin_src sh
+# Fast orientation check: external feed tube, rim, and inlet only.
+uv run gmsh \
+  out/ported_prism_default/nGap_04/viz/feed_boundary_only.msh
+
+# Exact cell cutaway; suppress dense edge drawing for the first view.
+uv run gmsh \
+  -setnumber Mesh.SurfaceFaces 1 \
+  -setnumber Mesh.SurfaceEdges 0 \
+  -setnumber Mesh.VolumeFaces 1 \
+  -setnumber Mesh.VolumeEdges 0 \
+  out/ported_prism_default/nGap_04/viz/feed_cutaway_exact.msh
+#+end_src
+
+At the recorded production resolution, the default =nGap_04= cutaway is about
+90 MB and contains more than half a million prisms; =nGap_12= is roughly 237 MB
+with about 1.49 million prisms.  A blank or unresponsive Gmsh window while the
+larger file is parsed/rendered is therefore not evidence of missing geometry.
+Use =nGap_04= for interactive topology study and the higher levels for
+convergence/quality evidence.
+
+Quality =.pos= views multiply render load.  Establish a responsive plain-mesh
+view first, then enable one post-processing field at a time.
+
+The film-to-tube mouth is also *not an exterior hole edge*.  In the connected
+fluid mesh it is an internal shared surface with two incident cells.  A skin-only
+renderer correctly omits it; drawing an exposed circular cap there would
+represent the wrong topology.  To see the open passage, use the exact cutaway
+and rotate toward the feed, or use the much lighter =x=0 ParaView section below.
+The red mouth diagnostic shows the internal shared triangles, not a wall patch.
+
+* ParaView on Artix Linux and Wayland
+
+Use XCB to avoid ParaView's Wayland/OpenGL warnings:
+
+#+begin_src sh
+QT_QPA_PLATFORM=xcb paraview \
+  out/ported_prism_default/nGap_08/volume_prism.vtu
+#+end_src
+
+The generated launcher is equivalent and relocatable:
+
+#+begin_src sh
+out/ported_prism_default/nGap_08/viz/launch_paraview_xcb.sh
+#+end_src
+
+Inspect with *Surface With Edges*; color by =region_id=, =gap_layer_index=,
+=gap_um=, or =minSICN=.  An =x=0= Clip exposes the feed-axis section;
+*Crinkle Clip* preserves whole cells, and *Shrink* separates individual prisms.
+
+Useful direct views:
+
+#+begin_src sh
+QT_QPA_PLATFORM=xcb paraview \
+  out/ported_prism_default/nGap_08/viz/feed_cutaway_exact.vtu
+QT_QPA_PLATFORM=xcb paraview \
+  out/ported_prism_default/nGap_08/viz/x0_section.vtu
+#+end_src
+
+If =pvpython= is installed, the generated helper loads the full mesh, colors
+by region, and creates the =x=0= clip using paths relative to itself:
+
+#+begin_src sh
+pvpython out/ported_prism_default/nGap_08/viz/open_in_paraview.py
+#+end_src
+
+Absence of =pvpython= is a recorded visualization skip, not a mesh failure.
+
+* Solver-neutral and Fluent inspection
+
+The clean interchange MSH has no ElementData views and is useful when the task
+is to inspect only the transferred mesh/entity model:
+
+#+begin_src sh
+uv run gmsh out/interchange_default/nGap_04/bearing_prism_gmsh41.msh
+#+end_src
+
+When Fluent is available, the required visual evidence is not a generic
+isometric screenshot.  It must isolate the complete volume, feed inlet/tube,
+bore opening, =x=0= connection, and a clipped junction while also recording the
+boundary-zone list.  The exact display set and its relationship to the count
+audit are in [[file:../interchange/fluent-import-audit.org::Manual visual proof][the Fluent visual-proof contract]].
+
+* Validation boundary
+
+A screenshot cannot resolve a 20 micrometre minimum gap or prove conformal
+ownership.  Those claims come from analytic residuals, the generic Prism6 face
+census, positive Jacobians, format round trips, and the native-BREP checks in
+[[file:../../meshing/layered_prism_central_feed.py::def validate_topology][=validate_topology=]] and
+[[file:../../meshing/layered_prism_central_feed.py::def validate_geometry][=validate_geometry=]].

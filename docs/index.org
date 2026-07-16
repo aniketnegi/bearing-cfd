@@ -1,0 +1,109 @@
+#+TITLE: Eccentric Conical Bearing — Engineering Notebook
+#+SUBTITLE: Programmatic CAD, mesh construction, and solver-neutral transfer
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Purpose
+
+This is the maintained technical map of the project.  It explains how the
+geometry and meshes are constructed, why the implementation takes its current
+form, which assertions make an artifact trustworthy, and where each idea lives
+in the source.  It assumes familiarity with Python and basic journal-bearing
+physics; it concentrates on programmatic B-rep modelling, mesh topology, data
+exchange, and solver hand-off.
+
+* Current trust state
+
+| Stage | State | Meaning |
+|-------+-------+---------|
+| Native build123d/OCCT CAD | geometry PASS | The B-rep is valid, manifold, connected, and analytically consistent. |
+| STEP exchange | strict audit FAIL | Re-imported port-intersection volume exceeds the project's =1e-6= relative regression gate. |
+| Native BREP into Gmsh OCC | PASS | Three zones, shared interfaces, dimensions, and SI scaling survive. |
+| Boundary surface smoke mesh | PASS | A conformal first-order Tri3 skin can be generated and classified. |
+| No-port analytic Hex8 mesh | PASS | A full-360 structured reference mesh passes topology and round-trip checks. |
+| Central-feed layered Prism6 mesh | PASS | Film and tube are one conformal fluid mesh with an open internal mouth. |
+| Clean MSH/CGNS interchange | static PASS | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
+| Fluent import | not run | PyFluent/Fluent was unavailable; outputs are =STATICALLY_VALIDATED_NOT_IMPORTED=. |
+| OpenFOAM conversion | conditional | Audited when =gmshToFoam= and =checkMesh= are installed; otherwise explicitly skipped. |
+| CFD solution | not started | No viscosity, rotation, cavitation, turbulence, or boundary values are assigned here. |
+
+The STEP result does not invalidate the native CAD or BREP mesh path.  See
+[[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
+
+* Documentation map
+
+** Pipeline
+
+1. [[file:project/pipeline.org][Pipeline and trust boundaries]]
+2. [[file:project/architecture.org][Architecture and sources of truth]]
+3. [[file:geometry/index.org][Geometry subsystem map]]
+4. [[file:meshing/index.org][Meshing subsystem map]]
+5. [[file:interchange/index.org][Solver-neutral interchange map]]
+6. [[file:operations/code-reading-guide.org][Code-reading guide]]
+
+** Geometry and mathematics
+
+- [[file:geometry/coordinates-and-parameters.org][Coordinates, parameters, and cone laws]]
+- [[file:geometry/clearance-mathematics.org][Radial and surface-normal clearance]]
+- [[file:geometry/cad-construction.org][Exact B-rep construction]]
+- [[file:geometry/cad-validation.org][CAD validation and invariants]]
+- [[file:geometry/interchange.org][BREP, STEP, and round trips]]
+
+** Meshing
+
+- [[file:meshing/brep-preflight.org][Native BREP preflight in Gmsh OCC]]
+- [[file:meshing/surface-smoke.org][Two-dimensional surface smoke test]]
+- [[file:meshing/structured-hex-no-port.org][Structured full-360 no-port Hex8 baseline]]
+- [[file:meshing/layered-prism-central-feed.org][Conformal central-feed Prism6 mesh]]
+- [[file:meshing/topology-and-quality.org][Topology proofs and quality metrics]]
+
+** Solver-neutral interchange
+
+- [[file:interchange/canonical-source.org][Canonical NPZ source contract]]
+- [[file:interchange/discrete-model.org][Clean discrete reconstruction]]
+- [[file:interchange/static-topology-and-geometry.org][Static topology and geometry audit]]
+- [[file:interchange/round-trip-validation.org][MSH and CGNS round trips]]
+- [[file:interchange/formats-and-cgns.org][Format and CGNS semantics]]
+- [[file:interchange/fluent-import-audit.org][Fluent import-only audit]]
+- [[file:interchange/operations-and-reports.org][Interchange operations and reports]]
+
+** Running and inspecting
+
+- [[file:operations/running-and-testing.org][Commands, cases, and tests]]
+- [[file:operations/outputs-and-reports.org][Artifact and report contracts]]
+- [[file:operations/visualization.org][Gmsh and ParaView inspection]]
+- [[file:operations/openfoam-handoff.org][OpenFOAM conversion boundary]]
+- [[file:interchange/fluent-import-audit.org][Fluent import boundary]]
+
+** Rationale and provenance
+
+- [[file:project/decisions.org][Decision register]]
+- [[file:concepts/glossary.org][Modelling and meshing glossary]]
+- [[file:references/literature.org][Bearing literature]]
+- [[file:references/software.org][Software manuals]]
+- [[file:references/provenance.org][Project provenance and conversational context]]
+
+* Source entry points
+
+- CAD: [[file:../bearing_film.py::def main][bearing_film.main]]
+- Native BREP preflight: [[file:../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]]
+- Surface smoke mesh: [[file:../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]]
+- No-port Hex8 mesh: [[file:../meshing/structured_hex_no_port.py::def run_structured][run_structured]]
+- Ported Prism6 mesh: [[file:../meshing/layered_prism_central_feed.py::def run_ported][run_ported]]
+- Solver-neutral export: [[file:../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
+- Live Fluent audit: [[file:../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
+- Tests: [[file:../tests][tests/]]
+
+* Scope boundary
+
+This repository currently proves geometry, mesh topology/quality, and static
+solver-neutral transfer.  Patch names describe intended physical roles, but
+they are not yet numerical CFD boundary conditions.  In particular,
+=pressure_feed= is an inlet candidate and the two axial end patches are outlet
+candidates; no pressure, flow rate, journal speed, lubricant model,
+initialization, or iteration is assigned in this stage.
+
+* Maintenance
+
+- [[file:contributing.org][Documentation conventions]]
+- [[file:project/decisions.org][Decision register]]
