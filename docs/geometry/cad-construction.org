@@ -1,0 +1,129 @@
+#+TITLE: CAD Construction
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Exact solids, not surface approximations
+
+The geometry is made from planar profiles, exact revolutions, an exact
+cylinder, and OCCT set operations through build123d algebra mode.  It does not
+use STL, tessellated offsets, mesh-derived geometry, fuzzy Booleans, or relaxed
+modelling tolerance.
+
+The shared helper
+[[file:../../bearing_film.py::def _revolved_frustum][_revolved_frustum()]] draws
+a closed polygon in the =XZ= plane,
+
+#+begin_example
+(0,z0) -> (R(z0),z0) -> (R(z1),z1) -> (0,z1) -> close,
+#+end_example
+
+makes a planar face, and revolves it 360 degrees about global =Z=.  Including
+the axis closes the profile and yields a solid rather than a conical shell.
+
+* Construction sequence
+
+** Bore-volume blank
+
+[[file:../../bearing_film.py::def make_bore_blank][make_bore_blank()]] revolves
+the bore radius law over =[0,L]=.  This solid is everything inside the bearing
+bore.  It is a Boolean blank for the fluid, not the bushing metal.
+
+** Extended eccentric journal cutter
+
+[[file:../../bearing_film.py::def make_journal][make_journal()]] first revolves
+the journal about global =Z= and then translates the completed solid by
+=(e_x,e_y,0)=.  Revolving about an offset axis would describe a different
+surface.
+
+For subtraction, the journal spans =[-delta,L+delta]= while preserving the
+same radius law.  The overrun prevents journal and bore end caps from being
+coplanar, avoiding a fragile coincident-face Boolean.  A separate exact-length
+copy over =[0,L]= is created for context export.
+
+** Deliberately overlapping feed cylinder
+
+[[file:../../bearing_film.py::def make_feed_cylinder][make_feed_cylinder()]]
+constructs a radius-=r_h= cylinder from =y=0= to =y_feed_end= along global
+=+Y=.  Parameter validation has already proven that its entire starting disk
+lies inside the journal cutter.  The remote end clears the largest outer-wall
+radius touched by its finite disk.
+
+Immediately after construction, the function finds one planar face having the
+expected circular area, centre, and =+Y= normal, then requires one circular
+edge.  This catches an axis, alignment, or length mistake before any Boolean
+can obscure the inlet.
+
+** Boolean order
+
+Let =B= be the bore blank, =F= the feed cylinder, and =J= the extended journal.
+The production order is
+
+#+begin_src python
+base_film = bore_blank - journal
+wet = bore_blank + feed_cylinder
+film = wet - journal
+#+end_src
+
+The corresponding functions are
+[[file:../../bearing_film.py::def make_base_film][make_base_film()]] and
+[[file:../../bearing_film.py::def make_full_film][make_full_film()]].
+
+This order matters.  =F= intentionally overlaps both =B= and =J=.  Fusing
+=B+F= first must produce one valid connected wet solid.  Subtracting =J= last
+then trims the overlong feed exactly to the journal surface and opens it into
+the film.  Attempting to start the cylinder on the journal/feed intersection
+would require constructing against a more fragile intersection curve.
+
+The code validates =wet= before the final subtraction.  It does not silently
+retry a failed operation with fuzzy or loosened tolerances.
+
+* Axial zones
+
+[[file:../../bearing_film.py::def split_axial_zones][split_axial_zones()]]
+splits the already valid full film at =z_1=z_h-w= and =z_2=z_h+w=.  It expects
+exactly three solids, sorts them by centre-of-mass =Z=, and verifies each
+bounding interval before naming them:
+
+- =ring_A=: =0 <= z <= z_1=;
+- =hole_band=: =z_1 <= z <= z_2=;
+- =ring_B=: =z_2 <= z <= L=.
+
+They are not re-fused.  The coincident split faces are retained for downstream
+partition-aware meshing.  These three bodies alone do not promise an all-Hex
+mesh; see [[file:../meshing/index.org][Meshing]].
+
+* Context metal
+
+[[file:../../bearing_film.py::def make_context_bushing][make_context_bushing()]]
+constructs
+
+#+begin_example
+outer frustum - bore blank - feed cylinder.
+#+end_example
+
+Together with the exact-length journal it provides visual context only.  The
+CFD geometry remains the fluid solid.  Keeping context separate prevents an
+exporter or downstream tool from mistaking metal for a second fluid region.
+
+* Full model and optional half
+
+The production body is always 360 degrees.  Even when static geometry appears
+mirror-symmetric, a rotating journal wall has a vector velocity field that is
+not represented by an ordinary diametral symmetry boundary.
+
+=--export-debug-half= creates an explicitly labelled inspection artifact only.
+[[file:../../bearing_film.py::def export_all][export_all()]] prints
+=GEOMETRY DEBUG ONLY — NOT VALID FOR ROTATING-JOURNAL CFD= and never presents
+the half as a solver model.
+
+* Common construction failures
+
+| Failure | Likely cause | Guard |
+|-
+| Feed is detached | Cylinder does not overlap bore, or journal was subtracted in the wrong order | Validate =wet= and final one-solid topology |
+| Feed is capped at journal | Cylinder was not overlapped and journal was not subtracted last | Fixed Boolean order |
+| Dirty axial faces | Cutter caps coincide with bore caps | =delta= overrun |
+| Inlet clips the context wall | Endpoint based only on =R_o(z_h)= | Use =R_o(z_h-r_h)+s_u= |
+| Inlet points in the wrong direction | Incorrect local plane orientation | Unique face centre/area/normal/circle check |
+| Zone names are swapped | Trusting Boolean return order | Centre and bounding-range classification |
+| Face-count explosion | Sliver faces at intersections | =max_face_count= validation and loud failure |

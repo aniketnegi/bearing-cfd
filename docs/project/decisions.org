@@ -1,0 +1,217 @@
+#+TITLE: Decision Register
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+Records decisions affecting geometry semantics, mesh topology, or artifact
+trust.  Derivations remain in the subsystem chapters.
+
+* D001 — Model the fluid, not the metal
+
+- Status :: accepted
+- Context :: CFD requires the connected lubricant volume and its wetted
+  boundaries; subtractive metal models invite a second interpretation step.
+- Decision :: construct the bore-volume blank, unite the feed volume, and
+  subtract the journal.  Export metal only as separate context.
+- Rejected :: export the bushing and ask a downstream tool to infer voids.
+- Consequence :: CAD volume and mesh volume describe the same physical domain.
+- Evidence :: [[file:../geometry/cad-construction.org][CAD construction]].
+
+* D002 — Preserve the same-z radial-clearance definition
+
+- Status :: accepted
+- Context :: radial clearance and shortest distance between conical surfaces
+  differ by a factor involving the cone angle.
+- Decision :: build and layer the film along bearing-centred radial rays at the
+  same axial coordinate.  Validate surface-normal distance separately.
+- Rejected :: offset the cone by a normal distance or compare OCCT minimum
+  distance directly with =c-e=.
+- Consequence :: the geometry matches the stated bearing convention while both
+  measures remain reportable.
+- Evidence :: [[file:../geometry/clearance-mathematics.org][Clearance mathematics]].
+
+* D003 — Use a full 360-degree domain
+
+- Status :: accepted
+- Context :: the geometric half is mirrorable, but the rotating journal-wall
+  velocity is not a mirror-symmetry boundary condition.
+- Decision :: all solver-eligible CAD and meshes close periodically around the
+  complete circumference.
+- Rejected :: diametral half-domain CFD.
+- Consequence :: there is no circumferential seam patch; debug cutaways are
+  marked non-solver artifacts.
+
+* D004 — Subtract the journal last
+
+- Status :: accepted
+- Context :: the radial feed cylinder deliberately begins inside the journal so
+  it robustly overlaps the bore blank.
+- Decision :: compute =wet = bore_blank + feed_cylinder=, validate it as one
+  solid, then compute =film = wet - journal=.
+- Rejected :: trim the feed by guessed coordinates or subtract it from metal
+  before constructing the fluid.
+- Consequence :: the journal surface trims the passage exactly and no internal
+  fluid overlap remains.
+- Evidence :: [[file:../../bearing_film.py::def make_full_film][make_full_film]].
+
+* D005 — Native BREP is the open-source geometry contract
+
+- Status :: accepted
+- Context :: strict STEP re-import errors are localized around the feed
+  intersection, while native BREP round trips remain at numerical noise.
+- Decision :: retain STEP for engineering interchange, but use native OCCT BREP
+  for the Gmsh/OpenCASCADE path.
+- Rejected :: loosen the STEP tolerance until the report turns green.
+- Consequence :: format accuracy is visible and does not block trustworthy
+  native geometry.
+- Evidence :: [[file:../geometry/interchange.org][Interchange]].
+
+* D006 — Disable automatic OCC repair during preflight
+
+- Status :: accepted
+- Context :: healing can make an import appear successful while changing the
+  entity graph or tolerances.
+- Decision :: explicitly disable auto-fix, sewing, small-edge/face repair, and
+  fuzzy Boolean behaviour; compare topology with Boolean simplification off.
+- Rejected :: accept Gmsh defaults and trust the imported appearance.
+- Consequence :: a failure remains diagnostic instead of being silently healed.
+- Evidence :: [[file:../../meshing/gmsh_brep_preflight.py::def configure_occ_options][configure_occ_options]].
+
+* D007 — Retain the no-port all-Hex mesh as a frozen baseline
+
+- Status :: accepted
+- Context :: the thin annulus naturally maps to a structured
+  circumferential/axial/gap grid; the circular port junction does not.
+- Decision :: preserve a simple analytic Hex8 reference without the feed.
+- Rejected :: distort the baseline into an increasingly complex port topology.
+- Consequence :: changes to cone geometry, periodic connectivity, layering,
+  quality, and file round trips have a stable regression target.
+- Evidence :: [[file:../meshing/structured-hex-no-port.org][No-port Hex8 baseline]].
+
+* D008 — Use a Tri3 master mesh and explicit Prism6 sweeps for the port
+
+- Status :: accepted
+- Context :: forcing an all-Hex block decomposition around a circular branched
+  junction is brittle and unnecessary for the current objective.
+- Decision :: let Gmsh triangulate only an unwrapped 2-D master surface, then
+  sweep it analytically through the film and tube.
+- Rejected :: Gmsh tetrahedral volume generation, an all-Hex port decomposition,
+  STL/snappyHexMesh, or a commercial mesher.
+- Consequence :: layers remain explicit, the mouth is conformal, and every 3-D
+  cell is derived from auditable arrays.
+- Evidence :: [[file:../meshing/layered-prism-central-feed.org][Ported Prism6 mesh]].
+
+* D009 — Treat the feed mouth as an internal owner-neighbour interface
+
+- Status :: accepted
+- Context :: fluid passes from the tube into the film; there is no physical wall
+  at their common mouth.
+- Decision :: reuse the same bore-side feed-disk nodes and triangles.  Every
+  mouth face must have exactly two incident cells, one film and one feed, and
+  must not be exported as a boundary element.
+- Rejected :: create a =feed_mouth= patch, cap, coincident node set, or later
+  node merge.
+- Consequence :: the mesh has one connected fluid region and an open passage.
+- Evidence :: [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]].
+
+* D010 — Keep canonical arrays independent of export formats
+
+- Status :: accepted
+- Context :: a writer can reorder tags or cells and still produce a valid file;
+  an export can also silently drop metadata.
+- Decision :: NumPy arrays are authoritative.  Re-import MSH4, MSH2, VTU, NPZ,
+  and clean CGNS and compare coordinates, connectivity, data lengths, groups,
+  and counts.
+- Rejected :: consider a successful write call sufficient validation.
+- Consequence :: visualization and solver files are proven derivatives of one
+  mesh rather than parallel constructions.
+
+* D011 — Publish atomically and fail closed
+
+- Status :: accepted
+- Context :: a failed rerun in an existing output directory can otherwise leave
+  an old solver file beside a new failure report.
+- Decision :: generate in staging, validate there, and replace the destination
+  only on success.  Mesh-generation stages may publish a failure-only
+  directory; interchange discards its failed staging tree and preserves any
+  previously published destination.
+- Rejected :: incremental writes directly into the final directory.
+- Consequence :: no partial artifact from the current attempt reaches the
+  publication path.
+
+* D012 — Stop before assigning CFD physics
+
+- Status :: accepted for the current stage
+- Context :: mesh boundary names do not determine pressure, mass flow, rotation
+  speed, lubricant rheology, cavitation, or turbulence assumptions.
+- Decision :: stop after geometry, mesh, optional format conversion, and
+  =checkMesh=.
+- Rejected :: add placeholder solver dictionaries that appear physically
+  authoritative.
+- Consequence :: the later CFD stage must make and document its own physics
+  decisions.
+
+* D013 — Reject concentric ported cases until BREP classification is unambiguous
+
+- Status :: accepted limitation
+- Context :: for zero eccentricity, journal and bore conical surfaces share the
+  same axis.  The current BREP probe's centre-distance classifier would assign
+  both to the bore rather than distinguish their analytic surface equations.
+- Decision :: require =0 < eccentricity_ratio < 1= in the ported-mesh input
+  contract and report a clear concentric-geometry error.
+- Rejected :: silently accept zero eccentricity and weaken or skip the BREP
+  surface check.
+- Consequence :: a future concentric implementation must classify using
+  residuals against both journal and bore radius equations, with regression
+  coverage, before relaxing the guard.
+- Evidence :: [[file:../../tests/test_layered_prism_central_feed.py::def test_concentric_case_is_rejected_explicitly][explicit rejection regression]].
+
+* D014 — Keep optional GUI launch outside canonical publication failure handling
+
+- Status :: accepted
+- Context :: an FLTK/Wayland error can occur after a fully validated mesh has
+  been atomically published.
+- Decision :: complete validation and directory replacement first; catch GUI
+  launch errors separately and emit a warning only.
+- Rejected :: let a display failure replace valid artifacts with a mesh failure
+  report.
+- Consequence :: GUI availability cannot alter solve-eligible mesh state.
+- Evidence :: [[file:../../meshing/layered_prism_central_feed.py::def open_optional_gui][open_optional_gui]] and
+  [[file:../../tests/test_layered_prism_central_feed.py::def test_gui_failure_after_publication_is_warning_only][GUI isolation regression]].
+
+* D015 — Reconstruct neutral files from canonical arrays
+
+- Status :: accepted
+- Context :: copying the generator MSH would retain post-processing views and
+  make a prior export, rather than the validated arrays, the interchange source.
+- Decision :: load =mesh_arrays.npz= plus its manifests, create a clean discrete
+  model, and write every neutral format from that one model.
+- Rejected :: copy/rename MSH, rebuild from BREP, or generate new volume cells.
+- Consequence :: format transfer preserves the exact validated mesh identity
+  while remaining independent of CAD and solver choice.
+- Evidence :: [[file:../interchange/canonical-source.org][Canonical interchange source]].
+
+* D016 — Use Gmsh's CGNS writer and fail on boundary-definition loss
+
+- Status :: accepted
+- Context :: CGNS boundary names and memberships must exist in the CGNS
+  hierarchy; a sidecar cannot supply BC definitions to an importer.
+- Decision :: use the pinned Gmsh build's CGNS-library writer, reopen CGNS, and
+  require one fluid zone plus six exact boundary groups and memberships.
+- Rejected :: undocumented HDF5, geometry-only CGNS with sidecar names, or a
+  second export library without a stronger contract.
+- Consequence :: name loss produces =GEOMETRY_ONLY_NOT_FLUENT_READY= and no
+  successful publication.
+- Evidence :: [[file:../interchange/formats-and-cgns.org][Formats and CGNS]].
+
+* D017 — Separate static transfer from live Fluent acceptance
+
+- Status :: accepted
+- Context :: Gmsh reading its own CGNS output cannot prove Fluent's importer,
+  zone mapping, unit interpretation, or licensed runtime behavior.
+- Decision :: report =STATIC_PASS_FLUENT_NOT_RUN= until a real Fluent process
+  imports, checks, queries, compares, and saves the mesh.
+- Rejected :: infer =FLUENT_IMPORT_PASS= from file creation, mocked output, or
+  parser fixtures.
+- Consequence :: =bearing_prism_imported.msh.h5= becomes a guarded promotion
+  artifact and is absent from static-only outputs.
+- Evidence :: [[file:../interchange/fluent-import-audit.org][Fluent import-only audit]].

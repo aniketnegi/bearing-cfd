@@ -1,0 +1,143 @@
+#+TITLE: Clearance Mathematics
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Radial versus surface-normal clearance
+
+#+begin_quote
+Radial clearance is measured in a plane of constant =z= along a ray from the
+bearing axis.  It is not the shortest Euclidean distance normal to the conical
+surfaces.
+#+end_quote
+
+The input =c= and every film-thickness field in this project use the first
+definition.  An unrestricted OCCT distance query returns the second.  The two
+targets must never be interchanged.
+
+The conical thin-film setting and developed-surface formulation are consistent
+with the Gangrade--Phalle--Mantha paper indexed in
+[[file:../references/literature.org::Gangrade, Phalle, and Mantha][Literature]].  The exact ray intersection, normal-distance distinction, and
+validation tolerances below are project derivations; the paper is context, not
+implementation evidence.
+
+* Exact same-z radial thickness
+
+At fixed =z=, the journal cross-section has radius =R_j(z)= and centre
+=(e_x,e_y)=.  Let the bearing-frame ray direction be
+
+\[
+\hat{u}(\theta)=(\cos\theta,\sin\theta),
+\]
+
+and define =alpha=theta-phi=.  If =r_j= is the positive ray intersection with
+the journal circle, then
+
+\[
+\left|r_j\hat{u}(\theta)-e\hat{u}(\phi)\right|^2=R_j(z)^2.
+\]
+
+Solving the resulting quadratic and taking the outward root gives
+
+\[
+r_j(\theta,z)=e\cos\alpha+
+\sqrt{R_j(z)^2-e^2\sin^2\alpha}.
+\]
+
+The exact radial film thickness is therefore
+
+\[
+h_{radial}(\theta,z)=R_b(z)-r_j(\theta,z).
+\]
+
+At =alpha=0= and =alpha=pi= this reduces exactly to
+
+\[
+h_{radial,min}=c-e=c(1-\epsilon),
+\qquad
+h_{radial,max}=c+e=c(1+\epsilon).
+\]
+
+The resolved targets are stored by
+[[file:../../bearing_film.py::def resolve_params][resolve_params()]].  Their
+five-station geometric measurement is in
+[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+
+* Why the common formula is only approximate
+
+The thin-clearance expression
+
+\[
+c(1-\epsilon\cos\alpha)
+\]
+
+is the first-order expansion of the exact square-root result for small
+=e/R_j=.  It is exact at the minimum and maximum meridians, but not at general
+angle.  Away from those meridians, the exact result also has a small =z=
+dependence because =R_j(z)= varies along the cone.
+
+[[file:../../bearing_film.py::def _plot_thickness_map][_plot_thickness_map()]]
+uses the exact expression.  Its PNG is a geometry diagnostic, not pressure,
+temperature, velocity, cavitation, or load.
+
+* Shortest surface-normal distance
+
+In an axial meridian the journal and bore generators are parallel lines with
+slope magnitude =tan(gamma)=.  A same-=z= radial separation =Delta r= has
+perpendicular separation
+
+\[
+\frac{\Delta r}{\sqrt{1+\tan^2\gamma}}=\Delta r\cos\gamma.
+\]
+
+At the extreme meridians,
+
+\[
+h_{normal,min}=(c-e)\cos\gamma,
+\qquad
+h_{normal,max}=(c+e)\cos\gamma.
+\]
+
+The code selects only the lateral conical faces and calls
+=distance_to_with_closest_points()=.  It compares the returned minimum with
+=(c-e)cos(gamma)=, not with =c-e=.  The closest points generally have different
+=z= coordinates, which is direct evidence that this segment is not a same-=z=
+radial measurement.  See
+[[file:../../bearing_film.py::def _lateral_face][_lateral_face()]] and
+[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+
+* Exact base-film volume
+
+Before adding the feed, each coaxial annular section has area
+
+\[
+A(z)=\pi\left(R_b(z)^2-R_j(z)^2\right)
+=\pi\left(2cR_j(z)+c^2\right).
+\]
+
+The linear radius law has mean value =R_m= over =0 <= z <= L=, so
+
+\[
+V_{base}=\pi L\left(2R_mc+c^2\right).
+\]
+
+This result is independent of transverse journal translation while the journal
+remains contained, and independent of cone angle when =L=, =R_m=, and =c=
+remain fixed.  It provides an analytic check independent of the Boolean
+algorithm.  The implementation stores it in
+[[file:../../bearing_film.py::def resolve_params][resolve_params()]] and checks
+the Boolean volume to relative tolerance =1e-8= in
+[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+
+* How radial gaps are measured from CAD
+
+The validator avoids global minimum distance for the radial test:
+
+1. section bore and journal with five interior =XY= planes;
+2. rotate each section by =-phi= so the eccentricity vector aligns with =+X=;
+3. use the two bounding extrema along that aligned axis;
+4. compare with =c-e= and =c+e= to =0.0005 mm=.
+
+This works for non-default eccentricity angle and excludes end-cap artifacts.
+The separate normal-distance check then tests the actual conical lateral
+faces.  Keeping both records is more useful than asking either measurement to
+stand in for the other.

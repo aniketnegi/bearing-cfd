@@ -1,0 +1,154 @@
+#+TITLE: Architecture and Sources of Truth
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Design rule: one authoritative representation per layer
+
+The implementation avoids a vague “current model” that changes meaning as it
+moves between libraries.  Instead, each layer has an explicit source of truth:
+
+| Layer | Source of truth | Derived representations |
+|-------+-----------------+-------------------------|
+| Inputs | frozen input/resolved dataclasses and =params.json= | console tables, plots |
+| CAD | native OCCT B-rep solids | STEP exchange, context assembly |
+| no-port mesh | immutable NumPy =MeshData= arrays | Gmsh MSH, VTU, NPZ |
+| ported mesh | =MasterMesh= plus =PrismMesh= arrays | Gmsh MSH, VTU, NPZ |
+| neutral mesh hand-off | canonical ported NPZ plus source reports | clean MSH 4.1, MSH 2.2, CGNS |
+| proprietary import | live Fluent process and canonical comparison | native Fluent =.msh.h5= only after PASS |
+
+Exports are not silently treated as equivalent to their source.  Each is
+re-imported and compared.
+
+* Parameter ownership
+
+CAD inputs live in [[file:../../bearing_film.py::class InputParams][InputParams]].
+[[file:../../bearing_film.py::class ResolvedParams][ResolvedParams]] contains the
+resolved feed position and quantities derived from the independent inputs.
+Both are frozen dataclasses so geometry cannot drift through incidental mutation.
+
+Meshing scripts read =resolved_parameters= from =params.json= rather than
+reconstructing CAD choices from defaults:
+
+- [[file:../../meshing/structured_hex_no_port.py::def load_params][load_params]]
+- [[file:../../meshing/layered_prism_central_feed.py::def load_contract][load_contract]]
+
+The ported pipeline also binds the parameter file, BREP, and preflight report by
+hash and by measured mass/bounding box.  A plausible path is not sufficient.
+
+* Coordinate representations and unit boundaries
+
+There are three intentionally different coordinate spaces:
+
+1. *CAD space*: millimetres, global bearing axis =Z=.
+2. *Master-surface space*: unwrapped millimetres =(u,z)= with
+   =u=R_m theta=.
+3. *Solver mesh space*: metres, obtained by one multiplication by =0.001=.
+
+The unwrapped plane is a meshing parameterization, not a physical flattening of
+the final fluid volume.  The final nodes are evaluated from the analytic
+eccentric-cone equations before the single SI conversion.
+
+Each report records coordinate units.  Unit conversion belongs at a named
+boundary so it can be asserted and cannot be applied twice.
+
+* Script boundaries
+
+** =bearing_film.py=
+
+Owns exact B-rep construction, CAD invariants, CAD exports, and CAD round trips.
+It knows nothing about solver cells.
+
+** =gmsh_brep_preflight.py=
+
+Owns the interpretation of native CAD inside Gmsh OCC: import options,
+fragmentation, volume/surface classification, SI copy, and BREP rechecks.  It
+does not create a mesh.
+
+** =gmsh_surface_smoke.py=
+
+Owns the low-cost 2-D boundary triangulation probe.  It intentionally refuses
+to create volume elements.
+
+** =structured_hex_no_port.py=
+
+Owns the frozen all-Hex no-port reference.  Its canonical arrays are computed
+analytically and must not be changed as a shortcut for ported-mesh work.
+
+** =layered_prism_central_feed.py=
+
+Owns the actual feed-connected volume mesh.  It reuses a Gmsh-generated master
+Tri3 topology, but constructs all 3-D Prism6 cells analytically.
+
+** =export_solver_neutral.py=
+
+Owns format-neutral reconstruction from the validated =mesh_arrays.npz=.  It
+does not read CAD or remesh.  It creates a clean discrete model, writes MSH and
+CGNS, and reopens every format against canonical signatures.
+
+** =fluent_import_check.py=
+
+Owns the optional proprietary runtime boundary.  It launches Fluent only for
+CGNS import, mesh/quality checks, canonical count/scale comparison, and a
+guarded native-mesh save.  It never initializes or iterates.
+
+* Data-model choices
+
+The mesh dataclasses carry arrays and metadata together:
+
+- [[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]]
+- [[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
+- [[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
+- [[file:../../interchange/export_solver_neutral.py::class CanonicalCase][CanonicalCase]]
+- [[file:../../interchange/export_solver_neutral.py::class CanonicalAudit][CanonicalAudit]]
+
+Connectivity uses stable integer node tags, while NumPy arrays use compact
+zero-based rows internally where convenient.  Conversion functions are explicit
+because an off-by-one error can preserve visual appearance while inverting or
+disconnecting cells.
+
+The canonical arrays are written to =mesh_arrays.npz=.  Generator MSH/VTU and
+interchange MSH/CGNS round trips are compared back to these arrays; the export
+library is never the authority.
+
+* Classification policy
+
+Imported CAD entity tags and Boolean return order are unstable implementation
+details.  Geometry is classified using centres of mass, bounding boxes, areas,
+adjacency, and known planes.  Analytic meshes derive boundary groups from
+logical indices and a generic face census.
+
+The generator's declared Gmsh physical IDs are stable local contracts, while
+elementary entity tags are model-local.  Neutral-format checks use physical
+names and exact memberships because another reader may remap both numeric ID
+classes.  See [[file:../meshing/topology-and-quality.org][Topology proofs and quality metrics]].
+
+* Validation and publication architecture
+
+Validation functions receive a record list and add named PASS/FAIL evidence.
+Exceptions stop the pipeline; they do not request relaxed tolerances.  Output is
+built in a sibling staging directory and atomically moved into place only after
+all mandatory checks and round trips succeed.
+
+The mesh generators publish an explicit failure directory with solver-eligible
+artifacts removed.  The interchange exporter instead discards its incomplete
+staging directory; an already published destination is left untouched.  In
+both cases partial new MSH/CGNS/VTU files cannot be mistaken for a completed
+run.
+
+Relevant entry points:
+
+- [[file:../../bearing_film.py::def validate_geometry][CAD validation]]
+- [[file:../../meshing/gmsh_brep_preflight.py::def require][preflight records]]
+- [[file:../../meshing/structured_hex_no_port.py::def run_structured][Hex atomic run]]
+- [[file:../../meshing/layered_prism_central_feed.py::def run_ported][Prism atomic run]]
+- [[file:../../interchange/export_solver_neutral.py::def run_interchange][interchange atomic run]]
+- [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][live Fluent import audit]]
+
+* What is intentionally not abstracted
+
+The stages share ideas, but they do not inherit from a general mesh framework.
+Their geometry, element types, and validation contracts differ enough that a
+common class hierarchy would obscure the physical reasoning.  The interchange
+stage reuses only the already-tested Prism6 discrete registration and face/
+metric helpers; it does not introduce an exporter framework for hypothetical
+future meshes.

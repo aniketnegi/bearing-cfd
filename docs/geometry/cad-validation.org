@@ -1,0 +1,139 @@
+#+TITLE: CAD Validation
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Validation is part of construction
+
+The script does not equate “OCCT returned a shape” with success.
+[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]]
+builds structured records containing a name, mandatory flag, measurement,
+target, tolerance, and PASS/FAIL status.  Mandatory failures raise
+[[file:../../bearing_film.py::class GeometryValidationError][GeometryValidationError]].
+Specific exceptions also distinguish invalid inputs, construction, Boolean,
+topology, export, and round-trip failures.
+
+These checks are normal control flow, not bare Python =assert= statements, so
+=python -O= cannot disable them.
+
+* Topology checks
+
+[[file:../../bearing_film.py::def _shape_record][_shape_record()]] records solid
+counts, individual volumes, face counts, bounding boxes, and property-form
+=is_valid= and =is_manifold= results.
+
+The mandatory topology contract requires:
+
+- exactly one final full-film solid;
+- one connected, valid, manifold =wet= union before journal subtraction;
+- every resulting solid valid and manifold;
+- each axial zone and context body to be exactly one solid;
+- a positive face count no greater than =max_face_count=;
+- positive feed-added volume in the same connected full-film solid.
+
+The face-count ceiling detects a Boolean sliver-face explosion without
+loosening OCCT tolerances to conceal it.
+
+* Independent volume checks
+
+The base film is compared with
+
+\[
+V_{base}=\pi L(2R_mc+c^2)
+\]
+
+at relative tolerance =1e-8=.  This check is independent of the B-rep Boolean
+implementation.
+
+For the port, the code compares
+
+\[
+V_{film}-V_{base}
+\]
+
+with
+
+\[
+\operatorname{Vol}(feed\ cylinder-bore\ blank).
+\]
+
+Both must be positive and agree within relative =5e-5=.  The implementation
+records that default OCCT tolerance can perturb the shared cone/cylinder
+intersection slightly; it does not introduce fuzzy healing.  The simpler
+=pi*r_h^2*(t_w+s_u)= value is diagnostic only because a sloped wall and
+finite-radius hole do not have one universal passage length.
+
+After zoning,
+
+\[
+\frac{|V_A+V_{band}+V_B-V_{film}|}{V_{film}}\le10^{-8}.
+\]
+
+* Clearance checks
+
+Five interior sections measure same-=z= radial minimum and maximum gaps to
+=0.0005 mm=.  The sections are rotated by =-phi= before using their extrema,
+so the test is not hardcoded to the default =-Y= displacement.
+
+Separately, the unique lateral bore and journal faces are queried for their
+closest points.  Their minimum Euclidean distance is compared with
+=(c-e)cos(gamma)= to =0.0005 mm=.  It is deliberately not compared with the
+radial target =c-e=.  See [[file:clearance-mathematics.org][Clearance mathematics]].
+
+* Bounding box and inlet identity
+
+The final-fluid bounds must reproduce =z=0= and =z=L= and the large-end bore
+envelope to =0.001 mm=.  The allowed =+Y= feed changes only the positive
+=y= bound, which must equal =max(R_b(0),y_feed_end)=.  A preceding radius guard
+proves that the feed cannot change =x_min=, =x_max=, or =y_min=.
+
+The validator finds the inlet by geometry rather than face index.  Exactly one
+face must have:
+
+- planar geometry;
+- area =pi*r_h^2= within =max(1e-7 mm^2, relative 1e-8)=;
+- centre =(0,y_feed_end,z_h)= within =1e-6 mm=;
+- outward normal parallel to =+Y= with dot product at least =1-1e-10=;
+- exactly one circular boundary edge.
+
+Face ordering and persistent naming are not assumed.
+
+* Main in-memory tolerances
+
+| Check | Acceptance |
+|-
+| Base-film analytic volume | relative =<= 1e-8= |
+| Feed Boolean identity | relative =<= 5e-5= |
+| Five-station radial gaps | absolute =<= 0.0005 mm= |
+| Minimum normal gap | absolute =<= 0.0005 mm= |
+| Axial split conservation | relative =<= 1e-8= |
+| Final bounds | absolute =<= 0.001 mm= |
+| Inlet centre | distance =<= 1e-6 mm= |
+
+Interchange tolerances are separate; see [[file:interchange.org][Interchange]].
+
+* Failure reporting and publication
+
+The main flow in [[file:../../bearing_film.py::def main][main()]] prints the
+specific exception, emits diagnostics for every shape that exists, writes an
+=overall: FAIL= =params.json=, and exits nonzero.  Export is staged beside the
+requested output directory.  A failed STEP audit cannot leave newly staged or
+stale program-generated STEP files looking accepted.
+
+[[file:../../bearing_film.py::def _failure_payload][_failure_payload()]] records
+the exception type/message, inputs, resolved parameters, dependencies,
+validation records, shape diagnostics, and hashes of any trusted native
+fallback.
+
+* Test boundary and downstream checks
+
+There is no standalone =tests/test_bearing_film.py= at present.  The CAD
+command itself performs its mandatory geometry checks for every run.  The
+native artifacts are then independently checked in Gmsh/OpenCASCADE by
+[[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight()]]
+for both strict parameter cases.
+
+Downstream analytic meshes cross-check the same geometry contract, including
+[[file:../../tests/test_structured_hex_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][no-port analytic geometry]]
+and [[file:../../tests/test_layered_prism_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][ported inlet, radial-gap, and volume agreement]].
+Those tests do not replace CAD validation; they verify that accepted CAD
+parameters and BREP survive the handoff into meshing.

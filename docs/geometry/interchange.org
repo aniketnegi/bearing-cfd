@@ -1,0 +1,116 @@
+#+TITLE: CAD Interchange: Native BREP and STEP
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Two distinct acceptance questions
+
+The project keeps these questions separate:
+
+1. Is the in-memory/native OCCT geometry correct?
+2. Does a neutral STEP translation preserve that geometry closely enough?
+
+A native BREP PASS does not imply a STEP PASS, and a STEP failure does not by
+itself invalidate an already validated in-memory solid.  This distinction is
+especially important where the thin annulus meets the radial cone/cylinder
+intersection.
+
+The exporter helpers are
+[[file:../../bearing_film.py::def _export_brep_file][_export_brep_file()]] and
+[[file:../../bearing_film.py::def _export_step_file][_export_step_file()]].
+
+* Native OCCT BREP
+
+=film_unsplit.brep= stores the one complete fluid solid.  =film_zones.brep=
+stores the three coincident axial solids.  BREP stays within the OCCT topology
+model used by build123d and Gmsh's OpenCASCADE kernel, so it is the preferred
+open-source geometry handoff.
+
+After export, [[file:../../bearing_film.py::def _round_trip_all][_round_trip_all()]]
+re-imports BREP and requires:
+
+- expected solid count;
+- every solid valid and manifold;
+- total volume relative error =<= 1e-12=.
+
+BREP should not be expected to carry the same XCAF assembly labels as STEP.
+The geometric solids and their validated counts are the contract.
+
+* STEP
+
+STEP remains the exchange format for tools such as FreeCAD, SOLIDWORKS, and
+ANSYS.  Every STEP export explicitly requests millimetres, p-curves, and the
+highest documented precision mode:
+
+#+begin_src python
+export_step(
+    shape,
+    path,
+    unit=Unit.MM,
+    write_pcurves=True,
+    precision_mode=PrecisionMode.GREATEST,
+)
+#+end_src
+
+The code does not request an undocumented AP schema.  Re-import requires the
+expected solid count, valid/manifold solids, and volume relative error
+=<= 1e-6=.  Labels are reported when present; missing labels are a warning
+because =ring_A.step=, =hole_band.step=, and =ring_B.step= are mandatory
+label-independent fallbacks on a fully passing STEP run.
+
+* Why p-curves and precision do not guarantee equivalence
+
+P-curves provide a surface-parameter representation of trimming edges, and
+=PrecisionMode.GREATEST= asks the writer for its highest documented exchange
+precision.  Neither option can guarantee that a receiving STEP importer
+reconstructs every cone/cylinder intersection identically.  The only defensible
+acceptance test is re-import followed by topology and measurement checks.
+
+The strict runs recorded in [[file:../../EXPLANATION.md][EXPLANATION.md]] found
+native BREP volume errors near numerical noise while STEP errors were larger in
+bodies containing the feed intersection.  Treat =params.json= from the actual
+run as the current evidence; do not generalise those measured values into a
+universal STEP tolerance claim.
+
+* Export set
+
+[[file:../../bearing_film.py::def export_all][export_all()]] stages:
+
+| Artifact | Contents |
+|-
+| =film_unsplit.step= / =.brep= | One full-360 fluid solid |
+| =film_zones.step= / =.brep= | Three coincident axial fluid bodies |
+| =ring_A.step=, =hole_band.step=, =ring_B.step= | Label-independent zone files |
+| =context_assembly.step= | Separate journal and bushing context |
+| =geometry_half_debug.step= | Optional geometry-only half; forbidden for rotating CFD |
+| =film_thickness_map.png= | Exact same-=z= radial-thickness diagnostic |
+| =params.json= | Inputs, derived data, validation, versions, hashes, status |
+| =requirements.txt= | Successful-run dependency pins |
+
+The context assembly is not fluid and the debug half is not a CFD symmetry
+model.
+
+* Transactional publication and strict failure
+
+The main routine writes the batch to a temporary staging directory beside the
+requested output directory.  Native BREP is round-tripped first and copied as
+a trusted fallback only after passing.  STEP is then audited separately.
+
+If STEP fails, [[file:../../bearing_film.py::def _publish_brep_fallback][_publish_brep_fallback()]]
+retains only trustworthy native/diagnostic artifacts and
+[[file:../../bearing_film.py::def _discard_published_steps][_discard_published_steps()]]
+removes stale program-generated STEP files.  The command exits nonzero and
+=params.json= says =overall: FAIL=.  This prevents a previous STEP file from
+being mistaken for output of the failed strict run.
+
+* FreeCAD inspection
+
+#+begin_src sh
+freecad out/strict_default/film_unsplit.brep
+freecad out/strict_default/film_zones.brep
+#+end_src
+
+The unsplit file should import as one solid; the zones file should contain
+three solids with coincident split faces.  Visual inspection cannot verify a
+20 micrometre gap; the numerical checks remain authoritative.  Native BREP,
+not the rejected STEP, feeds [[file:../meshing/brep-preflight.org][the Gmsh
+preflight]].

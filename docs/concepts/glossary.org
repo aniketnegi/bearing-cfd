@@ -1,0 +1,198 @@
+#+TITLE: Project Glossary
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Geometry representation
+
+** B-rep
+
+A boundary representation stores a solid through analytic or parametric faces,
+their trimming edges, vertices, orientation, and adjacency.  It is not merely a
+surface triangle collection.  OCCT is the B-rep kernel beneath build123d and
+Gmsh's OpenCASCADE interface in this project.
+
+See [[file:../geometry/cad-construction.org][CAD construction]].
+
+** Topology versus geometry
+
+Geometry answers where a curve or surface lies.  Topology answers which
+vertices bound an edge, which edges bound a face, and which faces bound a
+solid.  Two coincident faces can be geometrically identical but topologically
+unshared; a conformal mesh needs the appropriate shared topology or shared
+nodes.
+
+** Manifold solid
+
+Locally, a manifold solid boundary separates one inside from one outside.  A
+non-manifold edge or face has an ambiguous number of incident regions and is a
+bad fluid-volume contract.
+
+** p-curve
+
+A parametric curve describing a trimming edge in the two-dimensional parameter
+space of a surface.  STEP can carry p-curves to help receiving kernels rebuild
+trimmed faces.  They improve interchange information but do not guarantee an
+identical re-import.
+
+** Boolean fragment versus fuse
+
+A fuse replaces overlapping solids by their union.  A fragment operation splits
+intersecting entities while retaining the material pieces and establishing
+shared interfaces.  The CAD film uses fuse/subtract; the three imported axial
+zones use Gmsh OCC fragment to enforce conformal shared faces.
+
+* Gmsh entity layers
+
+** OCC entity
+
+A CAD-kernel vertex, curve, surface, or volume imported or constructed through
+=gmsh.model.occ=.  It has a dimension and a model-local tag.  Tags are not
+stable semantic identifiers, so this project classifies OCC entities by
+geometry and adjacency.
+
+** Discrete entity
+
+A Gmsh model entity whose geometry is represented directly by an existing mesh.
+The analytic Hex8 and Prism6 pipelines register completed nodes and elements on
+discrete curves, surfaces, and volumes.  Gmsh is not asked to generate those 3-D
+cells.
+
+** Physical group
+
+A named collection of model entities written into mesh formats.  It is the
+semantic bridge to solver regions and patches.  A physical group is not itself
+a boundary condition; OpenFOAM dictionaries later assign physical behaviour to
+the resulting patch name.
+
+** Periodic seam
+
+The duplicate boundary of the unwrapped master domain at =theta=0= and
+=theta=2*pi=.  Periodic node identification collapses the slave representation
+onto the master, so the physical full-360 mesh has no external seam patch.
+
+* Mesh topology
+
+** Conformal interface
+
+Both sides use the same face connectivity and node tags.  There are no gaps,
+overlaps, hanging nodes, or coincident-but-independent faces.  At the feed mouth
+the film and tube share each Tri3 exactly.
+
+** Face incidence, owner, and neighbour
+
+A volume cell is incident to each of its faces.  A face census gives:
+
+- one incident cell: exterior boundary face; that cell is the owner;
+- two incident cells: internal face; finite-volume terminology calls them
+  owner and neighbour after choosing an ordering;
+- more than two incident cells: non-manifold mesh topology.
+
+The shared feed-film mouth is therefore an internal owner-neighbour face and
+the numerical expression of an open, continuous fluid passage—not a wall.  See
+[[file:../meshing/layered-prism-central-feed.org][the ported mesh]].
+
+** CGNS zone and boundary condition
+
+A CGNS =Zone_t= contains one structured or unstructured grid and its coordinate
+and element sections.  Boundary memberships live in =ZoneBC_t=/family
+structures; a JSON sidecar cannot replace those definitions for an importer.
+See [[file:../interchange/formats-and-cgns.org][Formats and CGNS]].
+
+** PENTA_6
+
+The CGNS name for a linear six-node pentahedral/wedge cell.  It is the format
+equivalent of this repository's Prism6, subject to node-order validation during
+round trip and live import.
+
+** Hex8
+
+A first-order hexahedron with eight corner nodes.  The no-port baseline follows
+logical circumferential, axial, and gap directions and therefore admits a
+structured Hex8 layout.
+
+** Tri3 and Prism6
+
+A Tri3 is a first-order triangle.  Sweeping its three nodes between two layers
+creates a six-node wedge/prism (Prism6).  The ported mesh uses a common Tri3
+master topology for the film and feed disk, then creates Prism6 cells explicitly.
+
+** Boundary element
+
+A Tri3 or Quad4 explicitly written on an exterior volume face so an exchange
+tool can recover a named patch.  An internal face such as the feed mouth must
+not be written as a solver boundary element.
+
+* Geometry approximation in a linear mesh
+
+** Nodal exactness
+
+A boundary node can satisfy the analytic cylinder or cone equation to floating
+point tolerance.  This says nothing about the straight edge between two nodes.
+
+** Chord sagitta
+
+The maximum distance between a circular arc and its straight chord.  For feed
+radius =r_h= and =N= equal rim segments,
+
+\[
+s=r_h\left(1-\cos\frac{\pi}{N}\right).
+\]
+
+The ported mesh reports both nodal residual and sagitta because they measure
+different approximation errors.
+
+** Faceted volume error
+
+The relative difference between the volume enclosed by linear mesh faces/cells
+and the analytic or native-BREP volume.  Circumferential and circular-boundary
+refinement should reduce it even when every cell is already topologically valid.
+
+* Cell validity and quality
+
+** Signed volume
+
+An oriented cell volume.  A negative result indicates reversed connectivity;
+zero indicates degeneration.  Positivity is mandatory.
+
+** Jacobian determinant
+
+The determinant of the mapping from a reference element to the physical cell.
+It must remain positive at the checked integration points.  A positive total
+volume alone cannot exclude a locally inverted mapping.
+
+** =minDetJac=
+
+Gmsh's minimum sampled Jacobian determinant quality.  This project requires it
+to be finite and positive and cross-checks it with custom calculations.
+
+** =minSICN=
+
+Gmsh's signed inverse condition number metric.  Positive values indicate valid
+orientation.  The thin-film elements are intentionally highly anisotropic, so
+the metric can be small; the code reports its distribution rather than imposing
+an inappropriate isotropic threshold such as =0.1=.
+
+** Non-orthogonality
+
+For a finite-volume face, the angle between the face-area vector and the vector
+joining adjacent cell centres.  Large values weaken the direct normal-flux
+approximation and increase correction requirements.
+
+** Skewness
+
+A measure of how far the face geometry is displaced from an ideal interpolation
+location between neighbouring cells.  It is distinct from aspect ratio.
+
+** Face-pyramid volume
+
+The oriented volume of the pyramid from a cell centre to one of its faces.  A
+positive minimum helps detect concave or inverted local cell geometry.
+
+* Artifact eligibility
+
+** Solve-eligible artifact
+
+A true-coordinate complete mesh that passed all mandatory checks and may enter
+the next solver-conversion stage.  Cutaways, internal-interface views, and any
+distorted visualization carry =solve_eligible=0= and are never substitutes for
+the canonical mesh.

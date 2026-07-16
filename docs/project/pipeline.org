@@ -1,0 +1,144 @@
+#+TITLE: Pipeline and Trust Boundaries
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* The pipeline is a chain of contracts
+
+The project does not have one global notion of “the model passed.”  Each stage
+answers a different question and records enough evidence for the next stage to
+reject the input if its contract changes.
+
+#+begin_example
+Input parameters
+      |
+      v
+exact OCCT fluid B-rep --------> STEP exchange audit
+      |                              |
+      | native .brep                 +-- strict FAIL is isolated here
+      v
+Gmsh OCC import + fragmentation
+      |
+      +----> 2-D boundary smoke mesh
+      |
+      +----> analytic no-port Hex8 regression baseline
+      |
+      +----> analytic central-feed layered Prism6 production mesh
+                    |
+                    v
+        MSH/VTU/NPZ round trips
+                    |
+                    v
+        canonical NPZ -> clean MSH/CGNS round trips
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
+ optional Fluent import   optional gmshToFoam
+ and native .msh.h5       + checkMesh audit
+#+end_example
+
+The arrows are file-and-report contracts, not informal assumptions.  Hashes,
+units, counts, volumes, topology, and physical-group membership are rechecked
+at each boundary.
+
+* Stage 1: exact fluid CAD
+
+[[file:../../bearing_film.py::def main][bearing_film.main]] resolves parameters,
+constructs the bore blank, journal cutter, feed cylinder, base film and full
+film, splits the full film into three axial zones, validates everything, and
+then exports through a staging directory.
+
+The production object is the *fluid volume*, not the journal or bushing metal.
+Context solids are exported separately and never enter the mesh contract.
+
+The native OCCT representation is accepted only after analytic and topological
+checks.  STEP is additionally audited as an exchange format.  The present
+strict STEP failure is explained in [[file:../geometry/interchange.org][the
+interchange chapter]].
+
+* Stage 2: geometry preflight inside Gmsh
+
+[[file:../../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]]
+imports native BREP into a deliberately non-healing Gmsh OCC configuration.  It
+checks the unsplit volume, imports the three zones in a separate model,
+fragments them to establish shared topology, classifies volumes and surfaces by
+geometry rather than tags, and writes both millimetre and SI copies.
+
+This stage proves that Gmsh sees the same geometry and conformal interfaces.  It
+does not prove that any mesh can be generated.
+
+* Stage 3A: boundary surface smoke test
+
+[[file:../../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]]
+consumes the preflight report and the fragmented BREP by hash, scales millimetres
+to metres exactly once, and asks Gmsh for a first-order triangular *surface*
+mesh.  It asserts that no 3-D elements exist.
+
+This is a cheap probe of boundary classification, interface sharing, inlet
+resolution, and local surface-mesh quality before committing to a volume-mesh
+strategy.
+
+* Stage 3B: no-port structured Hex8 reference
+
+[[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]]
+computes canonical nodes and Hex8 connectivity directly with NumPy.  Gmsh is a
+container, inspector, and quality evaluator; it does not generate the 3-D mesh.
+
+The feed is deliberately absent.  This gives a clean, full-360, all-Hex
+regression case for the eccentric conical film and isolates thin-film layering
+from port-junction topology.
+
+* Stage 3C: ported layered Prism6 mesh
+
+[[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]]
+uses Gmsh only to triangulate a two-dimensional unwrapped master surface.
+[[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]]
+maps and sweeps those Tri3 cells analytically into the conical film and feed
+tube, constructing every Prism6 explicitly.
+
+The bore-side feed disk is not a wall.  Each triangle has two incident cells,
+one film Prism6 and one tube Prism6, so it is an internal owner-neighbour face.
+A one-incident-cell triangle there would be an external cap and would
+incorrectly block the passage.  See
+[[file:../meshing/layered-prism-central-feed.org][the ported mesh chapter]].
+
+* Stage 4: solver-neutral interchange
+
+[[file:../../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
+reads the validated ported NPZ and source reports, reconstructs one clean
+discrete mesh, and writes MSH 4.1, MSH 2.2, and CGNS.  All three are reopened
+against coordinate/connectivity signatures independent of imported tag
+numbering.  Exact BC names and memberships are required inside CGNS itself.
+
+This stage is documented in [[file:../interchange/index.org][Solver-neutral interchange]].
+
+* Stage 5: optional solver import audits
+
+The OpenFOAM branch converts the MSH 2.2 file and runs =checkMesh= when its
+utilities exist.  The Fluent branch imports CGNS in a real 3-D,
+double-precision process and saves native =.msh.h5= only after live checks
+match the canonical source.  Neither branch initializes or solves a flow.
+
+- [[file:../operations/openfoam-handoff.org][OpenFOAM hand-off boundary]]
+- [[file:../interchange/fluent-import-audit.org][Fluent import-only boundary]]
+
+* Why failures are stage-local
+
+A neutral-format translation can perturb curved intersections without changing
+the native B-rep.  A CAD-valid solid can still have unsuitable mesh topology.  A
+topologically conformal mesh can still contain negative Jacobians.  A valid mesh
+can still be converted into the wrong patch set.  Therefore every stage has its
+own PASS/FAIL record and downstream code checks the upstream report and file
+hash instead of trusting a filename.
+
+* Evidence paths
+
+- CAD report: =out/strict_default/params.json=
+- OCC preflight: =out/gmsh_preflight/preflight_report.json=
+- Surface smoke test: =out/gmsh_surface_smoke/surface_mesh_report.json=
+- No-port mesh family: =out/structured_no_port_default/run_report.json=
+- Ported mesh family: =out/ported_prism_default/run_report.json=
+- Solver-neutral handoff: =out/interchange_default/nGap_04/interchange_report.json=
+
+Generated outputs are evidence, not source.  Recreate them with the commands in
+[[file:../operations/running-and-testing.org][Running and testing]].

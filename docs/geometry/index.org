@@ -1,0 +1,56 @@
+#+TITLE: Geometry and CAD
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Purpose
+
+This section explains how the project constructs and accepts the exact
+lubricant-fluid CAD volume for an eccentric conical journal bearing.  The
+production body is fluid, not metal.  It contains the complete 360-degree
+conical film, the radial feed drilling, and the external inlet extension.
+Journal and bushing solids are separate visual context.
+
+The executable source of truth is
+[[file:../../bearing_film.py::def main][bearing_film.py: main()]].  It uses
+build123d algebra mode and OCCT B-rep operations; it does not create a mesh or
+run CFD.
+
+* Reading map
+
+| Document | Question answered |
+|-
+| [[file:coordinates-and-parameters.org][Coordinates and parameters]] | What is specified, what is derived, and which direction is positive? |
+| [[file:clearance-mathematics.org][Clearance mathematics]] | What does radial clearance mean, and why is it not the normal gap? |
+| [[file:cad-construction.org][CAD construction]] | How do profiles, revolutions, overlaps, Booleans, and splits create the fluid? |
+| [[file:cad-validation.org][CAD validation]] | Which independent checks make a geometry result trustworthy? |
+| [[file:interchange.org][Interchange]] | Why are native BREP and STEP audited separately, and what is published? |
+
+* Geometry contract
+
+The CAD stage promises all of the following before an artifact is accepted:
+
+- millimetre construction with exact B-rep solids;
+- one connected, valid, manifold full-fluid solid;
+- radial-clearance and surface-normal checks kept distinct;
+- a feed passage open to the film and ending in one selectable circular inlet;
+- three optional axial bodies whose volumes sum to the unsplit fluid volume;
+- native BREP and STEP re-import checks performed independently;
+- explicit failure and nonzero exit when a mandatory check fails.
+
+The main construction order is visible directly in
+[[file:../../bearing_film.py::def main][main()]].  The validation and export
+phases are not optional post-processing: they decide whether output is safe to
+publish.
+
+* Current test boundary
+
+=bearing_film.py= is a self-validating command: mandatory checks use custom
+exceptions and recorded PASS/FAIL entries rather than removable Python
+=assert= statements.  The accepted native BREP is also independently consumed
+by [[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight()]].
+Meshing tests then use its parameters and geometry contract, for example
+[[file:../../tests/test_layered_prism_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][the ported-mesh geometry/volume test]].
+
+There is currently no separate unit-test module dedicated solely to
+=bearing_film.py=.  Its executable validation record and downstream native-BREP
+preflight are therefore both important parts of the geometry acceptance path.
