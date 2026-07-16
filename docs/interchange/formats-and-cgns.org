@@ -1,0 +1,129 @@
+#+TITLE: Gmsh and CGNS Interchange Formats
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Three outputs, one discrete model
+
+[[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+writes all three files before clearing the model:
+
+| File | Representation | Intended use |
+|------+----------------+--------------|
+| =bearing_prism_gmsh41.msh= | Gmsh MSH 4.1 binary | compact canonical inspection/interchange |
+| =bearing_prism_gmsh22_ascii.msh= | Gmsh MSH 2.2 ASCII | conservative legacy/tool compatibility and readable physical names |
+| =bearing_prism.cgns= | HDF5-backed CGNS unstructured mesh | Fluent/import-neutral transfer candidate |
+
+The content comes from one registered model; the writers do not independently
+derive boundaries or cells.
+
+* Clean MSH files
+
+The generator's =ported_prism.msh= contains ElementData views such as
+=region_id=, =minSICN=, and =gap_um=.  Those are useful for inspection but are
+not part of a minimal solver-neutral mesh.
+
+The interchange MSH files contain only:
+
+- one unique coordinate set;
+- Prism6 volume elements;
+- Tri3 and Quad4 external faces;
+- one named volume group and six named surface groups.
+
+=Mesh.SaveAll= remains zero.  Because every intended element belongs to a
+physical group, this prevents unclassified elements from being exported.  The
+MSH 2.2 writer is explicitly ASCII; the 4.1 writer is binary.
+
+* Gmsh MSH is not Fluent MSH
+
+The extension =.msh= identifies unrelated format families in Gmsh and Fluent.
+Renaming =bearing_prism_gmsh41.msh= to another filename does not convert its
+syntax, zone records, or connectivity representation into Fluent's native
+format.
+
+The first Fluent-native file in this workflow is
+=bearing_prism_imported.msh.h5=, and it may be written only by Fluent after a
+live import audit passes.  See [[file:fluent-import-audit.org][Fluent import-only audit]].
+
+* CGNS structures used here
+
+CGNS represents an unstructured zone through a hierarchy rather than a flat
+element table.  The relevant concepts are:
+
+- an unstructured =Zone_t= with grid coordinates;
+- =Elements_t= sections for =PENTA_6=, =TRI_3=, and =QUAD_4= connectivity;
+- =ZoneBC_t=/family associations carrying the six boundary memberships;
+- a family/group representing the single =fluid= volume;
+- no =FlowSolution_t= data.
+
+The CGNS SIDS describe =Zone_t= and =Elements_t= in
+[[https://cgns.org/standard/SIDS/hierarchy.html][the hierarchy definition]]
+and [[https://cgns.org/standard/SIDS/grid.html][the grid/element definition]].
+Those structures are why an HDF5 sidecar or arbitrary group layout is not a
+CGNS implementation.
+
+* Writer selection
+
+The pinned Gmsh 4.15.2 build reports =Cgns= in =General.BuildInfo=.  The
+exporter refuses CGNS output if that capability is absent and calls
+=gmsh.write(...cgns)= only after building the exact physical-group model.
+
+Reasons for using this writer:
+
+- it is a maintained CGNS-library integration, not custom HDF5;
+- it already maps Gmsh entities and physical groups into CGNS sections/BCs;
+- the same process can immediately reopen the file and query those definitions;
+- no new dependency or parallel element-order mapping is needed.
+
+The Gmsh reference documents CGNS as a supported mesh format and physical
+groups as the meaningful entity collections used during export:
+[[https://gmsh.info/doc/texinfo/][Gmsh 4.15.2 manual]].
+
+* Boundary names must exist in CGNS itself
+
+A =zones.csv= sidecar is useful for humans, but Fluent does not import that
+file.  After reopening CGNS, the audit queries physical names and entity
+memberships from the CGNS reader and requires all six exact patch names plus
+=fluid=.
+
+If names or memberships are lost, the run fails with
+=GEOMETRY_ONLY_NOT_FLUENT_READY=.  It does not publish a sidecar claiming that
+the missing definitions “should” have been present.
+
+* Coordinates and units
+
+The coordinate arrays passed to the writer are already numeric SI values in
+metres; the exporter applies scale =1.0=.  Reopened coordinates and bounding
+box must match the canonical arrays under =1e-14 m= by default, which detects
+both =0.001= and =1000= mistakes immediately.
+
+Gmsh's current CGNS output does not declare a length unit that its reader uses
+for rescaling; the reader reports that the length unit is undefined and leaves
+the numbers unchanged.  Therefore the metre contract is established by:
+
+1. the canonical NPZ/report unit declaration;
+2. no scaling during export;
+3. exact numeric coordinate/bounding-box round trip;
+4. the interchange manifest/report supplied with the file.
+
+This is preferable to pretending that an absent CGNS dimensional-units node
+was written.  A live Fluent import must independently confirm the same metre
+extents.
+
+* Linear precision and the thin gap
+
+All coordinates remain float64 in memory and CGNS.  A zero-error CGNS round
+trip was observed for both production cases.  The audit tolerance is many
+orders below the 20--80 micrometre film thickness, so a float32-like precision
+loss or unit conversion would fail before solver import.
+
+The elements remain linear.  Exact analytic rim nodes are connected by chords;
+CGNS does not restore curved geometry between those nodes.  Rim sagitta and
+linear-mesh/BREP volume error remain the appropriate approximation measures.
+
+* No solution state
+
+No pressure, velocity, material, model, initialization, or iteration data is
+attached.  The CGNS file is a mesh with zone definitions, not a Fluent case or
+a CFD solution.  The =solution_fields: 0= report field and empty Gmsh view set
+make this boundary machine-checkable.
+

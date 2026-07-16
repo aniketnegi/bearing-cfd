@@ -1,0 +1,121 @@
+#+TITLE: Format Round-Trip Validation
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Why numeric tags cannot be compared directly
+
+MSH and CGNS readers may renumber nodes, elements, elementary entities, and
+physical IDs while preserving the same mesh.  A correct audit must tolerate
+renumbering without tolerating changed geometry or membership.
+
+[[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
+therefore reconstructs canonical signatures in three steps:
+
+1. map imported nodes to canonical nodes by coordinates;
+2. map imported cells/faces by unordered canonical node sets;
+3. check geometry and stored face orientation using the imported ordered rows.
+
+* Coordinate mapping
+
+[[file:../../interchange/export_solver_neutral.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
+lexicographically sorts imported and source =(x,y,z)= arrays.  The source audit
+has already rejected coincident duplicate coordinates, so corresponding sorted
+rows define an unambiguous node map.
+
+The maximum componentwise error must not exceed =--coordinate-tolerance=
+(default =1e-14 m=).  The smallest nominal film gap is =20 micrometres = 2e-5
+m=, so the default gate is nine orders of magnitude smaller than that physical
+length scale.  It is a round-trip precision gate, not a mesh-size tolerance.
+
+The resulting lookup maps imported node tags back to canonical one-based node
+tags.  All later connectivity comparisons operate in the canonical tag space.
+
+* Connectivity signatures
+
+[[file:../../interchange/export_solver_neutral.py::def _signature_mapping][_signature_mapping]]
+sorts node tags within each cell or face only to establish identity.  It
+requires equal array shape, every expected signature exactly once, and no
+missing or duplicate mapped member.
+
+For Prism6 cells, the imported ordered rows are retained after identity mapping
+and passed to the same Jacobian/volume calculation.  For external faces, the
+imported ordering is used for the local outward-normal check.  This separation
+allows harmless element reordering but rejects a node-order change that inverts
+a cell or face.
+
+* Exact group membership
+
+The reopened model must expose exactly seven physical names:
+
+#+begin_example
+fluid
+journal_wall
+bushing_bore_wall
+axial_end_z0
+axial_end_zL
+feed_tube_wall
+pressure_feed
+#+end_example
+
+=fluid= must be the only 3-D entity/group.  Each boundary name must map to one
+2-D entity.  The element rows collected from each entity must match the
+canonical patch signatures exactly.  A correct total boundary count with one
+merged or renamed patch is a failure.
+
+[[file:../../interchange/export_solver_neutral.py::def validate_group_names][validate_group_names]]
+also rejects all forbidden mouth/default names.  In the CGNS path its error is
+annotated =GEOMETRY_ONLY_NOT_FLUENT_READY= to make clear that surviving
+coordinates without BC membership are insufficient.
+
+* Reconstructing the internal mouth after export
+
+The mouth is not an exported surface section, so it cannot be checked by
+looking for a group.  Instead, the audit maps every imported Prism6 to its
+canonical cell and verifies that each canonical mouth node triple is contained
+in the two mapped incident cells recorded by =CanonicalAudit=.
+
+The absence of a mouth physical group plus preservation of both incident cells
+is the interchange form of the owner-neighbour proof.
+
+* Geometry checks on reopened files
+
+Every reopened format must reproduce:
+
+- point, Prism6, and per-patch element counts;
+- exactly one 3-D fluid zone;
+- =PENTA_6= volume and =TRI_3=/=QUAD_4= boundary element types;
+- bounding box within coordinate tolerance;
+- total volume within relative tolerance;
+- positive per-cell signed volumes and Jacobian samples;
+- positive local outward projection on every external face;
+- no solution fields or Gmsh post-processing views.
+
+The report stores the maximum coordinate error, minimum signed volume,
+minimum Jacobian, and minimum outward projection per patch rather than only a
+boolean result.
+
+* Format-specific interpretation
+
+The same audit function reopens all three outputs through Gmsh.  For native MSH
+this exercises the corresponding MSH reader.  For CGNS it exercises Gmsh's
+CGNS reader, including the zone/BC structures emitted by its writer.  This is
+an independent serialization round trip but still not a Fluent import.
+
+The production results recorded on 2026-07-16 were:
+
+| Format | nGap_04 max coordinate error | nGap_08 max coordinate error |
+|--------+------------------------------+------------------------------|
+| Gmsh 4.1 binary | 0 | 0 |
+| Gmsh 2.2 ASCII | approximately =6.94e-18 m= | approximately =6.94e-18 m= |
+| CGNS | 0 | 0 |
+
+Current values belong in =interchange_report.json=; this table records the
+acceptance run, not a permanent promise about future writers.
+
+* Regression links
+
+- [[file:../../tests/test_solver_neutral_interchange.py::def test_all_three_round_trips_retain_counts_units_and_connectivity][three-format count/unit/connectivity test]]
+- [[file:../../tests/test_solver_neutral_interchange.py::def test_physical_groups_are_exact_and_mouth_is_not_a_boundary][exact physical-group test]]
+- [[file:../../tests/test_solver_neutral_interchange.py::def test_every_exported_boundary_face_is_outward][exported orientation test]]
+- [[file:../../tests/test_solver_neutral_interchange.py::def test_cgns_boundary_name_loss_is_rejected][CGNS name-loss rejection]]
+

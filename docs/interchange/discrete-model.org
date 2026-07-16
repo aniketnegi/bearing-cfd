@@ -1,0 +1,132 @@
+#+TITLE: Clean Discrete Mesh Reconstruction
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Reconstruction is not remeshing
+
+[[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+creates a new Gmsh model container but does not generate a node or cell.  It
+reuses [[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]],
+which registers completed arrays on discrete entities.
+
+The distinction is important:
+
+- =gmsh.model.mesh.generate(3)= would create a new mesh and violate identity;
+- =addNodes= and =addElementsByType= serialize connectivity already proved by
+  the generator;
+- Gmsh supplies entity/group semantics and official writers, not meshing policy.
+
+* Entity model
+
+The clean model contains exactly:
+
+| Dimension | Entity/group | Elements |
+|-----------+--------------+----------|
+| 3 | =fluid= | all linear Prism6 cells, CGNS =PENTA_6= |
+| 2 | =journal_wall= | Tri3 |
+| 2 | =bushing_bore_wall= | Tri3 |
+| 2 | =pressure_feed= | Tri3 |
+| 2 | =axial_end_z0= | Quad4 |
+| 2 | =axial_end_zL= | Quad4 |
+| 2 | =feed_tube_wall= | Quad4 |
+
+The Gmsh element type checks require =2= for Tri3, =3= for Quad4, and =6= for
+Prism6.  These are first-order elements; there are no high-order nodes to
+project or reinterpret.
+
+* Registration order
+
+The implementation performs four distinct operations:
+
+1. create six discrete surface entities and one discrete volume;
+2. add the unique canonical node set once on the volume entity;
+3. add external surface elements and volume cells with separate element tags;
+4. reclassify nodes, then attach stable physical groups and names.
+
+A simplified extract is:
+
+#+begin_src python
+gmsh.model.mesh.addNodes(3, VOLUME_ENTITY, mesh.node_tags, mesh.points_m.ravel())
+gmsh.model.mesh.addElementsByType(
+    VOLUME_ENTITY, prism_type, mesh.cell_tags, mesh.prisms.ravel()
+)
+gmsh.model.mesh.reclassifyNodes()
+gmsh.model.addPhysicalGroup(3, [VOLUME_ENTITY], tag=201, name="fluid")
+#+end_src
+
+Surface element tags start after the canonical cell tags so node, cell, and
+surface identifiers remain globally unique inside Gmsh.  Entity tags and
+physical IDs are stable local interface values, but later round trips never
+assume another format preserves their numeric values.
+
+* Why the mouth is omitted
+
+The shared feed-film interface is already represented by the face relation
+between two Prism6 cells.  Registering its Tri3s as a surface entity would turn
+an internal owner-neighbour face into a named boundary candidate.
+
+Therefore =mouth_triangles= are used only for validation.  They are absent
+from =SURFACE_ENTITIES=, physical groups, =zones.csv=, and exported boundary
+sections.  The journal triangles remain continuous beneath the disk; omission
+of a mouth BC does not omit journal geometry.
+
+This design is proved in
+[[file:../meshing/layered-prism-central-feed.org::Why the mouth is open, not capped][the ported-mesh chapter]]
+and rechecked in
+[[file:static-topology-and-geometry.org::Shared feed-film interface][the interchange topology audit]].
+
+* Why reuse the generator's registration function
+
+The element ordering and physical-group contract already live in one tested
+function.  Reimplementing them in the exporter would create two mappings that
+could diverge.  Reuse stops at the discrete registration boundary: the
+exporter deliberately does not add the generator's ElementData views or copy
+its MSH files.
+
+Immediately after registration the exporter asserts:
+
+#+begin_src python
+len(gmsh.view.getTags()) == 0
+#+end_src
+
+This is the clean-output distinction.  The production visualization MSH is
+allowed to contain quality fields; the solver-neutral MSH/CGNS files contain
+only mesh and group definitions.
+
+* Physical groups versus elementary entities
+
+Elementary entities organize elements inside the Gmsh model.  Physical groups
+carry engineering names across output formats.  The exporter needs both:
+
+- separate surface entities prevent patch elements from being merged before
+  naming;
+- physical names become MSH physical names and CGNS boundary/family records;
+- the single volume group prevents multiple unintended fluid zones.
+
+Gmsh writes only elements belonging to physical groups when =Mesh.SaveAll= is
+zero.  That behavior is useful here: every intended element is explicitly in
+one of the seven groups, so an unclassified element cannot silently leak into
+the file.
+
+* Rejected alternatives
+
+** Copy or rename an existing MSH
+
+This would preserve post-processing views and would not prove that a clean
+model can be reconstructed from the canonical source.  Renaming a Gmsh MSH to
+a Fluent MSH is not conversion; the formats merely share an extension.
+
+** Write CGNS with generic HDF5 calls
+
+CGNS is a documented hierarchy and API contract, not “HDF5 with arrays in it.”
+A hand-built approximation could look plausible to =h5ls= while omitting
+=Elements_t=, =ZoneBC_t=, family references, or required ranges.  This project
+uses Gmsh's compiled official CGNS writer instead.
+
+** Use meshio for CGNS
+
+meshio remains useful for VTU diagnostics, but the selected CGNS path must
+preserve the six named boundary memberships in the file itself.  The Gmsh
+writer/reader path already integrates physical groups and is validated by the
+same API used for the MSH round trips; another dependency adds no value here.
+

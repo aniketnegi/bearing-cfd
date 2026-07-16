@@ -1,0 +1,156 @@
+#+TITLE: Static Topology and Geometry Audit
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Audit order
+
+[[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+runs before any writer is trusted.  Its checks are ordered from cheap schema
+failures to connectivity and numerical geometry:
+
+1. exact source counts and group names;
+2. duplicate nodes/cells and cell validity;
+3. complete face incidence and external shell manifoldness;
+4. shared-mouth and global cell-graph connectivity;
+5. local outward orientation for every external face;
+6. bounding box, metre scale, cell volume, and BREP-relative error.
+
+The output is a compact =CanonicalAudit= summary plus arrays mapping each
+declared patch face to its sole incident cell.  Later file round trips reuse
+those incidence relations after mapping cells back to canonical signatures.
+
+* Cell uniqueness and validity
+
+A duplicate Prism6 can occupy the same six nodes with a different local
+ordering.  The duplicate key is therefore the sorted six-node set, not the raw
+row:
+
+#+begin_src python
+cell_keys = _structured_rows(np.sort(mesh.prisms, axis=1))
+len(np.unique(cell_keys)) == len(mesh.prisms)
+#+end_src
+
+This test is topological.  Positive signed volume and positive sampled
+Jacobian determinants are separate geometric tests performed by
+[[file:../../meshing/layered_prism_central_feed.py::def _prism_metrics][_prism_metrics]].
+Neither can replace the other: two duplicate valid cells still overlap, and a
+unique cell can still be inverted.
+
+* Complete face census
+
+For every Prism6, two triangular and three quadrilateral local faces are
+extracted using the canonical local-face tables.  Faces are sorted only for
+identity; their stored order remains available for normal checks.
+
+[[file:../../meshing/layered_prism_central_feed.py::def _face_census][_face_census]]
+returns each unique face, its incidence count, and the first/second incident
+cell indices.
+
+| Incident cells | Required interpretation |
+|----------------+-------------------------|
+| 1 | external boundary face |
+| 2 | conformal internal owner-neighbour face |
+| 0 | impossible for a face extracted from a cell; indicates a declaration error elsewhere |
+| >2 | non-manifold overlap |
+
+The union of all six declared patches must equal the complete one-incident-cell
+face set.  This catches missing patch elements, duplicate patch assignment,
+and =defaultFaces=-style leftovers through one exact set equality.
+
+* External shell edges
+
+Every edge of the closed external surface must occur in exactly two external
+faces, regardless of whether those faces are Tri3 or Quad4.  The audit extracts
+all three or four edges per patch face, sorts their endpoint tags, and requires
+an incidence count of two.
+
+This does not assert that a single named patch is closed; most patches have
+legitimate rims shared with another patch.  It asserts that the union of all
+six patches is a closed two-manifold shell.
+
+* Shared feed-film interface
+
+Each =mouth_triangles= row is looked up in the triangular volume-face census.
+It must have exactly two incident cells, with sorted =region_id= pair =[0,1]=:
+
+#+begin_example
+film Prism6 ---- shared Tri3 ---- feed Prism6
+ region 0       no BC entity       region 1
+#+end_example
+
+The same face key must be absent from the external triangle set.  These checks
+prove an internal owner-neighbour face, not a boundary condition or zone.
+
+Implementation and focused regression:
+
+- [[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+- [[file:../../tests/test_solver_neutral_interchange.py::def test_mouth_has_two_incident_cells_and_pressure_paths_exist][mouth/path test]]
+- [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][generator mouth test]]
+
+* Cell-graph connectivity and feed paths
+
+Every two-incident-cell face contributes an undirected cell-graph edge.
+[[file:../../meshing/layered_prism_central_feed.py::def _component_count][_component_count]]
+uses union-find to require one connected 3-D region.
+
+One component alone is necessary but the audit also checks the intended local
+route:
+
+- every =pressure_feed= face is incident to a feed cell;
+- mouth pairs join feed and film cells;
+- pressure-feed incident cells, both axial-end incident cells, and both sides
+  of every mouth face have the same union-find root.
+
+This distinguishes “the imported mesh is connected somewhere” from “the
+external feed actually communicates through the mouth to the film and both
+axial exits.”
+
+* Local boundary orientation
+
+The generator originally checked the pressure inlet explicitly and compared
+total cell volume with the signed exterior-boundary volume.  The hardened
+contract now checks every external Tri3 and Quad4 independently in
+[[file:../../meshing/layered_prism_central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]].
+
+For face =f= and its sole incident cell =c=:
+
+#+begin_example
+n_f  = area vector from the stored face-node order
+x_f  = face centroid
+x_c  = cell centroid
+require dot(n_f / |n_f|, x_f - x_c) > 0
+#+end_example
+
+For a Quad4 the area vector is the sum of the two oriented triangles
+=(0,1,2)= and =(0,2,3)=.  The owner direction is local, so one reversed face
+cannot be hidden by cancellation elsewhere on the closed surface.
+
+The audit records the minimum positive projection and minimum face area per
+patch.  Reversing one journal triangle is a mandatory failure in
+[[file:../../tests/test_solver_neutral_interchange.py::def test_reversed_face_and_negative_cell_are_rejected][the negative/reversed regression]].
+
+* Scale, bounding box, and volume
+
+Coordinates must already be float64 metres.  No export scaling is applied.
+The audit requires:
+
+- NPZ metadata says =coordinate_unit: m=;
+- generator provenance records one earlier =0.001= conversion from CAD mm;
+- recomputed bounding box equals the canonical source;
+- integrated Prism6 volume agrees with the stored per-cell sum and source
+  =mesh_report.json= under the configured relative tolerance;
+- the source linear-mesh/native-BREP error stays within =5e-4=, the established
+  curved-facet envelope;
+- every signed cell volume and sampled Jacobian remains positive.
+
+The BREP comparison is not recomputed from CAD during interchange.  Its value
+is read from the source mesh report and checked against the accepted envelope,
+because recreating CAD would violate the mesh-identity boundary.
+
+* What this audit does not prove
+
+Static topology and geometry do not prove that Fluent's importer will retain
+the same zones, element types, scale, or connectivity.  That is a separate
+runtime boundary in [[file:fluent-import-audit.org][the live Fluent audit]].
+They also do not establish CFD suitability under a particular turbulence,
+cavitation, or transient model.

@@ -1,0 +1,161 @@
+#+TITLE: Interchange Commands and Report Contracts
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Production exports
+
+Default four-layer film mesh:
+
+#+begin_src sh
+uv run python interchange/export_solver_neutral.py \
+  --case-dir out/ported_prism_default/nGap_04 \
+  --outdir out/interchange_default/nGap_04 \
+  --fluent skip
+#+end_src
+
+Default eight-layer film mesh:
+
+#+begin_src sh
+uv run python interchange/export_solver_neutral.py \
+  --case-dir out/ported_prism_default/nGap_08 \
+  --outdir out/interchange_default/nGap_08 \
+  --fluent skip
+#+end_src
+
+The 20-degree/eccentricity-0.3 family is discovered in this repository as
+=out/ported_prism_e03_g20/=.  Select it by path:
+
+#+begin_src sh
+uv run python interchange/export_solver_neutral.py \
+  --case-dir out/ported_prism_e03_g20/nGap_04 \
+  --outdir out/interchange_e03_g20/nGap_04 \
+  --fluent skip
+#+end_src
+
+The output directory must not already exist unless =--overwrite= is explicit.
+Replacement remains atomic: all files and round trips complete in a sibling
+staging directory before the destination changes.
+
+* Tolerance options
+
+| Option | Default | Meaning |
+|--------+---------+---------|
+| =--coordinate-tolerance= | =1e-14 m= | maximum componentwise coordinate error after a format round trip |
+| =--volume-relative-tolerance= | =1e-12= | total exported/reopened volume error relative to the canonical cell sum |
+
+These are serialization tolerances, not meshing parameters.  They do not move
+nodes, heal cells, or change the already-established BREP/faceted-volume
+envelope.
+
+* Output directory
+
+| File | Contract |
+|------+----------|
+| =bearing_prism_gmsh41.msh= | clean MSH 4.1 binary, no views |
+| =bearing_prism_gmsh22_ascii.msh= | clean MSH 2.2 ASCII, no views |
+| =bearing_prism.cgns= | one unstructured fluid zone, six BC groups, no solution fields |
+| =interchange_report.json= | source audit, three round trips, tolerances, provenance, and Fluent result |
+| =interchange_manifest.json= | concise unit/zone/file/readiness contract |
+| =zones.csv= | zone dimension, element type, count, role, and external flag |
+| =file_hashes.json= | source and exported SHA-256 records |
+| =gmsh_interchange.log= | writer/reader messages, including CGNS unit handling |
+| =README_OPEN_ME_FIRST.txt= | generated handoff paths and current promotion boundary |
+
+When a live audit passes, the same directory additionally contains
+=fluent_import_transcript.txt=, =fluent_import_report.json=, and
+=bearing_prism_imported.msh.h5=.
+
+* Status model
+
+Only three overall states are valid:
+
+| Overall | Meaning |
+|---------+---------|
+| =STATIC_PASS_FLUENT_NOT_RUN= | canonical and three format audits passed; no live Fluent acceptance claim |
+| =FLUENT_IMPORT_PASS= | static audits plus a real Fluent import/check/query/save passed |
+| =FAIL= | a mandatory static or live-required check failed; no successful promotion |
+
+For a static-only output, =readiness= is
+=STATICALLY_VALIDATED_NOT_IMPORTED= and =fluent_ready=false=.  A CGNS file's
+mere existence never changes those fields.
+
+Useful report queries:
+
+#+begin_src sh
+jq '{overall,readiness,static_status,fluent_import_status}' \
+  out/interchange_default/nGap_04/interchange_report.json
+
+jq '.source | {points,prism6_cells,patch_counts,mouth_internal_faces,bounding_box_m,volume_m3}' \
+  out/interchange_default/nGap_04/interchange_report.json
+
+jq '.exports[] | {format,coordinate_max_error_m,minimum_signed_volume_m3,physical_groups}' \
+  out/interchange_default/nGap_04/interchange_report.json
+#+end_src
+
+* Live Fluent command
+
+When PyFluent and the required Ansys/VKI license are available:
+
+#+begin_src sh
+uv run python interchange/fluent_import_check.py \
+  --interchange-dir out/interchange_default/nGap_04
+#+end_src
+
+Use =--gui= only when the visual proof is being collected.  The automation
+still performs the same count and transcript gates; GUI availability is not a
+PASS criterion.
+
+* Inspection inputs
+
+Gmsh may open either clean MSH file:
+
+#+begin_src sh
+uv run gmsh out/interchange_default/nGap_04/bearing_prism_gmsh41.msh
+uv run gmsh out/interchange_default/nGap_04/bearing_prism_gmsh22_ascii.msh
+#+end_src
+
+The CGNS import candidate for Fluent is:
+
+#+begin_example
+out/interchange_default/nGap_04/bearing_prism.cgns
+#+end_example
+
+The older =ported_prism.msh= remains useful for Gmsh ElementData inspection,
+but it is not the clean solver-neutral handoff artifact.
+
+* Workbench boundary
+
+Workbench Meshing is not expected to edit a Gmsh volume mesh.  The intended
+route is:
+
+1. import =bearing_prism.cgns= in standalone Fluent or a Fluent Setup session;
+2. complete the live audit in [[file:fluent-import-audit.org][Fluent import-only audit]];
+3. save =bearing_prism_imported.msh.h5= only after PASS;
+4. use that Fluent-native mesh, or an explicitly import-only =.cas.h5=, in the
+   Workbench release's supported Fluent import path.
+
+If Ansys Meshing must generate or edit the mesh, return to the separate
+BREP/CAD route and accept that the result will be a newly generated mesh, not
+this validated ported Prism6 connectivity.
+
+* Acceptance evidence from 2026-07-16
+
+| Case | Points | Prism6 | Mouth internal faces | Static status | Fluent |
+|------+--------+--------+----------------------+---------------+--------|
+| =nGap_04= | 339358 | 552560 | 1732 | PASS in all three formats | NOT_RUN |
+| =nGap_08= | 575094 | 1021984 | 1732 | PASS in all three formats | NOT_RUN |
+
+Patch counts and numerical details should be read from each current
+=interchange_report.json= rather than copied into downstream solver setup.
+
+* Tests
+
+#+begin_src sh
+uv run pytest -q tests/test_solver_neutral_interchange.py
+uv run pytest -q
+#+end_src
+
+The acceptance run completed with 32 passing tests and one skipped real-Fluent
+integration test.  The skip records unavailable proprietary infrastructure;
+it is not evidence about Fluent's importer.
+

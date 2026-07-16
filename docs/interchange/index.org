@@ -1,0 +1,61 @@
+#+TITLE: Solver-Neutral Interchange
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Question answered by this branch
+
+The ported mesh already exists before this stage starts.  Interchange asks a
+narrower question than meshing:
+
+#+begin_quote
+Can the exact validated node coordinates, Prism6 connectivity, six external
+patches, and internal feed-film connection survive transfer into clean Gmsh
+and CGNS files without introducing a solver-specific model?
+#+end_quote
+
+The canonical input is =mesh_arrays.npz= plus its manifest and report.  STEP,
+BREP, and the older Gmsh files are evidence, not reconstruction inputs.
+
+* Current evidence boundary
+
+| Case | Static round trips | Fluent import | Permitted conclusion |
+|------+--------------------+---------------+----------------------|
+| =ported_prism_default/nGap_04= | MSH 4.1, MSH 2.2, and CGNS PASS | not run | =STATICALLY_VALIDATED_NOT_IMPORTED= |
+| =ported_prism_default/nGap_08= | MSH 4.1, MSH 2.2, and CGNS PASS | not run | =STATICALLY_VALIDATED_NOT_IMPORTED= |
+| 20-degree, eccentricity-0.3 family | no retained interchange run | not run | path-driven CLI support; run before making a transfer claim |
+
+A successful CGNS write or round trip is not evidence that Fluent accepted the
+mesh.  Only a live Fluent audit may produce =FLUENT_IMPORT_PASS=.
+
+* Reading map
+
+| Chapter | Main question |
+|---------+---------------|
+| [[file:canonical-source.org][Canonical source contract]] | Why does interchange start from NPZ arrays, and what must be present before export? |
+| [[file:discrete-model.org][Clean discrete reconstruction]] | How are the same arrays registered as one volume and six boundary entities without remeshing? |
+| [[file:static-topology-and-geometry.org][Static topology and geometry audit]] | Which connectivity, manifoldness, orientation, scale, and volume claims are proved before writing? |
+| [[file:round-trip-validation.org][Round-trip validation]] | How are files compared when a reader renumbers nodes, cells, entities, and physical IDs? |
+| [[file:formats-and-cgns.org][Formats and CGNS structure]] | What do the three files contain, and why is CGNS not just another extension? |
+| [[file:fluent-import-audit.org][Fluent import-only audit]] | What must a live proprietary import prove, and what does the automation deliberately refuse to do? |
+| [[file:operations-and-reports.org][Commands, reports, and Workbench handoff]] | How are cases exported, inspected, reported, and promoted after a live import? |
+
+* Implementation entry points
+
+- [[file:../../interchange/export_solver_neutral.py::class InterchangeInputs][InterchangeInputs]]
+- [[file:../../interchange/export_solver_neutral.py::def load_canonical_case][load_canonical_case]]
+- [[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+- [[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+- [[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
+- [[file:../../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
+- [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
+- [[file:../../tests/test_solver_neutral_interchange.py][interchange regression tests]]
+- [[file:../../SOLVER_INTERCHANGE.md][compact interchange handoff]] and
+  [[file:../../interchange/FLUENT_IMPORT.md][manual Fluent operator checklist]]
+
+* Scope boundary
+
+This stage contains no material model, journal speed, supply pressure,
+turbulence, cavitation, thermal model, initialization, iteration, or result
+calculation.  Generic patch roles are retained only so a later solver setup can
+make explicit physics decisions.  It also makes no commitment to Fluent or
+OpenFOAM as the final solver.
