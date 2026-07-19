@@ -120,6 +120,7 @@ class PortedInputs:
     gap_levels: tuple[int, ...] = (4, 8, 12)
     preview_ngap: int = 8
     rim_segments: int = 128
+    gap_inflation_ratio: float = 5.0
     tube_layers: int = 48
     tube_grading: float = 1.0
     openfoam: Literal["auto", "required", "skip"] = "auto"
@@ -385,6 +386,11 @@ def validate_inputs(inputs: PortedInputs, params: PortedParams) -> None:
         raise PortedMeshError("preview-ngap must be one of gap-levels")
     if inputs.rim_segments < 32 or inputs.rim_segments % 4:
         raise PortedMeshError("rim-segments must be >=32 and divisible by four")
+    if (
+        not math.isfinite(inputs.gap_inflation_ratio)
+        or inputs.gap_inflation_ratio < 1.0
+    ):
+        raise PortedMeshError("gap-inflation-ratio must be finite and >=1")
     if inputs.tube_layers < 1:
         raise PortedMeshError("tube-layers must be positive")
     if not math.isfinite(inputs.tube_grading) or inputs.tube_grading <= 0.0:
@@ -935,6 +941,31 @@ def _film_node_tags(master_nodes: np.ndarray, layer: int, master_count: int) -> 
     return master_nodes.astype(np.uint64) + np.uint64(1 + layer * master_count)
 
 
+def symmetric_gap_coordinates(n_gap: int, inflation_ratio: float) -> np.ndarray:
+    """Return wall-clustered layer coordinates with equal grading at both walls."""
+    if n_gap < 1:
+        raise PortedMeshError("nGap must be positive")
+    if not math.isfinite(inflation_ratio) or inflation_ratio < 1.0:
+        raise PortedMeshError("gap inflation ratio must be finite and >=1")
+    if n_gap <= 2 or inflation_ratio == 1.0:
+        return np.linspace(0.0, 1.0, n_gap + 1, dtype=np.float64)
+
+    half = n_gap // 2
+    if n_gap % 2 == 0:
+        growth = inflation_ratio ** (1.0 / (half - 1))
+        one_side = growth ** np.arange(half, dtype=np.float64)
+        widths = np.concatenate([one_side, one_side[::-1]])
+    else:
+        growth = inflation_ratio ** (1.0 / half)
+        one_side = growth ** np.arange(half, dtype=np.float64)
+        widths = np.concatenate([one_side, [inflation_ratio], one_side[::-1]])
+    widths /= widths.max()
+    widths /= widths.sum()
+    xi = np.concatenate([[0.0], np.cumsum(widths)])
+    xi[-1] = 1.0
+    return xi
+
+
 def _orient_periodic_edges(edges: np.ndarray, points: np.ndarray, width: float) -> np.ndarray:
     oriented = edges.copy()
     for row in oriented:
@@ -953,6 +984,7 @@ def build_prism_mesh(
     n_gap: int,
     tube_layers: int,
     tube_grading: float,
+    gap_inflation_ratio: float = 5.0,
 ) -> PrismMesh:
     if n_gap < 1:
         raise PortedMeshError("nGap must be positive")
@@ -967,7 +999,8 @@ def build_prism_mesh(
         raise PortedMeshError(
             f"requires rho_b>rho_j>0; min rho_j={rho_j.min()}, min gap={gap.min()}"
         )
-    xi = np.linspace(0.0, 1.0, n_gap + 1, dtype=np.float64)
+    xi = symmetric_gap_coordinates(n_gap, gap_inflation_ratio)
+    gap_layer_fractions = np.diff(xi)
     rho = rho_j[None, :] + xi[:, None] * gap[None, :]
     film = np.empty((n_gap + 1, master_count, 3), dtype=np.float64)
     film[:, :, 0] = rho * np.sin(theta)[None, :]
@@ -1141,6 +1174,12 @@ def build_prism_mesh(
             "source_unit": "mm",
             "scale_to_m_applied_once": SI_PER_MM,
             "n_gap": n_gap,
+            "gap_layer_coordinates": xi.tolist(),
+            "gap_layer_fractions": gap_layer_fractions.tolist(),
+            "gap_inflation_ratio_target": gap_inflation_ratio,
+            "gap_inflation_ratio_achieved": float(
+                gap_layer_fractions.max() / gap_layer_fractions.min()
+            ),
             "tube_layers": tube_layers,
             "tube_grading_exponent": tube_grading,
             "minimum_tube_layer_mm": float(layer_distances.min()),
@@ -1609,6 +1648,39 @@ def validate_geometry(
     points_mm = mesh.points_m / SI_PER_MM
     master_count = int(mesh.metadata["master_node_count"])
     n_gap = int(mesh.metadata["n_gap"])
+    gap_layer_fractions = np.asarray(
+        mesh.metadata["gap_layer_fractions"], dtype=np.float64
+    )
+    expected_ratio = inputs.gap_inflation_ratio if n_gap >= 3 else 1.0
+    achieved_ratio = float(
+        gap_layer_fractions.max() / gap_layer_fractions.min()
+    )
+    inflation_valid = (
+        len(gap_layer_fractions) == n_gap
+        and np.all(gap_layer_fractions > 0.0)
+        and abs(float(gap_layer_fractions.sum()) - 1.0) <= 1.0e-14
+        and np.allclose(
+            gap_layer_fractions,
+            gap_layer_fractions[::-1],
+            rtol=0.0,
+            atol=1.0e-14,
+        )
+        and abs(achieved_ratio - expected_ratio)
+        <= 1.0e-12 * max(1.0, expected_ratio)
+    )
+    require(
+        records,
+        "geometry.symmetric_gap_inflation",
+        bool(inflation_valid),
+        {
+            "layer_fractions": gap_layer_fractions.tolist(),
+            "achieved_centre_to_wall_ratio": achieved_ratio,
+        },
+        {
+            "positive_symmetric_fractions_sum": 1.0,
+            "centre_to_wall_ratio": expected_ratio,
+        },
+    )
     journal = points_mm[:master_count]
     bore = points_mm[n_gap * master_count : (n_gap + 1) * master_count]
     journal_residual = np.abs(
@@ -3311,7 +3383,12 @@ def generate_gap_case(
     case_dir.mkdir(parents=True, exist_ok=True)
     records = [dict(record) for record in inherited_records]
     mesh = build_prism_mesh(
-        master, params, n_gap, inputs.tube_layers, inputs.tube_grading
+        master,
+        params,
+        n_gap,
+        inputs.tube_layers,
+        inputs.tube_grading,
+        inputs.gap_inflation_ratio,
     )
     topology = validate_topology(mesh, master, records)
     geometry = validate_geometry(mesh, master, params, inputs, records)
@@ -3419,6 +3496,13 @@ def generate_gap_case(
             "boundary_faces": topology["boundary_face_counts"],
             "total_boundary_faces": topology["total_boundary_faces"],
         },
+        "film_inflation": {
+            "centre_to_wall_cell_thickness_ratio": mesh.metadata[
+                "gap_inflation_ratio_achieved"
+            ],
+            "layer_coordinates": mesh.metadata["gap_layer_coordinates"],
+            "layer_fractions": mesh.metadata["gap_layer_fractions"],
+        },
         "rim": dict(master.metadata),
         "boundary_roles": {
             "moving_wall": ["journal_wall"],
@@ -3441,6 +3525,7 @@ def generate_gap_case(
             "n_axial": inputs.n_axial,
             "n_gap": n_gap,
             "rim_segments": inputs.rim_segments,
+            "gap_inflation_ratio": inputs.gap_inflation_ratio,
             "tube_layers": inputs.tube_layers,
             "tube_grading": inputs.tube_grading,
             "openfoam": inputs.openfoam,
@@ -3720,6 +3805,7 @@ def parse_args(argv: Sequence[str] | None = None) -> PortedInputs:
     parser.add_argument("--gap-levels", type=int, nargs="+", default=[4, 8, 12])
     parser.add_argument("--preview-ngap", type=int, default=8)
     parser.add_argument("--rim-segments", type=int, default=128)
+    parser.add_argument("--gap-inflation-ratio", type=float, default=5.0)
     parser.add_argument("--tube-layers", type=int, default=48)
     parser.add_argument("--tube-grading", type=float, default=1.0)
     parser.add_argument("--openfoam", choices=("auto", "required", "skip"), default="auto")
@@ -3740,6 +3826,7 @@ def parse_args(argv: Sequence[str] | None = None) -> PortedInputs:
         gap_levels=tuple(args.gap_levels),
         preview_ngap=args.preview_ngap,
         rim_segments=args.rim_segments,
+        gap_inflation_ratio=args.gap_inflation_ratio,
         tube_layers=args.tube_layers,
         tube_grading=args.tube_grading,
         openfoam=args.openfoam,

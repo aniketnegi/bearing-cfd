@@ -142,10 +142,24 @@ two triangle owners.  Only the =z=0= and =z=L= edges may remain external.
 
 * Film sweep
 
-Every master triangle, including every disk triangle, is copied at each
-=xi=i/nGap=.  Adjacent copies form a Prism6.  Triangle orientation is made
-consistent in the =(u,z)= master before any volume cell is constructed; volume
-cells are not “repaired” later with arbitrary per-cell node swaps.
+Every master triangle, including every disk triangle, is copied through the
+gap.  Adjacent copies form a Prism6.  The default
+=--gap-inflation-ratio 5= uses symmetric geometric cell fractions: the two
+wall-adjacent cells are smallest and the largest central cell is five times
+their thickness.  The fractions remain positive, sum to one, and mirror about
+=xi=0.5=.  Ratio =1= restores uniform =xi=i/nGap= spacing; one or two gap cells
+cannot express non-uniform two-sided inflation and therefore remain uniform.
+
+This is wall-normal inflation across the lubricant film.  It clusters nodes at
+both =journal_wall= and =bushing_bore_wall= without changing connectivity or
+the exact journal/bore coordinates.  It does not create radial boundary-layer
+rings around =feed_tube_wall=; that requires a separately graded feed-disk
+master triangulation.
+
+Triangle orientation is made consistent in the =(u,z)= master before any
+volume cell is constructed; volume cells are not “repaired” later with
+arbitrary per-cell node swaps.  The coordinate construction is in
+[[file:../../meshing/layered_prism_central_feed.py::def symmetric_gap_coordinates][symmetric_gap_coordinates()]].
 
 At =xi=0=, reversing the master triangle produces the outward
 =journal_wall=.  Because the disk was not removed, the journal contains one
@@ -289,6 +303,8 @@ it is not required by the current robust Prism6 pipeline.
 
 - Analytic rim and closed loop:
   [[file:../../tests/test_layered_prism_central_feed.py::def test_analytic_mouth_rim_and_closed_degree_two_loop][test_analytic_mouth_rim_and_closed_degree_two_loop]]
+- Symmetric film inflation:
+  [[file:../../tests/test_layered_prism_central_feed.py::def test_symmetric_through_gap_inflation][test_symmetric_through_gap_inflation]]
 - Periodic seam and split conformity:
   [[file:../../tests/test_layered_prism_central_feed.py::def test_periodic_seam_and_axial_partitions_are_internal][test_periodic_seam_and_axial_partitions_are_internal]]
 - One region and complete boundaries:

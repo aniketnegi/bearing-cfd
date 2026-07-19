@@ -112,6 +112,12 @@ The cutaway must show all gap layers, continuous film below the feed, the open
 tube-to-film connection, and the pressure-inlet disk.  Its cells retain their
 true coordinates but it is a subset, so =solve_eligible= is false.
 
+For the default 5:1 film inflation, color the cutaway by =gap_layer_index= and
+use =Surface With Edges=.  The =nGap_08= normalized cell-thickness fractions
+increase from =0.047019= at either wall to =0.235095= at the two central cells,
+then mirror exactly.  The authoritative coordinates and fractions are stored
+under =film_inflation= in that case's =manifest.json=.
+
 The internal mouth can be inspected in:
 
 =out/ported_prism_default/nGap_08/viz/mouth_interface_DIAGNOSTIC_ONLY.vtu=

@@ -136,6 +136,7 @@ uv run python meshing/layered_prism_central_feed.py \
   --outdir out/ported_prism_default \
   --n-theta 256 --n-axial 96 \
   --gap-levels 4 8 12 --preview-ngap 8 \
+  --gap-inflation-ratio 5 \
   --rim-segments 128 --tube-layers 48 --tube-grading 1.0 \
   --openfoam skip --no-gui
 #+end_src
@@ -150,6 +151,7 @@ uv run python meshing/layered_prism_central_feed.py \
   --outdir out/ported_prism_e03_g20 \
   --n-theta 256 --n-axial 96 \
   --gap-levels 4 8 12 --preview-ngap 8 \
+  --gap-inflation-ratio 5 \
   --rim-segments 128 --tube-layers 48 --tube-grading 1.0 \
   --openfoam skip --no-gui
 #+end_src
@@ -159,6 +161,11 @@ three-dimensional Prism6 connectivity; the program never asks Gmsh to generate
 the 3-D volume mesh.  See [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][=build_master_mesh=]],
 [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][=build_prism_mesh=]], and
 [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][=validate_topology=]].
+
+=--gap-inflation-ratio 5= is the ratio of the largest central film-cell
+thickness to either wall-adjacent cell thickness.  It is applied symmetrically
+at the journal and bushing; use =1= only when reproducing uniform through-gap
+spacing.
 
 * Export solver-neutral MSH and CGNS
 

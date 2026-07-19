@@ -26,6 +26,7 @@ from meshing.layered_prism_central_feed import (
     load_contract,
     open_optional_gui,
     rim_coordinates,
+    symmetric_gap_coordinates,
     validate_geometry,
     validate_external_face_orientation,
     validate_gmsh_round_trip,
@@ -212,6 +213,38 @@ def test_analytic_mouth_rim_and_closed_degree_two_loop(
             seen.add(node)
             pending.append(node)
     assert seen == set(master.rim_nodes.astype(int))
+
+
+def test_symmetric_through_gap_inflation(
+    default_bundle: dict[str, Any],
+) -> None:
+    ratio = 5.0
+    xi = symmetric_gap_coordinates(4, ratio)
+    fractions = np.diff(xi)
+    assert fractions == pytest.approx(fractions[::-1], abs=1.0e-15)
+    assert fractions.sum() == pytest.approx(1.0, abs=1.0e-15)
+    assert fractions.max() / fractions.min() == pytest.approx(ratio, rel=1.0e-12)
+
+    master = default_bundle["master"]
+    mesh = build_prism_mesh(
+        master,
+        default_bundle["params"],
+        n_gap=4,
+        tube_layers=2,
+        tube_grading=1.0,
+        gap_inflation_ratio=ratio,
+    )
+    master_count = len(master.points_uz_mm)
+    node = master.centre_node
+    radial_line = mesh.points_m[
+        np.asarray([layer * master_count + node for layer in range(5)])
+    ]
+    thicknesses = np.linalg.norm(np.diff(radial_line, axis=0), axis=1)
+    assert thicknesses == pytest.approx(thicknesses[::-1], rel=1.0e-10)
+    assert thicknesses.max() / thicknesses.min() == pytest.approx(
+        ratio, rel=1.0e-10
+    )
+    assert mesh.metadata["gap_inflation_ratio_achieved"] == pytest.approx(ratio)
 
 
 def test_periodic_seam_and_axial_partitions_are_internal(
