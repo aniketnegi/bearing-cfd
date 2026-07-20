@@ -12,6 +12,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import uuid
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
@@ -48,6 +49,7 @@ from build123d import (
 STEP_ROUNDTRIP_REL_TOL = 1.0e-6
 BREP_ROUNDTRIP_REL_TOL = 1.0e-12
 PREVIEW_PORT = 3939
+REJECTED_STEP_SCHEMA = "eccentric-conical-bearing.rejected-step.v1"
 
 
 class BearingFilmError(RuntimeError):
@@ -118,6 +120,7 @@ class InputParams:
     axial_cutter_extension: float = 1.0
     max_face_count: int = 100
     export_debug_half: bool = False
+    retain_failed_step: bool = False
     preview: bool = False
     outdir: Path = Path("./out")
 
@@ -1213,6 +1216,104 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
+def _rejected_step_target(outdir: Path) -> Path:
+    return outdir.with_name(f"{outdir.name}.rejected-step")
+
+
+def _is_owned_rejected_step_batch(target: Path) -> bool:
+    manifest = target / "REJECTED.json"
+    if target.is_symlink() or not target.is_dir() or not manifest.is_file():
+        return False
+    try:
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        payload.get("schema") == REJECTED_STEP_SCHEMA
+        and payload.get("producer") == "bearing_film.py"
+        and payload.get("status") == "REJECTED_DIAGNOSTIC_ONLY"
+        and payload.get("solve_eligible") is False
+    )
+
+
+def _discard_rejected_step_batch(outdir: Path) -> None:
+    target = _rejected_step_target(outdir)
+    if not target.exists():
+        return
+    if not _is_owned_rejected_step_batch(target):
+        raise GeometryExportError(f"refusing to remove unrecognized STEP quarantine: {target}")
+    shutil.rmtree(target)
+
+
+def _publish_rejected_step_batch(
+    stage: Path,
+    outdir: Path,
+    manifest: dict[str, dict[str, Any]],
+    error: RoundTripValidationError,
+) -> dict[str, Any]:
+    """Atomically retain a failed STEP batch outside the trusted CAD directory."""
+    target = _rejected_step_target(outdir)
+    if target.exists() and not _is_owned_rejected_step_batch(target):
+        raise GeometryExportError(f"refusing to replace unrecognized STEP quarantine: {target}")
+
+    quarantine_stage = Path(
+        tempfile.mkdtemp(prefix=f".{target.name}.stage-", dir=target.parent)
+    )
+    backup = target.with_name(f".{target.name}.backup-{uuid.uuid4().hex}")
+    try:
+        files: dict[str, Any] = {}
+        for filename, expected in manifest.items():
+            source = stage / filename
+            if not source.is_file():
+                raise GeometryExportError(f"rejected STEP artifact is missing: {source}")
+            destination = quarantine_stage / filename
+            shutil.copy2(source, destination)
+            files[filename] = {
+                "sha256": _sha256(destination),
+                "expected": expected,
+                "round_trip": error.diagnostics.get(filename),
+            }
+
+        rejected = {
+            "schema": REJECTED_STEP_SCHEMA,
+            "producer": "bearing_film.py",
+            "status": "REJECTED_DIAGNOSTIC_ONLY",
+            "solve_eligible": False,
+            "warning": "DO NOT USE FOR MESHING OR SOLVER INPUT",
+            "source_output_directory": str(outdir),
+            "strict_relative_volume_tolerance": STEP_ROUNDTRIP_REL_TOL,
+            "error": {
+                "type": type(error).__name__,
+                "message": str(error),
+            },
+            "files": files,
+        }
+        _write_json(quarantine_stage / "REJECTED.json", rejected)
+
+        had_previous = target.exists()
+        if had_previous:
+            target.replace(backup)
+        try:
+            quarantine_stage.replace(target)
+        except Exception:
+            if had_previous and backup.exists():
+                backup.replace(target)
+            raise
+        if backup.exists():
+            shutil.rmtree(backup)
+        return {
+            "schema": REJECTED_STEP_SCHEMA,
+            "status": rejected["status"],
+            "solve_eligible": False,
+            "path": str(target),
+            "manifest": "REJECTED.json",
+            "files": sorted(files),
+        }
+    finally:
+        if quarantine_stage.exists():
+            shutil.rmtree(quarantine_stage)
+
+
 def _table(title: str, headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> None:
     print(f"\n{title}")
     text_rows = [[str(item) for item in row] for row in rows]
@@ -1250,6 +1351,7 @@ def _console_report(
         "axial_cutter_extension": "mm",
         "max_face_count": "1",
         "export_debug_half": "bool",
+        "retain_failed_step": "bool",
         "preview": "bool",
         "outdir": "path",
     }
@@ -1414,6 +1516,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> InputParams:
         default=defaults.export_debug_half,
     )
     parser.add_argument(
+        "--retain-failed-step",
+        action=argparse.BooleanOptionalAction,
+        default=defaults.retain_failed_step,
+        help="retain a rejected STEP batch in a sibling diagnostic-only directory",
+    )
+    parser.add_argument(
         "--preview",
         action=argparse.BooleanOptionalAction,
         default=defaults.preview,
@@ -1533,10 +1641,36 @@ def main(argv: Sequence[str] | None = None) -> int:
                 for filename, expected in manifest.items()
                 if Path(filename).suffix.lower() == ".step"
             }
-            step_records, step_round_trip, step_messages = _round_trip_all(
-                stage,
-                step_manifest,
-            )
+            try:
+                step_records, step_round_trip, step_messages = _round_trip_all(
+                    stage,
+                    step_manifest,
+                )
+            except RoundTripValidationError as step_error:
+                _discard_published_steps(params.outdir)
+                try:
+                    if inputs.retain_failed_step:
+                        diagnostics["rejected_step_quarantine"] = (
+                            _publish_rejected_step_batch(
+                                stage,
+                                params.outdir,
+                                step_manifest,
+                                step_error,
+                            )
+                        )
+                    else:
+                        _discard_rejected_step_batch(params.outdir)
+                except Exception as quarantine_error:
+                    diagnostics["rejected_step_quarantine"] = {
+                        "status": "PUBLICATION_FAILED",
+                        "error": str(quarantine_error),
+                    }
+                    print(
+                        f"ERROR [STEP quarantine publication]: {quarantine_error}",
+                        file=sys.stderr,
+                    )
+                raise
+            _discard_rejected_step_batch(params.outdir)
             records.extend(step_records)
             messages.extend(step_messages)
             hashes = {
@@ -1601,6 +1735,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         error = exc
     except Exception as exc:
         error = GeometryConstructionError(f"unexpected {type(exc).__name__}: {exc}")
+
+    quarantine = diagnostics.get("rejected_step_quarantine", {})
+    if inputs is not None and quarantine.get("status") != "REJECTED_DIAGNOSTIC_ONLY":
+        try:
+            _discard_rejected_step_batch(inputs.outdir)
+        except Exception as quarantine_error:
+            diagnostics["rejected_step_quarantine_cleanup"] = {
+                "status": "CLEANUP_FAILED",
+                "error": str(quarantine_error),
+            }
+            print(
+                f"ERROR [STEP quarantine cleanup]: {quarantine_error}",
+                file=sys.stderr,
+            )
 
     print(f"ERROR [{type(error).__name__}]: {error}", file=sys.stderr)
     if shapes:
