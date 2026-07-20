@@ -1,0 +1,294 @@
+#+TITLE: Structured Hex8 Film with a Surface Pressure Inlet
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :eval never
+
+[[file:structured-hex-no-port.org][No-port Hex8 baseline]] ·
+[[file:layered-prism-central-feed.org][Full-passage Prism6 branch]] ·
+[[file:topology-and-quality.org][Topology and quality]] ·
+[[file:../geometry/clearance-mathematics.org][Clearance mathematics]]
+
+* Model boundary
+
+[[file:../../meshing/structured_hex_surface_inlet.py][structured_hex_surface_inlet.py]]
+constructs the full-360 eccentric conical film as first-order Hex8 cells.  It
+does not include the radial drilling, bushing-wall passage, or external inlet
+stub in the fluid volume.  Instead, a set of outer-film Quad4 faces on the
+=+Y= stationary bushing bore is named =pressure_feed=.
+
+This is the production branch for a film-only hydrodynamic study in which the
+supply condition is applied directly at the bore opening.  It deliberately
+excludes feed-passage hydrostatic head, wall friction, developing pipe flow,
+and inlet-jet dynamics.  Those effects belong to the retained full-passage
+[[file:layered-prism-central-feed.org][Prism6 branch]].
+
+The pressure patch is on the stationary bushing bore, not on the journal.  The
+journal is the moving inner wall and remains geometrically and topologically
+continuous.
+
+* Fluid control volume, not metal assembly
+
+The solver mesh represents only the lubricant.  Its annular shape therefore
+surrounds an empty core: in the physical bearing that core is occupied by the
+journal, but journal metal is not part of the fluid cell zone.  Filling the
+core with cells would model the journal as lubricant.
+
+A skin or wireframe rendering of the mesh shows the one-owner exterior faces,
+even though the interior contains Hex8 volume cells.  The visible surfaces
+have these meanings:
+
+- the inner annular skin is =journal_wall=;
+- the outer annular skin is =stationary_wall= except where it is partitioned
+  as =pressure_feed=;
+- the two annular end faces are =axial_end_z0= and =axial_end_zL=.
+
+The pressure inlet is not represented by deleting faces.  =pressure_feed=
+faces remain the exterior faces of their adjacent Hex8 cells and become an
+inlet when the solver assigns the pressure boundary condition to that named
+group.  This is the finite-volume representation of a surface opening; it is
+not a resolved drilling, recess, or fluid tube.
+
+Journal and bushing solids may be exported separately for visual context.
+They must not be fused with this mesh or imported as additional fluid regions.
+
+* Analytic Hex8 film
+
+The physical nodes use the same cone/ray law and periodic tensor connectivity
+as the validated no-port baseline.  Theta is measured from the =-Y=
+minimum-clearance ray:
+
+#+begin_example
+d(theta) = (sin(theta), -cos(theta))
+Rj(z)    = Rm + (L/2-z) tan(gamma)
+Rb(z)    = Rj(z) + c
+
+q        = ex sin(theta) - ey cos(theta)
+rho_j    = q + sqrt(Rj(z)^2 - ex^2 - ey^2 + q^2)
+rho      = rho_j + xi [Rb(z)-rho_j]
+P        = (rho sin(theta), -rho cos(theta), z)
+#+end_example
+
+The canonical arrays contain no duplicate =theta=2*pi= nodes.  The final
+circumferential Hex8 block references the index-zero nodes directly, so the
+full model has no seam patch.  Geometry is evaluated from millimetre inputs
+and converted to metres exactly once for mesh export.
+
+The surface-inlet branch remaps the theta and z coordinates before evaluating
+this law, inflates the xi coordinates, and reclassifies selected =xi=1=
+boundary faces.  It does not remove nodes, alter logical Hex8 connectivity, or
+create a recess into the film.
+
+* Cubic theta/z inlet clustering
+
+The logical grid remains tensor-product, but its physical theta and z
+coordinates are nonuniform.  On either side of the feed-centre coordinate,
+normalize distance from the centre to =d in [0,1]= and apply
+
+#+begin_example
+w(d) = (1-s) d + s d^3.
+#+end_example
+
+Theta is anchored at =0, pi, 2*pi= and z at =0, z_h, L=.  The default
+=s=0.82= clusters lines smoothly about =theta=pi= (the =+Y= feed direction)
+and =z=z_h=.  =s=0= recovers uniform spacing; validation requires
+=0 <= s < 1=, strict monotonicity, and exact endpoint/feed-centre anchoring.
+
+Every theta line still spans the full axial interval and every z line spans
+the full circumference.  This preserves one conforming structured block,
+periodicity, cell count, and all-Hex8 connectivity without hanging nodes.
+Clustering improves the footprint by redistributing the existing lines rather
+than globally multiplying the mesh.
+
+* Symmetric 5:1 through-gap inflation
+
+The =xi= coordinates use the same symmetric geometric distribution at every
+=(theta,z)= location.  With =--gap-inflation-ratio 5=, the largest central
+film cell is five times the thickness of either wall-adjacent cell.  The
+fractions are positive, sum to one, and mirror about =xi=0.5=.
+
+Both walls are therefore resolved:
+
+- =xi=0=: moving =journal_wall=;
+- =xi=1=: stationary bore, partitioned into =stationary_wall= and
+  =pressure_feed=.
+
+Inflation changes only interior layer positions.  The analytic journal and
+bore surfaces, local radial gap, periodic connectivity, and continuous film
+volume are unchanged.  This is same-=z= radial layering, not a conical
+surface-normal offset.
+
+* Mesh-aligned pressure patch
+
+The nominal feed is a 4 mm diameter circle centred at =+Y= and =z=z_h=.  A
+logically tensor-product Hex8 mesh cannot represent that circle exactly while
+keeping every external face a complete Quad4.  The implementation therefore
+selects whole clustered outer-wall faces whose projected face centres satisfy
+the nominal circular footprint:
+
+#+begin_example
+x_c^2 + (z_c-z_h)^2 <= r_h^2,    y_c > 0.
+#+end_example
+
+The resulting boundary is a fine mesh-aligned staircase approximation.  It is
+a pressure boundary patch, not a resolved cylindrical hole.  Theta/z
+clustering or increasing =n_theta= and =n_axial= refines its boundary;
+increasing =n_gap= affects only the through-film layers.
+
+The report records at least:
+
+- selected Quad4 count;
+- projected =x-z= area and relative error from =pi r_h^2=;
+- actual three-dimensional Quad4 area seen by the solver;
+- area-weighted centroid and offset from =(0,+Rb(z_h),z_h)=;
+- equivalent projected diameter =sqrt(4 A_projected/pi)=;
+- circumferential and axial resolution at the feed;
+- the maximum distance of the mesh-aligned boundary from the nominal circle.
+
+These metrics describe the actual solver boundary.  The implementation must
+not label it an exact circular aperture.  For the default parameter case at
+=n_theta=256, n_axial=96, s=0.82=, the accepted mesh has 390 connected inlet
+faces, =12.5106696912 mm^2= projected area, =0.443254%= absolute relative area
+error, and a =3.991125 mm= projected equivalent diameter.  Its maximum rim
+radius error is =0.141383 mm=.  The second accepted cone case has 392 faces,
+=0.138729%= area error, and =0.139494 mm= maximum rim error.
+
+The production gates are 1% projected-area error and =0.16 mm= maximum rim
+error.  Area agreement alone cannot bound the staircase, so both tests are
+mandatory.  The generated report remains authoritative for a particular run.
+
+At the default feed, adjacent cells are approximately =0.253195 deg=
+circumferentially, =0.221176 mm= in local bore arc length, and =0.112722 mm=
+axially.  Their global width ratios are about 14.56 in theta and 14.36 in z.
+The largest consecutive-cell growth factors are about 1.029 in theta and 1.080
+in z: the mapping changes spacing smoothly rather than creating an abrupt
+local-block transition.  Pushing =s= toward one would further coarsen the
+remote bearing, so inlet-shape convergence should use
+=n_theta=/=n_axial= studies rather than unbounded clustering strength.
+
+* Why the journal remains continuous
+
+The pressure patch is produced by partitioning the original stationary-bore
+Quad4 set:
+
+#+begin_example
+original stationary bore
+    = stationary_wall union pressure_feed
+stationary_wall intersect pressure_feed
+    = empty
+#+end_example
+
+No journal face is removed or relabelled.  The =journal_wall= therefore
+contains one Quad4 for every circumferential and axial film cell, including
+the region radially opposite the pressure patch.  There is no tube cell,
+film/tube owner-neighbour interface, mouth cap, or internal feed boundary in
+this model.
+
+* Physical groups
+
+| ID | Name | Role |
+|----+------+------|
+| 101 | =journal_wall= | complete moving journal surface |
+| 102 | =stationary_wall= | stationary bushing bore outside the inlet patch |
+| 103 | =axial_end_z0= | axial outlet candidate at =z=0= |
+| 104 | =axial_end_zL= | axial outlet candidate at =z=L= |
+| 106 | =pressure_feed= | mesh-aligned pressure-inlet patch on the =+Y= bore |
+| 201 | =fluid= | one connected Hex8 film region |
+
+There is no =feed_tube_wall=, =feed_mouth=, =mouth_cap=, circumferential seam,
+or =defaultFaces=.  Patch names describe intended roles; this stage does not
+assign pressure values, journal speed, lubricant properties, or solver
+boundary conditions.
+
+* Validation contract
+
+The implementation follows the topology and round-trip strategy of the
+[[file:structured-hex-no-port.org][no-port Hex8 baseline]] and adds inlet
+partition checks:
+
+- exact point, Hex8, and Quad4 counts;
+- one connected periodic Hex8 region with no duplicate seam nodes or faces;
+- every volume face has one or two owners and none has more than two;
+- the five boundary groups are pairwise disjoint and equal the complete
+  one-owner face set;
+- =stationary_wall union pressure_feed= exactly reproduces the no-port outer
+  bore boundary;
+- stored theta and z coordinates are strictly monotonic, match the canonical
+  nodes, and are anchored at their endpoints and feed centre;
+- local and global theta/z spacing ranges and ratios are reported;
+- every inlet face lies on the analytic bore, faces outward, and is centred
+  around the =+Y= feed location;
+- the journal boundary is complete and disjoint from =pressure_feed=;
+- analytic journal/bore residuals and minimum/maximum radial gaps pass;
+- all Hex8 volumes, Jacobian determinants, and face pyramids are finite and
+  positive;
+- non-orthogonality, skewness, and Gmsh quality records pass the existing
+  Hex8 gates;
+- canonical cell volume converges to
+  =pi L (2 c Rm + c^2)= and is invariant under gap subdivision;
+- MSH 4.1 and MSH 2.2 reproduce coordinates, connectivity, physical names,
+  IDs, and membership; VTU reproduces coordinates, connectivity, every numeric
+  field, and physical IDs, with names carried by =physical_groups.json=;
+  NPZ reproduces every canonical array exactly.
+
+The native ported BREP contains the wall drilling and external stub, so its
+total volume is not the volume target for this reduced film-only model.  The
+analytic annular volume and exact cone equations are the appropriate geometry
+contracts.
+
+* Relationship to the other mesh branches
+
+| Branch | Volume cells | Feed representation | Use |
+|--------+--------------+---------------------+-----|
+| [[file:structured-hex-no-port.org][No-port Hex8]] | Hex8 | none | frozen geometry, periodicity, quality, and convergence regression |
+| *Surface-inlet Hex8* | Hex8 | pressure patch on stationary bore | current film-only hydrodynamic model |
+| [[file:layered-prism-central-feed.org][Full-passage Prism6]] | Prism6 | resolved drilling, wall passage, stub, and remote inlet disk | studies that retain feed-passage hydraulics |
+
+The new branch does not replace or weaken either validated baseline.  It
+reuses tensor-product annular connectivity with nonuniform theta/z coordinates
+while changing the physical boundary partition required by the reduced-domain
+study.
+
+* Run and inspect
+
+Default production family:
+
+#+begin_src sh
+uv run python meshing/structured_hex_surface_inlet.py \
+  --params out/strict_default/params.json \
+  --outdir out/structured_surface_inlet_default \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --gap-inflation-ratio 5 \
+  --inlet-cluster-strength 0.82 \
+  --max-projected-area-relative-error 0.01 \
+  --max-inlet-rim-error-mm 0.16 \
+  --openfoam skip --no-gui
+#+end_src
+
+Gmsh:
+
+#+begin_src sh
+uv run gmsh \
+  out/structured_surface_inlet_default/nGap_08/structured_hex.msh
+
+uv run gmsh \
+  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.msh
+#+end_src
+
+ParaView on Wayland:
+
+#+begin_src sh
+QT_QPA_PLATFORM=xcb paraview \
+  out/structured_surface_inlet_default/nGap_08/volume_hex.vtu
+
+QT_QPA_PLATFORM=xcb paraview \
+  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.vtu
+#+end_src
+
+For the full mesh, use =Surface With Edges= and color by =gap_layer_index= or
+mesh quality.  To inspect patch membership in context, open
+=boundary_quads.vtu= and color by =patch_id=; ID 106 is =pressure_feed=.  The
+compact =pressure_feed_only.vtu= contains only inlet points and faces, so
+ParaView frames the near-circular patch directly.  The authoritative status
+remains =manifest.json= and =mesh_report.json=; an interactive rendering is
+not a topology or clearance measurement.

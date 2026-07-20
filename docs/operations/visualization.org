@@ -93,6 +93,88 @@ uv run gmsh \
 The generator-side GUI modes are =exact=, =cutaway=, =quality=, and
 =exaggerated=; see [[file:../../meshing/structured_hex_no_port.py::def open_gui][=open_gui=]].
 
+* Surface-inlet Hex8 visualization
+
+The inlet footprint alone is the fastest Gmsh check:
+
+#+begin_src sh
+uv run gmsh \
+  -setnumber Mesh.SurfaceFaces 1 \
+  -setnumber Mesh.SurfaceEdges 1 \
+  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.msh
+#+end_src
+
+The exact-coordinate volume cutaway shows the 5:1 gap layers without the feed
+column:
+
+#+begin_src sh
+uv run gmsh \
+  -setnumber Mesh.VolumeFaces 1 \
+  -setnumber Mesh.VolumeEdges 1 \
+  out/structured_surface_inlet_default/nGap_08/viz/cutaway_exact.msh
+#+end_src
+
+ParaView is generally more responsive for the same cutaway:
+
+#+begin_src sh
+QT_QPA_PLATFORM=xcb paraview \
+  out/structured_surface_inlet_default/nGap_08/viz/cutaway_exact.vtu
+#+end_src
+
+The inlet is visible as boundary faces because a finite-volume pressure
+opening must still close the cell-volume topology.  Its =pressure_feed= tag,
+not deletion of those faces, makes it an inlet.  The mesh has no cells outside
+the bore and no cells between the inlet patch and journal.
+
+For patch membership in ParaView, open =boundary_quads.vtu=, select *Surface
+With Edges*, and color by =patch_id=.  Physical ID 106 is =pressure_feed=.
+The footprint PNG compares the whole-face approximation with the nominal
+4 mm projected circle.  For a patch-only view that fills the camera, open
+=viz/pressure_feed_only.vtu=; it contains a compact point set.
+
+The visibly denser theta/z edges around the inlet are intentional cubic
+clustering in the exact mesh coordinates.  They are neither duplicated cells
+nor gap exaggeration.  The logical mesh remains one conforming periodic Hex8
+block.
+
+** Interpreting the apparently hollow full mesh
+
+Gmsh and ParaView normally draw a volume mesh through its exterior skin.  For
+this model the skin is annular, so the central void is expected: it is the
+space occupied by journal metal in the assembled bearing, not a missing part
+of the lubricant mesh.  Volumetric status is established by the =fluid=
+Hex8 element count and connectivity in =mesh_report.json=, not by opaque
+screen filling.
+
+The physical groups identify what is visible:
+
+| Group | Visible role |
+|-------+--------------|
+| =journal_wall= | inner annular fluid boundary against the moving journal |
+| =stationary_wall= | outer annular fluid boundary against the bushing bore |
+| =pressure_feed= | small near-circular subset of the stationary bore |
+| =axial_end_z0=, =axial_end_zL= | annular end boundaries |
+| =fluid= | Hex8 cells between the inner and outer skins |
+
+Viewer colours are not part of the mesh contract and may change between
+imports.  Use the physical-group names or =patch_id= rather than identifying a
+boundary by colour.
+
+The metal journal and bushing belong in a separate context STEP.  Viewing that
+STEP answers an assembly question; viewing the CGNS/MSH/VTU answers a fluid
+mesh question.  Do not combine the context solids with the solver's =fluid=
+zone merely to make the viewport look filled.
+
+For the current default Ansys handoff, the two views are:
+
+#+begin_src sh
+uv run gmsh \
+  out/ansys_surface_inlet_default/bearing_surface_inlet_hex.cgns
+
+freecad \
+  out/ansys_surface_inlet_default/VISUAL_CONTEXT_ONLY_context_assembly.step
+#+end_src
+
 * Ported Prism6 visualization
 
 Canonical solver-eligible mesh:

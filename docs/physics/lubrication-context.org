@@ -39,9 +39,11 @@ h_\theta=R_b(z), \qquad h_z=\sqrt{1+\left(\frac{dR_b}{dz}\right)^2}
 \]
 
 A reduced Reynolds model on the developed cone must retain the changing
-circumferential length scale and the generator-length factor.  The present 3-D
-mesh instead represents the physical fluid volume directly, including the
-local disturbance introduced by the feed passage.
+circumferential length scale and the generator-length factor.  The 3-D mesh
+branches instead represent the physical fluid volume directly.  The
+full-passage Prism6 branch resolves the feed passage and its local disturbance;
+the reduced surface-inlet Hex8 branch omits that passage and applies supply
+pressure directly on the bore.
 
 The developed-surface model in [[file:../references/literature.org][the conical-bearing
 paper]] motivates the circumferential/axial parameterisation but does not
@@ -72,11 +74,19 @@ the external or hydrodynamic load direction.
 
 * Feed boundary role
 
-The external tube extension terminates in a planar circular disk beyond the
-context bushing.  This produces an unambiguous future boundary for supply
-pressure, mass flow, or velocity without treating the curved wall transition as
-the inlet.  =pressure_feed= is only a geometric/mesh role in the present stage;
-no value or solver condition is assigned.
+The project retains two different feed models:
+
+- In the [[file:../meshing/structured-hex-surface-inlet.org][surface-inlet Hex8
+  branch]], =pressure_feed= is a near-circular set of stationary-bore faces.
+  There is no feed tube, hydrostatic column, pipe-wall friction, developing
+  pipe flow, or inlet jet in the domain.
+- In the [[file:../meshing/layered-prism-central-feed.org][full-passage Prism6
+  branch]], the external tube extension terminates in a planar circular disk
+  beyond the context bushing.  The mesh resolves the drilling and tube-to-film
+  connection.
+
+Both names identify candidate supply boundaries only.  This repository does
+not assign a pressure, mass flow, velocity, or other solver condition.
 
 * Quantities not predicted here
 

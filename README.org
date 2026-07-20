@@ -1,3 +1,4 @@
+#+UPDATED_AT: [2026-07-16 Thu 19:34]
 #+TITLE: Eccentric Conical Journal Bearing
 #+SUBTITLE: Exact fluid CAD, layered volume meshes, and solver-neutral interchange
 #+STARTUP: overview
@@ -11,9 +12,15 @@ eccentric conical journal bearing with a radial central feed.  It contains:
 - exact build123d/OCCT B-rep construction of the film and feed passage;
 - native-BREP assurance inside Gmsh/OpenCASCADE;
 - a full-360 no-port structured Hex8 regression mesh;
-- a conformal central-feed layered Prism6 production mesh;
+- a film-only structured Hex8 mesh with a surface pressure-inlet patch;
+- a retained conformal central-feed layered Prism6 full-passage mesh;
 - clean MSH 4.1, MSH 2.2, and CGNS interchange from canonical NumPy arrays;
 - optional OpenFOAM and Fluent import audits.
+
+Solver meshes describe the lubricant control volume, not the metal assembly.
+Their annular centre is empty because the journal occupies that space
+physically; separately exported journal/bushing STEP solids are visual context,
+not additional fluid zones.
 
 It does not configure or run a CFD solution.  Rotation rate, lubricant model,
 supply/outlet conditions, cavitation, turbulence, thermal coupling, and solver
@@ -21,32 +28,34 @@ selection remain separate decisions.
 
 * Current state
 
-| Stage | State |
-|-------+-------|
-| Native OCCT CAD and BREP round trip | PASS |
+| Stage                                             | State                         |
+|---------------------------------------------------+-------------------------------|
+| Native OCCT CAD and BREP round trip               | PASS                          |
 | STEP exchange at =1e-6= relative-volume tolerance | FAIL at the feed intersection |
-| Gmsh OCC import, fragmentation, and SI round trip | PASS |
-| Surface-only Tri3 smoke mesh | PASS |
-| No-port structured Hex8 mesh | PASS |
-| Central-feed layered Prism6 mesh | PASS |
-| Clean MSH/CGNS static interchange | PASS |
-| Live Fluent import | NOT RUN |
-| OpenFOAM conversion | optional; tool-dependent |
+| Gmsh OCC import, fragmentation, and SI round trip | PASS                          |
+| Surface-only Tri3 smoke mesh                      | PASS                          |
+| No-port structured Hex8 mesh                      | PASS                          |
+| Surface-inlet structured Hex8 mesh                | PASS                          |
+| Central-feed layered Prism6 mesh                  | PASS                          |
+| Clean MSH/CGNS static interchange                 | PASS                          |
+| Live Fluent import                                | NOT RUN                       |
+| OpenFOAM conversion                               | optional; tool-dependent      |
 
 The STEP failure is isolated to neutral-format translation; native BREP is the
 accepted CAD handoff to the open-source mesh pipeline.
 
 * Pipeline
 
-| Stage | Entry point | Principal contract |
-|-------+-------------+--------------------|
-| CAD | [[file:bearing_film.py][bearing_film.py]] | one connected fluid B-rep plus zoned and context geometry |
-| OCC preflight | [[file:meshing/gmsh_brep_preflight.py][gmsh_brep_preflight.py]] | native geometry, conformal zone interfaces, explicit units |
-| Surface smoke | [[file:meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]] | classified first-order boundary triangulation; no volume cells |
-| Hex8 baseline | [[file:meshing/structured_hex_no_port.py][structured_hex_no_port.py]] | analytic full-360 no-feed reference |
-| Prism6 mesh | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
-| Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]] | clean MSH/CGNS files reconstructed from canonical arrays |
-| Fluent audit | [[file:interchange/fluent_import_check.py][fluent_import_check.py]] | live import, zone/count/quality checks, guarded native save |
+| Stage          | Entry point                   | Principal contract                                               |
+|----------------+-------------------------------+------------------------------------------------------------------|
+| CAD            | [[file:bearing_film.py][bearing_film.py]]               | one connected fluid B-rep plus zoned and context geometry        |
+| OCC preflight  | [[file:meshing/gmsh_brep_preflight.py][gmsh_brep_preflight.py]]        | native geometry, conformal zone interfaces, explicit units       |
+| Surface smoke  | [[file:meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]]         | classified first-order boundary triangulation; no volume cells   |
+| Hex8 baseline  | [[file:meshing/structured_hex_no_port.py][structured_hex_no_port.py]]     | analytic full-360 no-feed reference                              |
+| Surface inlet  | [[file:meshing/structured_hex_surface_inlet.py][structured_hex_surface_inlet.py]] | clustered Hex8 film with near-circular bore pressure patch and no feed tube |
+| Prism6 mesh    | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
+| Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]]      | clean MSH/CGNS files reconstructed from canonical arrays         |
+| Fluent audit   | [[file:interchange/fluent_import_check.py][fluent_import_check.py]]        | live import, zone/count/quality checks, guarded native save      |
 
 * Environment and regression
 

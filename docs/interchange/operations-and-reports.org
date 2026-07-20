@@ -126,7 +126,7 @@ but it is not the clean solver-neutral handoff artifact.
 * Workbench boundary
 
 Workbench Meshing is not expected to edit a Gmsh volume mesh.  The intended
-route is:
+route for the resolved full-passage Prism6 model is:
 
 1. import =bearing_prism.cgns= in standalone Fluent or a Fluent Setup session;
 2. complete the live audit in [[file:fluent-import-audit.org][Fluent import-only audit]];
@@ -137,6 +137,19 @@ route is:
 If Ansys Meshing must generate or edit the mesh, return to the separate
 BREP/CAD route and accept that the result will be a newly generated mesh, not
 this validated ported Prism6 connectivity.
+
+For the reduced surface-inlet Hex8 model, import
+=out/ansys_surface_inlet_default/bearing_surface_inlet_hex.cgns= through
+*Fluent Setup → File → Import → CGNS → Mesh*.  Run *Mesh Check* and require one
+=fluid= Hex8 zone plus =journal_wall=, =stationary_wall=, =pressure_feed=,
+=axial_end_z0=, and =axial_end_zL=.  The optional
+=VISUAL_CONTEXT_ONLY_context_assembly.step= is metal context for
+Workbench/SpaceClaim inspection; it must not enter the Fluent fluid zone.
+
+The current reduced-model file is =STATICALLY_VALIDATED_NOT_IMPORTED=.  Its
+five boundary groups differ intentionally from the full-passage model's six:
+there is no =feed_tube_wall= because the feed passage is outside the reduced
+domain.
 
 * Acceptance evidence from 2026-07-16
 
@@ -158,4 +171,3 @@ uv run pytest -q
 The acceptance run completed with 32 passing tests and one skipped real-Fluent
 integration test.  The skip records unavailable proprietary infrastructure;
 it is not evidence about Fluent's importer.
-

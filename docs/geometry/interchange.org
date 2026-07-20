@@ -102,11 +102,18 @@ removes stale program-generated STEP files.  The command exits nonzero and
 =params.json= says =overall: FAIL=.  This prevents a previous STEP file from
 being mistaken for output of the failed strict run.
 
+When rejected exchange files are needed for inspection, =--retain-failed-step=
+atomically writes the complete batch and =REJECTED.json= to the sibling
+=<outdir>.rejected-step/= directory.  The manifest records the strict
+round-trip measurements and hashes, sets =solve_eligible: false=, and marks the
+batch as diagnostic only.  The trusted output directory remains STEP-free.
+
 * FreeCAD inspection
 
 #+begin_src sh
 freecad out/strict_default/film_unsplit.brep
 freecad out/strict_default/film_zones.brep
+freecad out/strict_default.rejected-step/film_unsplit.step
 #+end_src
 
 The unsplit file should import as one solid; the zones file should contain

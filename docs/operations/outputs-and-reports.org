@@ -100,6 +100,61 @@ Each =nGap_XX/= directory contains:
 
 There is deliberately no feed boundary in this baseline.
 
+* Surface-inlet Hex8 family
+
+Root directory =out/structured_surface_inlet_default/=.  Its root reports
+record invariance across =nGap=; each =nGap_XX/= contains the same canonical
+Hex8/Quad4 file set as the no-port family plus:
+
+| File | Contract |
+|------+----------|
+| =physical_groups.json= | Five external boundary groups and one fluid volume; no feed-tube group. |
+| =images/pressure_feed_footprint.png= | Intended 4 mm circle overlaid with the selected bore Quad4 faces. |
+| =viz/pressure_feed_only.msh= / =.vtu= | Lightweight boundary-only inlet inspection. |
+| =viz/cutaway_exact.msh= / =.vtu= | Exact-coordinate diagnostic subset; never a solver input. |
+
+The solver-eligible volume contains only Hex8 annular-film cells.
+=pressure_feed= is a partition of the original stationary bore boundary, not
+a cylindrical fluid passage.  =mesh_report.json= records its projected area,
+actual three-dimensional area, centroid, equivalent diameter, rim topology,
+normal direction, and resolution-dependent footprint error.  The report and
+NPZ metadata also record =theta_edge_coordinates_rad=,
+=z_node_coordinates_mm=, cluster strength/power, local spacing at the feed,
+global spacing extrema, and width ratios.  These arrays are part of the
+canonical nonuniform-grid contract, not visualization settings.
+
+** Solver mesh and visual context are separate artifacts
+
+An Ansys handoff may include both a CGNS mesh and a context STEP.  They serve
+different purposes:
+
+| Artifact | Contents | Use |
+|----------+----------+-----|
+| CGNS surface-inlet mesh | one Hex8 lubricant cell zone and its named boundary-face zones | import into Fluent |
+| =VISUAL_CONTEXT_ONLY_context_assembly.step= | journal and illustrative bushing metal solids | inspect the bearing arrangement in Workbench, SpaceClaim, or FreeCAD |
+
+The context STEP is not a second representation of the fluid and must not be
+included in the Fluent fluid cell zone.  Conversely, the apparently hollow
+centre of the CGNS mesh is correct: the journal occupies that space in the
+physical assembly.  =pressure_feed= is the inlet boundary on the bore skin;
+there is deliberately no feed-tube cell zone in this reduced model.
+
+The current default =nGap_08= Ansys handoff is
+=out/bearing_surface_inlet_hex_ANSYS_HANDOFF.zip=.  It contains:
+
+| File | Role |
+|------+------|
+| =bearing_surface_inlet_hex.cgns= | solver mesh: 223488 nodes, 196608 Hex8 cells, and 53248 external Quad4 faces |
+| =VISUAL_CONTEXT_ONLY_context_assembly.step= | separate two-solid metal context |
+| =ANSYS_IMPORT.txt= | import procedure, counts, status, and CGNS hash |
+| =zones.csv= | exact physical-zone inventory |
+| =pressure_feed_footprint.png= | nominal circle versus the 390-face inlet patch |
+
+This bundle was assembled from the validated surface-inlet case; it is not yet
+produced by a repository export entry point.  Its status is
+=STATICALLY_VALIDATED_NOT_IMPORTED=.  The Gmsh/CGNS round trip is evidence for
+static transfer, not a substitute for Fluent's *Mesh Check*.
+
 * Ported Prism6 family
 
 Root directory =out/ported_prism_default/=: 

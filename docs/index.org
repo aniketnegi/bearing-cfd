@@ -1,3 +1,4 @@
+#+UPDATED_AT: [2026-07-16 Thu 19:34]
 #+TITLE: Eccentric Conical Bearing — Engineering Notebook
 #+SUBTITLE: Programmatic CAD, mesh construction, and solver-neutral transfer
 #+STARTUP: overview
@@ -5,27 +6,25 @@
 
 * Purpose
 
-This is the maintained technical map of the project.  It explains how the
-geometry and meshes are constructed, why the implementation takes its current
-form, which assertions make an artifact trustworthy, and where each idea lives
-in the source.  It assumes familiarity with Python and basic journal-bearing
-physics; it concentrates on programmatic B-rep modelling, mesh topology, data
-exchange, and solver hand-off.
+This notebook explains how the geometry and meshes are constructed.  It assumes
+familiarity with Python and basic journal-bearing physics; it concentrates on
+programmatic B-rep modelling, mesh topology, data exchange, and solver hand-off.
 
-* Current trust state
+* Current state
 
-| Stage | State | Meaning |
-|-------+-------+---------|
-| Native build123d/OCCT CAD | geometry PASS | The B-rep is valid, manifold, connected, and analytically consistent. |
-| STEP exchange | strict audit FAIL | Re-imported port-intersection volume exceeds the project's =1e-6= relative regression gate. |
-| Native BREP into Gmsh OCC | PASS | Three zones, shared interfaces, dimensions, and SI scaling survive. |
-| Boundary surface smoke mesh | PASS | A conformal first-order Tri3 skin can be generated and classified. |
-| No-port analytic Hex8 mesh | PASS | A full-360 structured reference mesh passes topology and round-trip checks. |
-| Central-feed layered Prism6 mesh | PASS | Film and tube are one conformal fluid mesh with an open internal mouth. |
-| Clean MSH/CGNS interchange | static PASS | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
-| Fluent import | not run | PyFluent/Fluent was unavailable; outputs are =STATICALLY_VALIDATED_NOT_IMPORTED=. |
-| OpenFOAM conversion | conditional | Audited when =gmshToFoam= and =checkMesh= are installed; otherwise explicitly skipped. |
-| CFD solution | not started | No viscosity, rotation, cavitation, turbulence, or boundary values are assigned here. |
+| Stage                            | State             | Meaning                                                                                     |
+|----------------------------------+-------------------+---------------------------------------------------------------------------------------------|
+| Native build123d/OCCT CAD        | geometry PASS     | The B-rep is valid, manifold, connected, and analytically consistent.                       |
+| STEP exchange                    | strict audit FAIL | Re-imported port-intersection volume exceeds the project's =1e-6= relative regression gate. |
+| Native BREP into Gmsh OCC        | PASS              | Three zones, shared interfaces, dimensions, and SI scaling survive.                         |
+| Boundary surface smoke mesh      | PASS              | A conformal first-order Tri3 skin can be generated and classified.                          |
+| No-port analytic Hex8 mesh       | PASS              | A full-360 structured reference mesh passes topology and round-trip checks.                 |
+| Surface-inlet analytic Hex8 mesh | PASS              | Clustered film-only Hex8 mesh; near-circular pressure patch and no feed column.             |
+| Central-feed layered Prism6 mesh | PASS              | Film and tube are one conformal fluid mesh with an open internal mouth.                     |
+| Clean MSH/CGNS interchange       | static PASS       | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
+| Fluent import                    | not run           | PyFluent/Fluent was unavailable; outputs are =STATICALLY_VALIDATED_NOT_IMPORTED=.           |
+| OpenFOAM conversion              | conditional       | Audited when =gmshToFoam= and =checkMesh= are installed; otherwise explicitly skipped.      |
+| CFD solution                     | not started       | No viscosity, rotation, cavitation, turbulence, or boundary values are assigned here.       |
 
 The STEP result does not invalidate the native CAD or BREP mesh path.  See
 [[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
@@ -56,6 +55,7 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - [[file:meshing/brep-preflight.org][Native BREP preflight in Gmsh OCC]]
 - [[file:meshing/surface-smoke.org][Two-dimensional surface smoke test]]
 - [[file:meshing/structured-hex-no-port.org][Structured full-360 no-port Hex8 baseline]]
+- [[file:meshing/structured-hex-surface-inlet.org][Structured Hex8 film with surface pressure inlet]]
 - [[file:meshing/layered-prism-central-feed.org][Conformal central-feed Prism6 mesh]]
 - [[file:meshing/topology-and-quality.org][Topology proofs and quality metrics]]
 
@@ -91,6 +91,7 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - Native BREP preflight: [[file:../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]]
 - Surface smoke mesh: [[file:../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]]
 - No-port Hex8 mesh: [[file:../meshing/structured_hex_no_port.py::def run_structured][run_structured]]
+- Surface-inlet Hex8 mesh: [[file:../meshing/structured_hex_surface_inlet.py::def run_surface_inlet][run_surface_inlet]]
 - Ported Prism6 mesh: [[file:../meshing/layered_prism_central_feed.py::def run_ported][run_ported]]
 - Solver-neutral export: [[file:../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
 - Live Fluent audit: [[file:../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
@@ -99,11 +100,11 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 * Scope boundary
 
 This repository currently proves geometry, mesh topology/quality, and static
-solver-neutral transfer.  Patch names describe intended physical roles, but
-they are not yet numerical CFD boundary conditions.  In particular,
-=pressure_feed= is an inlet candidate and the two axial end patches are outlet
-candidates; no pressure, flow rate, journal speed, lubricant model,
-initialization, or iteration is assigned in this stage.
+solver-neutral transfer. Patch names describe intended physical roles, but they
+are not yet numerical CFD boundary conditions. In particular, =pressure_feed= is
+an inlet candidate and the two axial end patches are outlet candidates; no
+pressure, flow rate, journal speed, lubricant model, initialization, or
+iteration is assigned in this stage.
 
 * Maintenance
 

@@ -41,13 +41,17 @@ the downstream open-source path.
 ** CAD and native BREP
 
 #+begin_src sh
-uv run python bearing_film.py --outdir out/strict_default
+uv run python bearing_film.py \
+  --outdir out/strict_default \
+  --retain-failed-step
 #+end_src
 
 The current strict report records the STEP failure and retains:
 =film_unsplit.brep=, =film_zones.brep=, =film_thickness_map.png=,
 =requirements.txt=, and =params.json=.  The nonzero exit is part of the STEP
-acceptance contract.
+acceptance contract.  Rejected exchange files are isolated in
+=out/strict_default.rejected-step/= with =solve_eligible: false=; they are for
+inspection, not downstream meshing.
 
 The second parameter case is generated independently:
 
@@ -123,6 +127,45 @@ uv run python meshing/structured_hex_no_port.py \
 
 This is a regression baseline without the feed passage.  It must not be used
 as the ported CFD domain.
+
+** Film-only Hex8 mesh with surface pressure inlet
+
+This reduced-domain model applies the supply condition directly to a
+mesh-aligned patch on the stationary bore.  It retains only annular-film Hex8
+cells, uses symmetric 5:1 through-gap inflation, clusters theta/z lines
+smoothly around the feed, and contains no feed-passage volume:
+
+#+begin_src sh
+uv run python meshing/structured_hex_surface_inlet.py \
+  --params out/strict_default/params.json \
+  --outdir out/structured_surface_inlet_default \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --gap-inflation-ratio 5 \
+  --inlet-cluster-strength 0.82 \
+  --openfoam skip --no-gui
+#+end_src
+
+The second parameter case changes only =--params= and =--outdir=:
+
+#+begin_src sh
+uv run python meshing/structured_hex_surface_inlet.py \
+  --params out/strict_case_e03_g20/params.json \
+  --outdir out/structured_surface_inlet_e03_g20 \
+  --n-theta 256 --n-axial 96 \
+  --gap-levels 4 8 12 --preview-ngap 8 \
+  --gap-inflation-ratio 5 \
+  --inlet-cluster-strength 0.82 \
+  --openfoam skip --no-gui
+#+end_src
+
+The =pressure_feed= group consists of complete outer Quad4 faces.  The report
+must pass its projected-area, connected-rim, outward-normal, and boundary
+partition checks.  The =0.82= setting is cubic coordinate clustering about
+=theta=pi= and =z=z_h=; theta/z spacing is intentionally nonuniform and remains
+conforming.  See
+[[file:../meshing/structured-hex-surface-inlet.org][Structured Hex8 film with a
+surface pressure inlet]] for the approximation and physics boundary.
 
 ** Conformal central-feed Prism6 production mesh
 

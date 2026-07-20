@@ -215,3 +215,24 @@ trust.  Derivations remain in the subsystem chapters.
 - Consequence :: =bearing_prism_imported.msh.h5= becomes a guarded promotion
   artifact and is absent from static-only outputs.
 - Evidence :: [[file:../interchange/fluent-import-audit.org][Fluent import-only audit]].
+
+* D018 — Apply supply pressure directly on the bore for the reduced film model
+
+- Status :: accepted
+- Context :: the resolved feed passage is useful when its pressure loss and jet
+  dynamics are in scope, but it also introduces a fluid column that is outside
+  the intended film-only hydrodynamic study.
+- Decision :: retain the full-passage Prism6 branch, and add a separate pure
+  Hex8 annular-film branch whose =pressure_feed= is a mesh-aligned subset of
+  the stationary bore faces.  Use symmetric 5:1 through-gap inflation and
+  smooth cubic theta/z clustering with =s=0.82= about the inlet.
+- Rejected :: delete boundary faces and leave an invalid open volume; extend
+  the tube into the gap; call Prism6 cells tetrahedra; silently reinterpret the
+  full-passage branch; globally multiply the mesh merely to resolve the
+  4 mm footprint; introduce an abrupt locally refined block.
+- Consequence :: the new domain has no feed-volume cells or hydrostatic column.
+  The inlet remains a boundary-face group, as every finite-volume opening must,
+  and its fine stair-stepped 4 mm approximation is measured explicitly.
+  Clustering preserves conforming tensor connectivity but coarsens remote cells,
+  so theta/axial convergence remains necessary.
+- Evidence :: [[file:../meshing/structured-hex-surface-inlet.org][Surface-inlet Hex8 mesh]].

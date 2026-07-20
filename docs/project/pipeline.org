@@ -22,7 +22,9 @@ Gmsh OCC import + fragmentation
       |
       +----> analytic no-port Hex8 regression baseline
       |
-      +----> analytic central-feed layered Prism6 production mesh
+      +----> analytic surface-inlet Hex8 reduced model
+      |
+      +----> analytic central-feed Prism6 full-passage model
                     |
                     v
         MSH/VTU/NPZ round trips
@@ -88,7 +90,20 @@ The feed is deliberately absent.  This gives a clean, full-360, all-Hex
 regression case for the eccentric conical film and isolates thin-film layering
 from port-junction topology.
 
-* Stage 3C: ported layered Prism6 mesh
+* Stage 3C: surface-inlet structured Hex8 mesh
+
+[[file:../../meshing/structured_hex_surface_inlet.py::def build_surface_inlet_mesh][build_surface_inlet_mesh]]
+reuses the periodic analytic Hex8 film topology, redistributes theta and axial
+coordinates around the feed location, and applies symmetric through-gap
+inflation.  A connected subset of outer bore Quad4 faces is reclassified from
+=stationary_wall= to =pressure_feed=.
+
+This is a reduced physical model, not a ported geometry: it contains no feed
+tube or drilling cells.  The central empty region seen in a skin rendering is
+the journal, which is intentionally outside the lubricant cell zone.  See
+[[file:../meshing/structured-hex-surface-inlet.org][the surface-inlet chapter]].
+
+* Stage 3D: ported layered Prism6 mesh
 
 [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]]
 uses Gmsh only to triangulate a two-dimensional unwrapped master surface.
@@ -109,6 +124,11 @@ reads the validated ported NPZ and source reports, reconstructs one clean
 discrete mesh, and writes MSH 4.1, MSH 2.2, and CGNS.  All three are reopened
 against coordinate/connectivity signatures independent of imported tag
 numbering.  Exact BC names and memberships are required inside CGNS itself.
+
+The reduced surface-inlet family has its own canonical Hex8 NPZ/MSH/VTU
+round trips.  Its current Ansys CGNS handoff is recorded separately and remains
+=STATICALLY_VALIDATED_NOT_IMPORTED= until Fluent performs the live import
+audit.
 
 This stage is documented in [[file:../interchange/index.org][Solver-neutral interchange]].
 
@@ -137,6 +157,7 @@ hash instead of trusting a filename.
 - OCC preflight: =out/gmsh_preflight/preflight_report.json=
 - Surface smoke test: =out/gmsh_surface_smoke/surface_mesh_report.json=
 - No-port mesh family: =out/structured_no_port_default/run_report.json=
+- Surface-inlet mesh family: =out/structured_surface_inlet_default/run_report.json=
 - Ported mesh family: =out/ported_prism_default/run_report.json=
 - Solver-neutral handoff: =out/interchange_default/nGap_04/interchange_report.json=
 
