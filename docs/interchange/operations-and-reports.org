@@ -138,16 +138,33 @@ If Ansys Meshing must generate or edit the mesh, return to the separate
 BREP/CAD route and accept that the result will be a newly generated mesh, not
 this validated ported Prism6 connectivity.
 
-For the reduced surface-inlet Hex8 model, import
-=out/ansys_surface_inlet_default/bearing_surface_inlet_hex.cgns= through
-*Fluent Setup → File → Import → CGNS → Mesh*.  Run *Mesh Check* and require one
+For the reduced surface-inlet Hex8 model, generate the native Fluent file from
+the canonical arrays:
+
+#+begin_src sh
+uv run python interchange/fluent_legacy_msh.py \
+  --npz out/structured_surface_inlet_default/nGap_08/mesh_arrays.npz \
+  --out out/ansys_surface_inlet_default/bearing_surface_inlet_hex_fluent.msh \
+  --report out/ansys_surface_inlet_default/fluent_native_validation.json
+#+end_src
+
+In Fluent, read =bearing_surface_inlet_hex_fluent.msh= through *File → Read →
+Mesh*.  Run *Mesh Check* and require one
 =fluid= Hex8 zone plus =journal_wall=, =stationary_wall=, =pressure_feed=,
 =axial_end_z0=, and =axial_end_zL=.  The optional
 =VISUAL_CONTEXT_ONLY_context_assembly.step= is metal context for
 Workbench/SpaceClaim inspection; it must not enter the Fluent fluid zone.
 
-The current reduced-model file is =STATICALLY_VALIDATED_NOT_IMPORTED=.  Its
-five boundary groups differ intentionally from the full-passage model's six:
+The corrected HDF5 and ADF CGNS variants both terminated Fluent 26.1 Student
+inside =CeetronSAM.dll= before =Mesh Check=.  They remain diagnostic artifacts,
+but are not the current execution path.  The native ASCII file bypasses
+Ceetron/VKI and preserves the canonical Hex8 nodes and connectivity.  Save a
+native =.msh.h5= only after *Mesh Check* passes, then use that file for parallel
+runs.
+
+The current reduced-model file is
+=STATICALLY_VALIDATED_NATIVE_MSH_FLUENT_NOT_RUN=.  Its five external boundary
+groups differ intentionally from the full-passage model's six:
 there is no =feed_tube_wall= because the feed passage is outside the reduced
 domain.
 

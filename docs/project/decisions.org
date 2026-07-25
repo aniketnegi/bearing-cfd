@@ -190,17 +190,20 @@ trust.  Derivations remain in the subsystem chapters.
   while remaining independent of CAD and solver choice.
 - Evidence :: [[file:../interchange/canonical-source.org][Canonical interchange source]].
 
-* D016 — Use Gmsh's CGNS writer and fail on boundary-definition loss
+* D016 — Use Gmsh's CGNS writer and correct surface BC locations
 
 - Status :: accepted
 - Context :: CGNS boundary names and memberships must exist in the CGNS
   hierarchy; a sidecar cannot supply BC definitions to an importer.
-- Decision :: use the pinned Gmsh build's CGNS-library writer, reopen CGNS, and
-  require one fluid zone plus six exact boundary groups and memberships.
-- Rejected :: undocumented HDF5, geometry-only CGNS with sidecar names, or a
-  second export library without a stronger contract.
+- Decision :: use the pinned Gmsh build's CGNS-library writer; change only
+  surface-element BC locations from =CellCenter= to the standard
+  =FaceCenter=; then reopen CGNS and require one fluid zone plus the exact
+  boundary groups and memberships.
+- Rejected :: a generic hand-written HDF5 exporter, geometry-only CGNS with
+  sidecar names, or a second mesh writer with parallel connectivity mapping.
 - Consequence :: name loss produces =GEOMETRY_ONLY_NOT_FLUENT_READY= and no
-  successful publication.
+  successful publication.  The correction fails unless every non-location
+  dataset remains byte-identical.
 - Evidence :: [[file:../interchange/formats-and-cgns.org][Formats and CGNS]].
 
 * D017 — Separate static transfer from live Fluent acceptance
@@ -236,3 +239,20 @@ trust.  Derivations remain in the subsystem chapters.
   Clustering preserves conforming tensor connectivity but coarsens remote cells,
   so theta/axial convergence remains necessary.
 - Evidence :: [[file:../meshing/structured-hex-surface-inlet.org][Surface-inlet Hex8 mesh]].
+
+* D019 — Bypass the failed CGNS reader with a native Fluent Hex8 file
+
+- Status :: accepted after live Fluent failure
+- Context :: corrected HDF5 and ADF CGNS files both terminated Fluent 26.1
+  Student inside =CeetronSAM.dll= before =Mesh Check=.  Switching the CGNS
+  storage backend therefore did not remove the failing reader path.
+- Decision :: for the reduced surface-inlet Hex8 branch, reconstruct Fluent's
+  native face-owner representation directly from =mesh_arrays.npz= and read it
+  through *File → Read → Mesh*.
+- Rejected :: keep retrying CGNS; rename a Gmsh MSH; use meshio's ANSYS writer,
+  which does not emit the required Fluent owner/neighbour face sections.
+- Consequence :: the nodes and Hex8 cells remain unchanged, while the live test
+  no longer enters Ceetron/VKI.  Static validation still does not become
+  =FLUENT_IMPORT_PASS= until Fluent reads, checks, and saves the native mesh.
+- Evidence :: [[file:../../interchange/fluent_legacy_msh.py][native Fluent writer]]
+  and [[file:../interchange/formats-and-cgns.org][format rationale]].

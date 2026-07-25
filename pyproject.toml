@@ -5,9 +5,13 @@ requires-python = ">=3.10,<3.14"
 dependencies = [
     "build123d==0.11.1",
     "gmsh==4.15.2",
+    "h5py==3.16.0",
     "matplotlib==3.10.7",
     "meshio==5.3.5",
     "ocp-vscode==4.0.0",
+    "scipy==1.15.3; python_full_version < '3.11'",
+    "scipy==1.17.1; python_full_version == '3.11.*'",
+    "scipy==1.18.0; python_full_version >= '3.12'",
 ]
 
 [dependency-groups]

@@ -33,16 +33,27 @@ The interchange MSH files contain only:
 physical group, this prevents unclassified elements from being exported.  The
 MSH 2.2 writer is explicitly ASCII; the 4.1 writer is binary.
 
-* Gmsh MSH is not Fluent MSH
+* Gmsh MSH and Fluent MSH are different formats
 
 The extension =.msh= identifies unrelated format families in Gmsh and Fluent.
 Renaming =bearing_prism_gmsh41.msh= to another filename does not convert its
 syntax, zone records, or connectivity representation into Fluent's native
 format.
 
-The first Fluent-native file in this workflow is
-=bearing_prism_imported.msh.h5=, and it may be written only by Fluent after a
-live import audit passes.  See [[file:fluent-import-audit.org][Fluent import-only audit]].
+For the Prism6 full-passage branch, the first Fluent-native file remains
+=bearing_prism_imported.msh.h5=, written only after a live CGNS import audit
+passes.  See [[file:fluent-import-audit.org][Fluent import-only audit]].
+
+The reduced surface-inlet Hex8 branch has a narrower direct route:
+[[file:../../interchange/fluent_legacy_msh.py][fluent_legacy_msh.py]] writes
+Fluent legacy ASCII directly from the validated canonical arrays.  It does not
+convert a Gmsh file.  It reconstructs every Quad4 face from Hex8 connectivity,
+assigns owner/neighbour cells, requires complete and disjoint external boundary
+coverage, verifies the Fluent right-hand face orientation toward =c0=, writes
+SI coordinates, and reparses the result before atomic publication.
+
+This writer intentionally supports only the existing first-order Hex8
+surface-inlet mesh.  It is not a general Fluent writer.
 
 * CGNS structures used here
 
@@ -52,6 +63,7 @@ element table.  The relevant concepts are:
 - an unstructured =Zone_t= with grid coordinates;
 - =Elements_t= sections for =PENTA_6=, =TRI_3=, and =QUAD_4= connectivity;
 - =ZoneBC_t=/family associations carrying the six boundary memberships;
+- =GridLocation=FaceCenter= for BC ranges that reference surface elements;
 - a family/group representing the single =fluid= volume;
 - no =FlowSolution_t= data.
 
@@ -67,12 +79,33 @@ The pinned Gmsh 4.15.2 build reports =Cgns= in =General.BuildInfo=.  The
 exporter refuses CGNS output if that capability is absent and calls
 =gmsh.write(...cgns)= only after building the exact physical-group model.
 
+Gmsh 4.15.2 writes BC ranges over =TRI_3=/=QUAD_4= sections with
+=GridLocation=CellCenter=.  That describes volume-cell centres, not the
+referenced surface elements, and =cgnscheck= reports those ranges as having
+invalid dimension.  [[file:../../interchange/cgns_compat.py][cgns_compat.py]]
+therefore performs one narrow post-write correction: only those discovered
+surface-BC location datasets are changed to =FaceCenter=.  CGNS defines
+=FaceCenter= for boundary faces in
+[[https://cgns.org/standard/SIDS/boundary.html][the boundary-condition SIDS]].
+
+The correction is deliberately not a second mesh writer.  It:
+
+- discovers the zone, element sections, and BC ranges from CGNS labels;
+- rejects an unexpected layout or location value;
+- writes through a same-directory temporary file and atomically replaces it;
+- hashes every other dataset before and after;
+- preserves the CGNS version, coordinates, connectivity, ranges, and names;
+- is idempotent and covered by a regression test.
+
 Reasons for using this writer:
 
 - it is a maintained CGNS-library integration, not custom HDF5;
-- it already maps Gmsh entities and physical groups into CGNS sections/BCs;
+- it maps Gmsh entities and physical groups into CGNS sections/BCs;
 - the same process can immediately reopen the file and query those definitions;
-- no new dependency or parallel element-order mapping is needed.
+- no parallel element-order mapping is needed.
+
+=h5py= is used only for the standards correction and its invariant check.
+Generic hand-written HDF5-to-CGNS output remains rejected.
 
 The Gmsh reference documents CGNS as a supported mesh format and physical
 groups as the meaningful entity collections used during export:
@@ -88,6 +121,20 @@ memberships from the CGNS reader and requires all six exact patch names plus
 If names or memberships are lost, the run fails with
 =GEOMETRY_ONLY_NOT_FLUENT_READY=.  It does not publish a sidecar claiming that
 the missing definitions “should” have been present.
+
+* Observed Fluent 26.1 CGNS failure
+
+Correcting the surface ranges to =GridLocation=FaceCenter= is a standards
+conformance fix, not proof that a proprietary reader will accept the file.
+Fluent 26.1 Student was tested with both corrected HDF5-backed and ADF-backed
+CGNS variants.  Both processes terminated in =CeetronSAM.dll= before Fluent
+reached =Mesh Check=.
+
+Because changing the CGNS storage backend did not change the failure, the
+surface-inlet handoff no longer uses CGNS as its critical path.  Read
+=bearing_surface_inlet_hex_fluent.msh= with *File → Read → Mesh*.  This invokes
+Fluent's native mesh reader rather than *File → Import → CGNS → Mesh* and its
+Ceetron/VKI dependency.
 
 * Coordinates and units
 
@@ -126,4 +173,3 @@ No pressure, velocity, material, model, initialization, or iteration data is
 attached.  The CGNS file is a mesh with zone definitions, not a Fluent case or
 a CFD solution.  The =solution_fields: 0= report field and empty Gmsh view set
 make this boundary machine-checkable.
-

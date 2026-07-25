@@ -37,6 +37,7 @@ from meshing.layered_prism_central_feed import (
     add_discrete_prism_model,
     validate_external_face_orientation,
 )
+from interchange.cgns_compat import sanitize_gmsh_cgns
 
 
 TRI_PATCHES = ("journal_wall", "bushing_bore_wall", "pressure_feed")
@@ -536,6 +537,7 @@ def write_clean_meshes(case: CanonicalCase, stage: Path, records: list[dict[str,
     build_info = gmsh.option.getString("General.BuildInfo")
     _check("Cgns" in build_info, "this official Gmsh build has no CGNS writer")
     gmsh.write(str(paths["cgns"]))
+    sanitize_gmsh_cgns(paths["cgns"], expected_surface_boundaries=len(PATCHES))
     _check(all(path.is_file() and path.stat().st_size > 0 for path in paths.values()), "an interchange mesh was not written")
     return paths
 

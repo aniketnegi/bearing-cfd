@@ -2,13 +2,19 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+import shutil
 from typing import Any
 
 import gmsh
+import h5py
 import numpy as np
 import pytest
 
 from interchange import fluent_import_check as fluent
+from interchange.cgns_compat import (
+    audit_surface_boundary_locations,
+    sanitize_gmsh_cgns,
+)
 from interchange.export_solver_neutral import (
     PATCHES,
     CanonicalCase,
@@ -100,6 +106,52 @@ def test_physical_groups_are_exact_and_mouth_is_not_a_boundary(
             gmsh.clear()
     finally:
         gmsh.finalize()
+
+
+def test_cgns_surface_boundaries_use_face_center(clean_export: dict[str, Any]) -> None:
+    audit = audit_surface_boundary_locations(
+        clean_export["outdir"] / "bearing_prism.cgns"
+    )
+    assert audit["surface_boundaries"] == len(PATCHES)
+    assert audit["face_center"] == len(PATCHES)
+    assert audit["cell_center"] == 0
+    assert audit["other"] == []
+
+
+def test_cgns_sanitizer_changes_only_surface_grid_locations(
+    clean_export: dict[str, Any], tmp_path: Path
+) -> None:
+    path = tmp_path / "gmsh-cell-center.cgns"
+    shutil.copy2(clean_export["outdir"] / "bearing_prism.cgns", path)
+    audit = audit_surface_boundary_locations(path)
+    targets = {
+        f"{record['boundary'].lstrip('/')}/GridLocation/ data"
+        for record in audit["records"]
+    }
+    assert len(targets) == len(PATCHES)
+
+    with h5py.File(path, "r+") as root:
+        for target in targets:
+            root[target][...] = np.frombuffer(b"CellCenter", dtype=np.int8)
+
+    def payloads() -> dict[str, tuple[str, tuple[int, ...], bytes]]:
+        result: dict[str, tuple[str, tuple[int, ...], bytes]] = {}
+        with h5py.File(path, "r") as root:
+            root.visititems(
+                lambda name, node: result.__setitem__(
+                    name,
+                    (node.dtype.str, node.shape, np.asarray(node[...]).tobytes()),
+                )
+                if isinstance(node, h5py.Dataset)
+                else None
+            )
+        return result
+
+    before = payloads()
+    sanitize_gmsh_cgns(path, expected_surface_boundaries=len(targets))
+    after = payloads()
+    assert before.keys() == after.keys()
+    assert {name for name in before if before[name] != after[name]} == targets
 
 
 def test_mouth_has_two_incident_cells_and_pressure_paths_exist(
