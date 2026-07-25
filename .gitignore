@@ -3,3 +3,4 @@
 .pytest_cache/
 out/
 __pycache__/
+/docs/handoff/
