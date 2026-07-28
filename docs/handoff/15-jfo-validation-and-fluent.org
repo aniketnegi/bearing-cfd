@@ -1,0 +1,274 @@
+#+title: 15 - JFO Validation Evidence and Fluent Path
+#+updated_at: [2026-07-29 Wed]
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:14-native-jfo-candidate.org][Previous: native JFO candidate]] | [[file:00-index.org][Index]]
+
+* Verdict
+
+#+begin_quote
+The shared active-set complementarity kernel is consistent with graph-read
+peaks and fronts from a published 60-cell slider comparison.  The 2000-rpm
+conical result remains an unvalidated numerical candidate because the feed
+footprint is grid-dependent, the native conical assembly has not passed an
+external solution, and the physical cavity mechanism has not been fixed as
+vapour formation or air ventilation.
+#+end_quote
+
+The reported =64.455%= is high.  It is surface area with
+=thetaFill < 1 - 1e-8=, not 64.455% vapour volume.  The lower fill thresholds
+show that the depletion is real inside the current model, but neither that
+metric nor the prescribed 101,325 Pa floor can be compared directly with
+Fluent vapour volume fraction.
+
+* Why Reynolds and why JFO
+
+| Layer | Meaning | Current role |
+|---+---+---|
+| Reynolds equation | Thin-film mass conservation and pressure equation derived under lubrication assumptions | Governing equation on the unwrapped conical film |
+| Simple rupture boundary | Clips or terminates the pressure solution where it would become nonphysical | Cheap, but generally loses mass and does not handle reformation correctly |
+| JFO conditions | Jakobsson--Floberg--Olsson mass-conserving rupture and reformation law | Declares full-film pressure cells and partially filled rupture cells |
+| Elrod--Adams/complementarity | Numerical formulations for solving Reynolds plus JFO | The current solver uses an active-set complementarity form |
+| Fluent cavitation model | 3-D liquid--vapour mass transfer derived from Rayleigh--Plesset bubble dynamics | A different physical model and an independent comparison |
+
+The Reynolds reduction is appropriate when film thickness is much smaller
+than bearing radius and length and the requested outputs are film pressure,
+load, leakage, and torque.  It avoids resolving many cells through a
+50-micrometre gap.  It is not sufficient by itself after a full-film solution
+demands negative absolute pressure.
+
+JFO was used instead of pressure clipping because it conserves lubricant mass
+through rupture and reformation.  It is not universally “better.”  Use:
+
+- thermohydrodynamic Reynolds analysis when viscosity and temperature feedback
+  matter;
+- elastohydrodynamic analysis when surface deformation matters;
+- 3-D liquid--vapour cavitation when oil phase change is the mechanism;
+- oil--air VOF or a related interface model when the open ends ventilate the
+  film.
+
+* Published graph-consistency check
+
+The automated check in
+[[file:../../tests/test_jfo_published_benchmark.py][test_jfo_published_benchmark.py]]
+reuses the production Python =solve_lcp= active-set function in the
+incompressible limit of the 60-cell sinusoidal slider comparison in Miraskari
+et al.  Their compressible Elrod result uses a 100 GPa bulk modulus and Figure
+9 compares it with Giacopini's incompressible complementarity result:
+
+| Input | Value |
+|---+---:|
+| Slider length | 125 mm |
+| Film thickness | 15 to 25 micrometres, sinusoidal |
+| Dynamic viscosity | 0.015 Pa s |
+| Sliding speed | 4 m/s |
+| Cavitation datum | =Pc=0 MPa in the paper |
+| Bulk modulus | 100 GPa in the published compressible comparison; not used in the local incompressible assembly |
+| Grid | 60 uniform cells |
+
+| End pressure | Published graph | Local result |
+|---+---+---:|
+| 0 MPa | peak approximately 5.9 MPa; rupture at =x/a approximately 0.65=; no reformation | 5.918 MPa; first cavity-cell centre 0.658; cavity reaches outlet |
+| 1 MPa | peak approximately 6.6 MPa; rupture approximately 0.65; reformation approximately 0.95 | 6.618 MPa; first and last cavity-cell centres 0.675 and 0.942 |
+
+Run it with:
+
+#+begin_src sh
+PYTHONDONTWRITEBYTECODE=1 \
+  .venv/bin/pytest -q \
+  tests/test_jfo_published_benchmark.py \
+  tests/test_reynolds_jfo.py
+#+end_src
+
+The recorded result is =3 passed=.  The assertions use broad graph-read bands;
+they do not digitize or compare the full Figure 9 pressure curves and therefore
+must not be described as a complete benchmark reproduction.
+
+This coarse check exercises the shared active-set LCP policy and its ability to
+place rupture and reformation in the expected range.  It does *not* exercise
+the conical metric, feed mask, axial boundary, transient transport, force
+integration, or native OpenFOAM matrix assembly.
+
+Primary sources:
+
+- [[https://doi.org/10.1115/1.4034244][Miraskari et al., /Journal of Tribology/ 139 (2017), 031703]];
+- [[https://doi.org/10.1115/1.4002215][Giacopini et al., /Journal of Tribology/ 132 (2010), 041702]];
+- [[https://doi.org/10.1115/1.3251669][Elrod, /Journal of Lubrication Technology/ 103 (1981), 350--354]].
+
+* Feed and grid audit
+
+The midsurface solver currently assigns the circular feed to every cell whose
+centre lies within the 2 mm radius.  That Boolean footprint changes
+discontinuously with resolution:
+
+| Grid | Feed cells | Effective area (mm2) | Error from =pi (2 mm)^2= |
+|---+---:|---:|---:|
+| 128 by 40 | 4 | 24.927 | +98.4% |
+| 192 by 60 | 4 | 11.079 | -11.8% |
+| 256 by 80 | 10 | 15.559 | +23.8% |
+| 384 by 120 | 16 | 11.079 | -11.8% |
+| 512 by 160 | 32 | 12.464 | -0.8% |
+
+The 64 by 20 native case was correctly rejected because no cell centre
+resolved the feed.  Direct, fully filled Python starts at 2000 rpm further
+show the non-monotonic response:
+
+| Grid | Steps | Cavity area | Maximum absolute pressure |
+|---+---:|---:|---:|
+| 128 by 40 | 604 | 64.485% | 17.926 MPa |
+| 192 by 60 | 972 | 66.446% | 17.143 MPa |
+| 256 by 80 | 1210 | 64.460% | 17.526 MPa |
+
+A native 512 by 160 sensitivity run in
+=out/openfoam_jfo_grid_512x160_mapped/= was initialized by mapping the
+converged 256 by 80 field, then continued at 2000 rpm until the original
+convergence gate passed after 1,452 steps, or 2.836 characteristic revolutions.
+The exact terminal summary is retained in
+[[file:media/jfo_candidate/grid_512x160_result.txt][grid_512x160_result.txt]]:
+
+| Quantity | 256 by 80 | 512 by 160 | Fine change |
+|---+---:|---:|---:|
+| Maximum absolute pressure | 17.521898 MPa | 17.358535 MPa | -0.932% |
+| Cavity area | 64.4549% | 64.2944% | -0.161 percentage point |
+| Feed flow | 4.409971e-6 m3/s | 4.431422e-6 m3/s | +0.486% |
+| Total =Fx= | 37,045.810 N | 37,031.446 N | -0.039% |
+| Total =Fy= | 50,425.411 N | 49,767.590 N | -1.305% |
+| Total =Fz= | -12,113.821 N | -12,012.649 N | -0.835% in magnitude |
+| Journal torque | -9.688458 N m | -9.690175 N m | +0.018% in magnitude |
+
+The fine sensitivity is encouraging, but it is not a formal three-grid
+convergence result.  The feed geometry does not form a consistent refinement
+family, and the coarse/intermediate sequence oscillates.  No observed order,
+Richardson extrapolation, or GCI is reported from those grids.
+
+The defensible fix is a feed boundary whose physical area and location are
+preserved during refinement, preferably a conforming or locally refined
+circular footprint.  Only after that should the project calculate GCI for
+pressure, load components, feed flow, torque, cavity area, and front position
+using [[https://doi.org/10.1115/1.2960953][the Celik et al. procedure]].
+
+* Physical-model sensitivity
+
+The current inputs set both axial ambient pressure and JFO rupture pressure to
+101,325 Pa absolute.  This imposes an ambient-pressure rupture floor and is
+consistent with an assumed ventilated interpretation.  The solver has no air
+phase, atmospheric-connectivity model, or gas transport, so it does not itself
+prove or simulate ventilation.
+
+Changing only the rupture pressure to an illustrative 0.5 Pa in the 128 by 40
+case changed cavity area from 64.485% to 53.879% and maximum absolute pressure
+from 17.926 MPa to 18.848 MPa.  This does not establish 0.5 Pa as a correct oil
+property.  It demonstrates that the predicted cavity depends materially on
+whether the model assumes an ambient-pressure rupture or an oil-vapour floor.
+
+The axial conditions also fix pressure at the rupture value while extrapolating
+fill.  This is consistent with a vented/starved-end interpretation and can
+allow the rupture region to connect to both ends, but it does not transport an
+air phase.  Flooded or oil-wetted ends require a different, explicit
+replenishment condition.
+
+* Remaining numerical acceptance gates
+
+Before presenting the conical outputs as validated:
+
+1. preserve the feed geometry across refinement and obtain monotonic
+   grid-convergence evidence;
+2. exercise the native OpenFOAM conical assembly against an exact or published
+   field, not only the Python LCP kernel;
+3. implement a separate forced, smoothly regularized diagnostic using the
+   published Reynolds--Elrod manufactured solution from
+   [[https://doi.org/10.1016/j.cma.2023.116488][Gravenkamp, Pfeil, and Codina]]
+   and its [[https://doi.org/10.5281/zenodo.8315789][forcing data]], then measure
+   the local observed order; the paper's second-order result belongs to its
+   stabilized FEM, while its artificial-diffusion scheme is first order and is
+   the relevant initial expectation for this upwind FVM;
+4. report local control-volume imbalance as well as global flow imbalance;
+5. report pressure, fill, and normalized complementarity residual bounds;
+6. declare and test flooded versus vented ends, feed representation, rupture
+   pressure, initial fill, and continuation sensitivity;
+7. compare pressure profiles, fronts, load, flow, and torque with independent
+   numerical or experimental data—not only one peak-pressure scalar.
+
+For every accepted field require:
+
+\[
+p-p_\mathrm{cav}\ge0,\qquad 0\le\theta\le1,\qquad
+(p-p_\mathrm{cav})(1-\theta)=0,
+\]
+
+plus conservative flux balance and stable integrated outputs.
+
+* How to run the final Fluent comparison
+
+** Near-term defensible route: independent 3-D physical model
+
+Do not call Fluent's built-in cavitation model “the same JFO calculation.”
+Ansys documents Schnerr--Sauer and Zwart--Gerber--Belamri as liquid--vapour
+mass-transfer models based on Rayleigh--Plesset bubble dynamics:
+[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_th/flu_th_sec_multiphase_cavitation.html][Fluent cavitation theory]].
+
+Use the statically audited 3-D film/feed mesh only after it passes a live
+Fluent import, Mesh Check, and Report Quality audit, then:
+
+1. run double precision and converge the single-liquid case first;
+2. set pressure values unambiguously:
+
+   | Fluent operating pressure | Pressure-inlet Gauge Total Pressure | Pressure-outlet Gauge Pressure |
+   |---+---:|---:|
+   | 0 Pa | 601,325 Pa | 101,325 Pa |
+   | 101,325 Pa | 500,000 Pa gauge | 0 Pa gauge |
+
+   Both rows implement this project's adopted convention: supply is 0.5 MPa
+   *above atmosphere*.  The source paper states only =Ps=0.5 MPa= and does not
+   identify its pressure reference, so gauge must not be presented as
+   paper-confirmed.  Fluent's definition is
+   [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][absolute pressure = operating pressure + gauge pressure]].
+   A Fluent pressure inlet specifies total pressure, whereas the JFO feed cells
+   are fixed at static pressure.  That boundary-model mismatch must be reported,
+   especially for a surface feed without a resolved passage.
+3. decide the mechanism before selecting phases:
+   - for vapour cavitation, use liquid oil plus its vapour, with measured
+     vapour pressure, density, viscosity, and operating temperature;
+   - for atmospheric air ingestion, use an oil--air interface model; do not use
+     oil vapour properties to imitate ventilation;
+4. for vapour cavitation, start with Mixture plus Schnerr--Sauer, then use
+   Zwart as a model-form sensitivity; use pressure-based coupled pressure--
+   velocity treatment and PRESTO as recommended by the Fluent theory guide;
+5. start with robust first-order numerics, then require the reported quantities
+   to remain stable after switching to the selected higher-order scheme;
+6. use a transient calculation if the multiphase field does not settle to a
+   true steady state.
+
+Monitor and save:
+
+- global minimum and maximum *absolute* static pressure and their locations;
+- inlet and both outlet mass flow rates and imbalance;
+- vapour volume and thresholded vapour footprint, or air volume for the
+  ventilation model;
+- journal force components, moment/torque, and pressure profiles;
+- residual histories and time histories of all integrated quantities;
+- mesh and timestep/iteration sensitivity.
+
+The global minimum need not equal vapour pressure exactly; local numerical
+undershoot is possible.  Acceptance comes from bounded, mesh-stable fields and
+mass/quantity histories, not from forcing the monitor to land on one number.
+
+** Exact JFO parity inside Fluent: separate solver development
+
+A =DEFINE_CAVITATION_RATE= or =DEFINE_MASS_TRANSFER= UDF changes phase mass
+transfer; it does not replace Fluent's pressure equation with the JFO
+complementarity system.  Exact parity would require a custom unwrapped
+two-dimensional UDS/UDF implementation for pressure/fill, including anisotropic
+diffusion, conservative Couette flux, feed constraints, transient storage,
+active-set or equivalent complementarity enforcement, and its own benchmark
+suite.  Fluent supports custom scalar transport ingredients through
+[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_ug_uds.html][user-defined scalars]],
+but this is a solver project, not a model-panel setting.
+
+For the final thesis comparison, the shorter defensible route is to keep
+OpenFOAM Reynolds/JFO as the reduced film model and Fluent as an independently
+validated 3-D vapour or air-ingestion model.  Compare only quantities that mean
+the same thing in both.
+
+[[file:14-native-jfo-candidate.org][Previous: native JFO candidate]] | [[file:00-index.org][Index]]

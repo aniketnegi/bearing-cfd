@@ -60,10 +60,12 @@ The earlier Fluent S100 solve log is rejected divergence evidence, not a
 canonical import-pass result.  At 20 rpm the OpenFOAM branch remains
 single-liquid and passes its acceptance gates; the 20.2-rpm update crossed the
 configured =pSat= threshold and was stopped before being treated as cavitation.
-The later native Reynolds/JFO midsurface application reaches 2000 rpm, but its
-64.455% severe rupture region has not passed an external benchmark or a
-three-grid study.  It is preserved for validation, not reported as trusted
-bearing performance.
+The later native Reynolds/JFO midsurface application reaches 2000 rpm.  Its
+active-set kernel is consistent with graph-read peaks and fronts from a
+published 60-cell slider comparison, but the conical model's feed footprint is
+grid-dependent and its 64.455% severe rupture region has not passed full-model
+verification.  It is preserved for validation, not reported as trusted bearing
+performance.
 
 * Pipeline
 
@@ -98,6 +100,7 @@ Production commands and output contracts are maintained in
 - [[file:docs/meshing/index.org][Mesh construction and topology]]
 - [[file:docs/interchange/index.org][Solver-neutral interchange]]
 - [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]
+- [[file:docs/handoff/15-jfo-validation-and-fluent.org][JFO validation and Fluent path]]
 - [[file:docs/project/decisions.org][Decision register]]
 - [[file:docs/references/literature.org][Literature]]
 

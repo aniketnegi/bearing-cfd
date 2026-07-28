@@ -26,8 +26,34 @@ Reynolds-equation convention is
 \]
 
 Signs and numerical factors depend on coordinate and wall-velocity conventions.
-The equation is context for the bearing physics, not an equation solved by this
-repository.
+The 3-D mesh pipeline does not solve this equation.  The later
+[[file:../handoff/14-native-jfo-candidate.org][native midsurface application]]
+does solve its conservative conical Reynolds counterpart.
+
+* Reynolds equation versus JFO
+
+These names describe different layers, not competing equations:
+
+- The *Reynolds equation* is the thin-film pressure/mass-conservation governing
+  equation obtained from Navier--Stokes under lubrication assumptions.
+- A plain Reynolds solve still needs a rupture condition when its diverging
+  wedge would otherwise produce nonphysical negative absolute pressure.
+- *JFO* (Jakobsson--Floberg--Olsson) supplies the mass-conserving rupture and
+  reformation conditions.  Full-film cells carry pressure with liquid fill
+  =theta=1=; ruptured cells remain at the declared rupture pressure and
+  transport =0 <= theta < 1=.
+- *Elrod--Adams* and complementarity methods are practical numerical
+  formulations used to solve the Reynolds equation subject to JFO conditions.
+
+Thus the current reduced model is “Reynolds plus JFO,” implemented as an
+active-set complementarity problem.  JFO was selected because the plain
+single-liquid calculation demanded impossible negative absolute pressure and
+because clipping that pressure would lose mass.  It is not automatically the
+best physical model: thermohydrodynamic or elastohydrodynamic Reynolds models
+are needed when temperature or deformation matters; a 3-D liquid--vapour model
+is needed for phase change; and an oil--air interface model is needed when an
+open bearing ingests air.  The declared mechanism decides which comparison is
+meaningful.
 
 * Conical surface coordinates
 

@@ -1,0 +1,21 @@
+Native OpenFOAM JFO 512x160 sensitivity ledger
+Date: 2026-07-29
+
+Generated case:
+  out/openfoam_jfo_grid_512x160_mapped
+
+Initialization:
+  source case: out/openfoam_jfo_native_256x80
+  source time: 17.261090445375 (converged 256x80, 2000 rpm)
+  target time: 0
+  mapping: mapFields -consistent -sourceTime latestTime
+
+Target:
+  512 circumferential x 160 axial cells
+  32 feed cells
+  rpm: 2000
+  deltaT: 0.0001171875 s
+
+Converged at step 1452 after 2.8359375 characteristic revolutions.
+
+JFO_RESULT converged=true accepted=true rpm=2000 pAbsMin=101325 pAbsMax=17358535.0741 pAbsMaxOverFeedGauge=34.7170701483 pGaugeMaxOverFeedGauge=34.5144201483 thetaMin=0.255444816618 thetaMean=0.63572267231 cavityAreaFraction=0.642943670605 feedIn=4.43142178391e-06 axialZ0Out=2.4120343677e-06 axialZLOut=2.01938817402e-06 netOut=7.57804385784e-13 relativeImbalance=1.71007025092e-07 pressureForce=(37124.2486094 49730.4135403 -12012.6490865) viscousForce=(-92.8025858994 37.1763590988 0) totalForce=(37031.4460235 49767.5898994 -12012.6490865) journalTorque=-9.69017504544 pressureError=1.17263270845e-09 fillError=9.59495227715e-09 maxActiveIterations=7

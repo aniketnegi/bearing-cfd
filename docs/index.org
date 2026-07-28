@@ -32,7 +32,7 @@ handoff.
 | 200-rpm liquid-only diagnostic   | rejected          | It drives pressure below absolute vacuum and demonstrates missing rupture physics.           |
 | Zero-bias liquid continuation    | accepted to 20 rpm | The 0, 1, 5, 10, 12, 14, 15, and 20-rpm checkpoints remain bounded and single-liquid.       |
 | First 20-to-50-rpm update        | guarded stop      | At 20.2 rpm, ~p_min=-0.177 Pa < pSat=0.5 Pa~; this is a threshold bracket, not cavitation.    |
-| Native Reynolds/JFO result       | unvalidated candidate | It reaches 2000 rpm but predicts a severe 64.455% rupture region; external benchmark and three-grid evidence are missing. |
+| Native Reynolds/JFO result       | unvalidated candidate | Its active-set kernel passes a coarse published graph-consistency check, but the conical feed mask is grid-dependent and the severe 64.455% rupture region is not physically validated. |
 
 The STEP result does not invalidate the native CAD or BREP mesh path.  See
 [[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
@@ -94,6 +94,7 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - [[file:handoff/12-five-rpm-jump-diagnosis.org][Direct-jump diagnosis and accepted native ramp]]
 - [[file:handoff/13-guarded-2000rpm-ramp.org][Accepted 20-rpm point and guarded 20.2-rpm stop]]
 - [[file:handoff/14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate and validation blockers]]
+- [[file:handoff/15-jfo-validation-and-fluent.org][Published JFO benchmark, numerical audit, and Fluent path]]
 
 ** Rationale and provenance
 

@@ -5,8 +5,9 @@
 * Project literature index
 
 The parent BTP survey is maintained in
-[[file:../../../../docs/papers_sorted/index.org][=docs/papers_sorted/index.org=]].  This project uses one local conical-bearing paper
-as limited geometric and thin-film-method context.
+[[file:../../../../docs/papers_sorted/index.org][=docs/papers_sorted/index.org=]].
+This project uses the local conical-bearing paper for a narrow model comparison
+and primary lubrication papers for JFO code verification.
 
 * Gangrade, Phalle, and Mantha
 
@@ -30,6 +31,47 @@ native-BREP assurance, or Tri3-to-Prism6 construction; those are local design
 decisions implemented in
 [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][the local master-surface construction]] and
 [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][explicit Prism6 construction]].
+
+* JFO and complementarity verification
+
+- Elrod, “A Cavitation Algorithm,” /Journal of Lubrication Technology/ 103
+  (1981), 350--354:
+  [[https://doi.org/10.1115/1.3251669][10.1115/1.3251669]].
+- Giacopini et al., “A Mass-Conserving Complementarity Formulation to Study
+  Lubricant Films in the Presence of Cavitation,” /Journal of Tribology/ 132
+  (2010), 041702:
+  [[https://doi.org/10.1115/1.4002215][10.1115/1.4002215]].
+- Miraskari et al., “A Robust Modification to the Universal Cavitation
+  Algorithm in Journal Bearings,” /Journal of Tribology/ 139 (2017), 031703:
+  [[https://doi.org/10.1115/1.4034244][10.1115/1.4034244]].
+
+The local automated test checks broad graph-read bands around the 60-cell
+sinusoidal slider peaks and rupture/reformation locations shown by Miraskari et
+al.  Their compressible Elrod calculation uses a 100 GPa bulk modulus and is
+compared with Giacopini's incompressible LCP; the local test directly assembles
+that incompressible limit.  This is a coarse check of the shared active-set
+kernel, not a digitized pressure-profile comparison or validation of the
+conical model.  Exact inputs and results are recorded in
+[[file:../handoff/15-jfo-validation-and-fluent.org][JFO validation and Fluent path]].
+
+* Manufactured solution and grid convergence
+
+Gravenkamp, Pfeil, and Codina publish a Reynolds--Elrod manufactured solution
+and its forcing data:
+
+- paper:
+  [[https://doi.org/10.1016/j.cma.2023.116488][10.1016/j.cma.2023.116488]];
+- code/data:
+  [[https://doi.org/10.5281/zenodo.8315789][10.5281/zenodo.8315789]].
+
+Reusing it requires a separate diagnostic mode with the published smooth
+regularization and forcing.  The paper's second-order result applies to its
+stabilized linear finite elements; its artificial-diffusion result is first
+order, which is the relevant initial expectation for the current upwind finite
+volume scheme.  The local observed order must still be measured.  Grid
+convergence must then follow the procedure of Celik et al.,
+[[https://doi.org/10.1115/1.2960953][10.1115/1.2960953]], after the physical feed
+footprint is made consistent across refinements.
 
 * Clearance terminology
 

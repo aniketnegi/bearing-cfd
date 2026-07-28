@@ -66,7 +66,7 @@ Contract implementation:
 | 200-rpm single-liquid run and exploratory pressure-fed cavitation runs | REJECTED | Retain as failure evidence; do not report as bearing performance. |
 | Zero-bias OpenFOAM continuation | ACCEPTED THROUGH 20 RPM | Checkpoints remain bounded, conservative, and single-liquid through the accepted 20-rpm hold. |
 | First 20-to-50-rpm update | SATURATION_THRESHOLD at 20.2 rpm | The configured =pSat= threshold was crossed before cavity evolution; no two-phase result is accepted. |
-| Native Reynolds/JFO continuation | UNVALIDATED CANDIDATE | Source, checkpoints, and diagnostics are preserved, but the severe 64.455% rupture footprint has not passed an external benchmark or three-grid study. |
+| Native Reynolds/JFO continuation | UNVALIDATED CANDIDATE | The active-set kernel passes a coarse published graph-consistency check; the conical feed representation, native assembly, grid convergence, and physical cavity interpretation remain unvalidated. |
 
 The canonical mesh reports and the downstream CFD cases are separate evidence
 families.  A skipped optional audit in an older mesh report does not erase the
@@ -105,6 +105,18 @@ second application of =0.001= is detectable.
 - OpenFOAM Foundation source guide: [[https://cpp.openfoam.org/v13/dir_70ca48d6efc076aae6c126917cb7ccc1.html][=gmshToFoam= reference]];
 - publisher DOI record for the local paper:
   [[https://doi.org/10.1007/s40997-018-0217-2][10.1007/s40997-018-0217-2]].
+- published complementarity benchmark:
+  [[https://doi.org/10.1115/1.4034244][Miraskari et al. 2017]] and
+  [[https://doi.org/10.1115/1.4002215][Giacopini et al. 2010]];
+- Reynolds--Elrod manufactured solution and open forcing data:
+  [[https://doi.org/10.1016/j.cma.2023.116488][Gravenkamp et al. 2024]] and
+  [[https://doi.org/10.5281/zenodo.8315789][Zenodo 8315789]];
+- primary grid-convergence procedure:
+  [[https://doi.org/10.1115/1.2960953][Celik et al. 2008]];
+- Ansys Fluent theory for
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_th/flu_th_sec_multiphase_cavitation.html][liquid--vapour cavitation]]
+  and
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][operating versus absolute pressure]].
 
 These references explain software APIs or literature context; local validation
 records establish this project's numerical acceptance.

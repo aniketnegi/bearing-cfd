@@ -47,12 +47,12 @@ is the only energy source.  None of the inspected papers established a
 
 * Values used
 
-| Quantity | Paper value used here | OpenFOAM value |
+| Quantity | Paper value or declared convention | OpenFOAM value |
 |---+---:|---:|
 | Density | 860 kg/m3 | =rho = 860= |
 | Dynamic viscosity | 0.0277 Pa.s | converted to =nu= |
 | Kinematic viscosity | derived | 3.22093023256e-5 m2/s |
-| Feed pressure | 0.5 MPa gauge | 581.395348837 m2/s2 kinematic gauge |
+| Feed pressure | paper: 0.5 MPa, reference unspecified; project: 0.5 MPa gauge | 581.395348837 m2/s2 kinematic gauge |
 | Axial-end pressure | atmosphere | 0 m2/s2 gauge |
 | Mean radius | 50 mm | mesh geometry |
 | Radial clearance ratio | 0.001 | 50 micrometres at 50 mm |
@@ -109,7 +109,7 @@ with the same incomplete model.
 
 The following pressure choices describe the old pressure-driven baseline:
 
-- =pressure_feed=: 0.5 MPa gauge pressure.
+- =pressure_feed=: 0.5 MPa gauge pressure as a declared project convention.
 - =axial_end_z0= and =axial_end_zL=: atmospheric pressure, or zero gauge.
 - =journal_wall=: rotating no-slip wall about +Z and origin
   =(0,-3e-5,0)= m.

@@ -2,7 +2,7 @@
 #+OPTIONS: toc:nil num:nil
 #+STARTUP: content
 
-- [[file:literature.org][Literature]] :: the local conical-bearing paper, its DOI, and the narrow
-  claims it supports.
+- [[file:literature.org][Literature]] :: the conical-bearing comparison and primary JFO
+  verification sources, with the narrow claims each supports.
 - [[file:software.org][Software]] :: pinned environment, official manuals, and tool roles.
 - [[file:provenance.org][Provenance]] :: data lineage, hashes, stage status, and external links.

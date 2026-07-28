@@ -29,7 +29,7 @@ The short conclusion is:
 | First 20-to-50-rpm ramp update | guarded stop | At 20.2 rpm, ~p_min=-0.177 Pa < pSat~; this brackets the schedule-dependent saturation threshold but is not yet a cavity solution |
 | Direct 10 to 15 rpm restart | rejected diagnostic | The discontinuous wall-speed update briefly crosses =pSat= and triggers a runaway phase/pressure feedback |
 | Native 10 to 15 rpm =omega= ramp | accepted diagnostic | The same target speed is reached with Schnerr-Sauer active, =alpha.oil= equal to one, and clean continuity |
-| Native Reynolds/JFO midsurface model through 2000 rpm | *unvalidated candidate* | The model converges and conserves its own discrete flow, but its 64.455% severe rupture region has not passed an external JFO benchmark or a three-grid study |
+| Native Reynolds/JFO midsurface model through 2000 rpm | *unvalidated candidate* | Its active-set kernel passes a coarse published graph-consistency check, but the full conical model has a grid-dependent feed mask and its 64.455% severe rupture region is not physically validated |
 
 The 200 rpm failure is useful evidence.  Rotation creates a low-pressure
 diverging-film region.  A liquid-only CFD model tries to continue that
@@ -59,6 +59,7 @@ continuous =omega= function followed by a constant-speed hold.
 12. [[file:12-five-rpm-jump-diagnosis.org][Five-rpm jump diagnosis]] -- controlled experiments that isolate the direct-jump failure and the native-ramp solution.
 13. [[file:13-guarded-2000rpm-ramp.org][Guarded ramp automation]] -- one command that continues toward the paper speeds, holds for convergence, and stops at the first unvalidated phase onset.
 14. [[file:14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate]] -- converged high-speed candidate, severe-cavity warning, narrow paper comparison, and validation blockers.
+15. [[file:15-jfo-validation-and-fluent.org][JFO validation and Fluent path]] -- published kernel benchmark, grid/feed audit, remaining numerical gates, and the separate Fluent vapour-or-air model.
 
 * Evidence locations
 
@@ -84,8 +85,9 @@ continuous =omega= function followed by a constant-speed hold.
 - *Rejected* means it is retained as evidence of a failure mode and must not
   be reported as bearing performance.
 - *Unvalidated candidate* means numerical checks passed inside the current
-  implementation, but external benchmark and grid-convergence evidence are
-  still missing.  It must not be promoted to a validated physical result.
+  implementation, but full-model external verification and valid
+  grid-convergence evidence are still missing.  It must not be promoted to a
+  validated physical result.
 
 * Version-control boundary
 

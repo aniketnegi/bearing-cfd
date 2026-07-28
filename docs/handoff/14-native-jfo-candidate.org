@@ -2,7 +2,7 @@
 #+startup: overview
 #+options: toc:2 num:nil
 
-[[file:13-guarded-2000rpm-ramp.org][Previous: guarded 3-D ramp]] | [[file:00-index.org][Index]]
+[[file:13-guarded-2000rpm-ramp.org][Previous: guarded 3-D ramp]] | [[file:00-index.org][Index]] | [[file:15-jfo-validation-and-fluent.org][Next: validation and Fluent path]]
 
 * Status
 
@@ -33,6 +33,7 @@ choices, and active-set policy.
 | [[file:../../openfoam/check_jfoBearingFoam.sh][check_jfoBearingFoam.sh]] | build plus zero-speed acceptance check |
 | [[file:../../reynolds_jfo.py][reynolds_jfo.py]] | separate Python/SciPy implementation of the same model |
 | [[file:../../tests/test_reynolds_jfo.py][test_reynolds_jfo.py]] | current minimal regression checks |
+| [[file:../../tests/test_jfo_published_benchmark.py][test_jfo_published_benchmark.py]] | published 1-D graph-consistency check for the complementarity kernel |
 | =out/openfoam_jfo_native_256x80/= | ignored generated case, checkpoints, result ledger, and VTK |
 
 The source case uses:
@@ -104,10 +105,14 @@ diverging film, and =thetaMin= being close to the geometric
 Neither observation proves that this discretization, feed treatment, or
 reformation boundary is correct.
 
-The result remains blocked from engineering use until all of these pass:
+The shared Python active-set kernel is now consistent with graph-read pressure
+peaks and fronts from the published sinusoidal slider comparison described in
+the next handoff chapter.  This is a coarse code-verification check for one
+kernel, not validation of this conical result.  The candidate remains blocked
+from engineering use until the remaining checks pass:
 
-1. a published mass-conserving JFO/Elrod--Adams benchmark with known pressure,
-   rupture, and reformation results;
+1. an equivalent published benchmark exercised through the native OpenFOAM
+   assembly, not only the shared Python active-set function;
 2. manufactured full-film solutions that isolate the transformed conical
    diffusion and Couette terms;
 3. a minimum three-grid convergence study for pressure, load, flow, rupture
@@ -163,4 +168,8 @@ complementarity law.  A final Fluent run must therefore be labelled as one of:
 The first option is the defensible near-term comparison.  The second is a
 solver-development project, not a settings translation.
 
-[[file:13-guarded-2000rpm-ramp.org][Previous: guarded 3-D ramp]] | [[file:00-index.org][Index]]
+See [[file:15-jfo-validation-and-fluent.org][Validation evidence and the Fluent
+path]] for the benchmark, grid audit, pressure convention, and exact distinction
+between vapour cavitation and air-connected film rupture.
+
+[[file:13-guarded-2000rpm-ramp.org][Previous: guarded 3-D ramp]] | [[file:00-index.org][Index]] | [[file:15-jfo-validation-and-fluent.org][Next: validation and Fluent path]]

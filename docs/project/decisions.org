@@ -264,15 +264,19 @@ trust.  Derivations remain in the subsystem chapters.
 
 - Status :: accepted evidence boundary
 - Context :: the native OpenFOAM Reynolds/JFO application converges to 2000
-  rpm and agrees with a second implementation, but both implementations encode
-  the same equations and predict a severe 64.455% rupture region.
+  rpm and agrees with a second implementation.  The shared active-set kernel
+  also passes a coarse graph-consistency check against a published 60-cell
+  slider comparison, but the full implementations encode the same conical
+  equations and their cell-centre feed footprint changes discontinuously with
+  grid resolution.
 - Decision :: preserve source, checkpoints, plots, and diagnostics while
-  withholding physical validation until a published JFO benchmark,
-  manufactured-solution checks, local conservation, and a three-grid study
-  pass.
+  withholding physical validation until the native assembly passes external or
+  manufactured checks, the feed geometry is grid-controlled, local
+  conservation is measured, and a valid grid study passes.
 - Rejected :: call internal convergence, global balance, Python/C++ agreement,
-  or one maximum-pressure match to the paper a validation of cavity fraction,
-  load, flow, or torque.
+  one kernel benchmark, or one maximum-pressure match to the paper a validation
+  of cavity fraction, load, flow, or torque.
 - Consequence :: Fluent is an independent model comparison unless a separately
   verified UDF implements the same pressure--fill complementarity law.
-- Evidence :: [[file:../handoff/14-native-jfo-candidate.org][Native JFO candidate]].
+- Evidence :: [[file:../handoff/14-native-jfo-candidate.org][Native JFO candidate]]
+  and [[file:../handoff/15-jfo-validation-and-fluent.org][validation and Fluent path]].
