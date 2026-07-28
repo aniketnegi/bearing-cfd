@@ -242,6 +242,42 @@ def test_production_master_counts_interfaces_and_far_field(
     assert not master.quads.flags.writeable
 
 
+def test_quality_optimized_ogrid_uses_circular_control_and_wide_support() -> None:
+    params, inlet = _geometry()
+    master = body_fitted.build_ogrid_master(
+        params,
+        inlet,
+        32,
+        1,
+        1,
+        n_theta=512,
+        n_axial=96,
+        quality_optimized=True,
+    )
+    records: list[dict] = []
+    body_fitted.validate_master_mesh(master, params, inlet, records)
+    control = master.points_mm[
+        body_fitted._indices_for_tags(
+            master.node_tags, master.control_loop_node_tags
+        )
+    ]
+
+    assert all(record["status"] == "PASS" for record in records)
+    assert len(master.quads) == 512 * 96 + 64
+    assert int(master.pressure_mask.sum()) == 96
+    assert master.metadata["quality_optimized"] is True
+    assert master.metadata["support_size_cells"] == [16, 16]
+    assert master.metadata["central_square_corner_radius_mm"] == pytest.approx(
+        0.9 * master.metadata["effective_radius_mm"]
+    )
+    np.testing.assert_allclose(
+        np.hypot(control[:, 0], control[:, 2] - inlet.axial_position_mm),
+        1.4 * master.metadata["effective_radius_mm"],
+        rtol=0.0,
+        atol=1.0e-12,
+    )
+
+
 @pytest.mark.parametrize(
     ("mode", "nominal"), [("inscribed", 1), ("equal-area", 0)]
 )

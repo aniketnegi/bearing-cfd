@@ -48,6 +48,7 @@ class FluentLegacyMeshError(RuntimeError):
 class FluentLegacyMesh:
     points_m: np.ndarray
     hexes: np.ndarray
+    cell_centres_m: np.ndarray
     faces: np.ndarray
     c0: np.ndarray
     c1: np.ndarray
@@ -68,11 +69,18 @@ def _require(condition: bool, message: str) -> None:
         raise FluentLegacyMeshError(message)
 
 
-def _load_canonical(path: Path) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
+def _load_canonical(
+    path: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, dict[str, np.ndarray]]:
     try:
         with np.load(path, allow_pickle=False) as archive:
             points = np.asarray(archive["points_m"], dtype=np.float64)
             hexes = np.asarray(archive["hexes"], dtype=np.uint64)
+            cell_centres = (
+                np.asarray(archive["cell_centres_m"], dtype=np.float64)
+                if "cell_centres_m" in archive
+                else None
+            )
             node_tags = np.asarray(archive["node_tags"], dtype=np.uint64)
             cell_tags = np.asarray(archive["cell_tags"], dtype=np.uint64)
             boundaries = {
@@ -96,6 +104,15 @@ def _load_canonical(path: Path) -> tuple[np.ndarray, np.ndarray, dict[str, np.nd
         "cell_tags must be contiguous and one-based",
     )
     _require(int(hexes.min()) >= 1 and int(hexes.max()) <= len(points), "Hex8 node tag out of range")
+    if cell_centres is not None:
+        _require(
+            cell_centres.shape == (len(hexes), 3),
+            "cell_centres_m must have shape [M,3]",
+        )
+        _require(
+            np.all(np.isfinite(cell_centres)),
+            "cell centres contain NaN or Inf",
+        )
     for name, quads in boundaries.items():
         _require(quads.ndim == 2 and quads.shape[1] == 4, f"boundary_{name} must have shape [F,4]")
         _require(len(quads) > 0, f"boundary_{name} is empty")
@@ -103,7 +120,149 @@ def _load_canonical(path: Path) -> tuple[np.ndarray, np.ndarray, dict[str, np.nd
             int(quads.min()) >= 1 and int(quads.max()) <= len(points),
             f"boundary_{name} node tag out of range",
         )
-    return points, hexes, boundaries
+    return points, hexes, cell_centres, boundaries
+
+
+def _quad_geometry(vertices: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    average = vertices.mean(axis=1)
+    following = np.roll(vertices, -1, axis=1)
+    triangles_twice = np.cross(
+        following - vertices,
+        average[:, None, :] - vertices,
+    )
+    summed = triangles_twice.sum(axis=1)
+    norm = np.linalg.norm(summed, axis=1)
+    _require(np.all(norm > 0.0), "degenerate quadrilateral face")
+    normal = summed / norm[:, None]
+    weights = np.einsum("mfc,mc->mf", triangles_twice, normal)
+    weight_sum = weights.sum(axis=1)
+    _require(np.all(weight_sum > 0.0), "inconsistent quadrilateral winding")
+    centre = (
+        weights[:, :, None]
+        * (vertices + following + average[:, None, :])
+    ).sum(axis=1) / (3.0 * weight_sum[:, None])
+    return centre, 0.5 * summed
+
+
+def _volume_centres(
+    points: np.ndarray,
+    hexes: np.ndarray,
+    chunk_size: int = 50_000,
+) -> np.ndarray:
+    centres = np.empty((len(hexes), 3), dtype=np.float64)
+    for start in range(0, len(hexes), chunk_size):
+        stop = min(start + chunk_size, len(hexes))
+        cell_points = points[hexes[start:stop].astype(np.int64) - 1]
+        face_centres = np.empty((stop - start, 6, 3), dtype=np.float64)
+        face_areas = np.empty_like(face_centres)
+        for face_index, local_face in enumerate(HEX_FACES_INWARD):
+            face_centres[:, face_index], face_areas[:, face_index] = (
+                _quad_geometry(cell_points[:, local_face])
+            )
+        estimate = face_centres.mean(axis=1)
+        pyramid_three = np.einsum(
+            "mfc,mfc->mf",
+            face_areas,
+            estimate[:, None, :] - face_centres,
+        )
+        _require(
+            np.all(pyramid_three > 0.0),
+            "a Hex8 cell has a nonpositive face pyramid",
+        )
+        centres[start:stop] = (
+            pyramid_three[:, :, None]
+            * (0.75 * face_centres + 0.25 * estimate[:, None, :])
+        ).sum(axis=1) / pyramid_three.sum(axis=1)[:, None]
+    return centres
+
+
+def orthogonal_quality(
+    mesh: FluentLegacyMesh,
+    chunk_size: int = 100_000,
+) -> np.ndarray:
+    """Return Fluent's face-normal/cell-centroid Orthogonal Quality per cell."""
+    quality = np.ones(len(mesh.hexes), dtype=np.float64)
+    for start in range(0, len(mesh.faces), chunk_size):
+        stop = min(start + chunk_size, len(mesh.faces))
+        vertices = mesh.points_m[
+            mesh.faces[start:stop].astype(np.int64) - 1
+        ]
+        face_centres, area = _quad_geometry(vertices)
+        area_norm = np.linalg.norm(area, axis=1)
+        c0 = mesh.c0[start:stop] - 1
+        c1_tags = mesh.c1[start:stop]
+
+        c0_vector = mesh.cell_centres_m[c0] - face_centres
+        c0_quality = np.einsum(
+            "ij,ij->i", area, c0_vector
+        ) / (area_norm * np.linalg.norm(c0_vector, axis=1))
+        face_quality_c0 = c0_quality.copy()
+
+        internal = c1_tags > 0
+        if np.any(internal):
+            c1 = c1_tags[internal] - 1
+            centre_vector = (
+                mesh.cell_centres_m[c0[internal]]
+                - mesh.cell_centres_m[c1]
+            )
+            centre_quality = np.einsum(
+                "ij,ij->i", area[internal], centre_vector
+            ) / (
+                area_norm[internal]
+                * np.linalg.norm(centre_vector, axis=1)
+            )
+            c1_vector = face_centres[internal] - mesh.cell_centres_m[c1]
+            c1_quality = np.einsum(
+                "ij,ij->i", area[internal], c1_vector
+            ) / (
+                area_norm[internal]
+                * np.linalg.norm(c1_vector, axis=1)
+            )
+            face_quality_c0[internal] = np.minimum(
+                face_quality_c0[internal],
+                centre_quality,
+            )
+            np.minimum.at(
+                quality,
+                c1,
+                np.minimum(c1_quality, centre_quality),
+            )
+
+        np.minimum.at(quality, c0, face_quality_c0)
+
+    quality = np.clip(quality, -1.0, 1.0)
+    _require(
+        np.all(np.isfinite(quality)) and np.all(quality > 0.0),
+        "Orthogonal Quality is nonpositive or non-finite",
+    )
+    return quality
+
+
+def orthogonal_quality_summary(
+    mesh: FluentLegacyMesh,
+    threshold: float = 0.8,
+) -> dict[str, Any]:
+    quality = orthogonal_quality(mesh)
+    quantile_levels = (0.0, 0.001, 0.01, 0.05, 0.5, 0.95, 1.0)
+    quantiles = np.quantile(quality, quantile_levels)
+    return {
+        "metric": "standard hexahedral Orthogonal Quality",
+        "enhanced_orthogonal_quality": False,
+        "formula": (
+            "minimum normalized face-area dot cell-to-face and "
+            "cell-to-neighbour vectors"
+        ),
+        "minimum": float(quality.min()),
+        "mean": float(quality.mean()),
+        "quantiles": {
+            f"{level:g}": float(value)
+            for level, value in zip(quantile_levels, quantiles)
+        },
+        "threshold": threshold,
+        "cells_below_threshold": int(np.count_nonzero(quality < threshold)),
+        "fraction_below_threshold": float(np.mean(quality < threshold)),
+        "threshold_passed": bool(np.all(quality >= threshold)),
+    }
 
 
 def _face_orientation_minimum(
@@ -144,7 +303,7 @@ def _face_orientation_minimum(
 
 def build_fluent_legacy_mesh(npz_path: Path) -> FluentLegacyMesh:
     """Build and validate the complete face-owner representation Fluent stores."""
-    points, hexes, boundaries = _load_canonical(Path(npz_path))
+    points, hexes, stored_centres, boundaries = _load_canonical(Path(npz_path))
     occurrences = hexes[:, HEX_FACES_INWARD].reshape(-1, 4)
     keys = np.sort(occurrences, axis=1)
     unique, inverse, counts = np.unique(
@@ -200,6 +359,11 @@ def build_fluent_legacy_mesh(npz_path: Path) -> FluentLegacyMesh:
     return FluentLegacyMesh(
         points_m=points,
         hexes=hexes,
+        cell_centres_m=(
+            stored_centres
+            if stored_centres is not None
+            else _volume_centres(points, hexes)
+        ),
         faces=faces,
         c0=c0,
         c1=c1,
@@ -317,6 +481,9 @@ def audit_written_mesh(path: Path, mesh: FluentLegacyMesh) -> dict[str, Any]:
             *mesh.points_m.min(axis=0).tolist(),
             *mesh.points_m.max(axis=0).tolist(),
         ],
+        "fluent_equivalent_orthogonal_quality": (
+            orthogonal_quality_summary(mesh)
+        ),
     }
 
 

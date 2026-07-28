@@ -195,6 +195,8 @@ class BodyFittedCaseInputs:
     n_axial: int = 96
     n_gap: int = 12
     gap_inflation_ratio: float = 1.0
+    quality_optimized_ogrid: bool = False
+    smoothing_iterations: int = 12
     openfoam: Literal["auto", "required", "skip"] = "skip"
     ansys: Literal["auto", "required", "skip"] = "required"
     context_step: Path | None = None
@@ -544,16 +546,26 @@ def build_ogrid_master(
     geometry_mode: GeometryMode = "inscribed",
     n_theta: int = 256,
     n_axial: int = 96,
+    quality_optimized: bool = False,
 ) -> MasterMesh:
     """Build a conformal central-square plus eight-sector O-grid insert."""
     if inner_layers < 1 or outer_layers < 1:
         raise BodyFittedError("inner_layers and outer_layers must be positive")
+    if quality_optimized and (inner_layers != 1 or outer_layers != 1):
+        raise BodyFittedError(
+            "the quality-optimized O-grid requires one inner and one outer ring"
+        )
     if rim_segments % 4:
         raise BodyFittedError("rim_segments must be divisible by four")
     q = rim_segments // 4
     points, tags, quads, logical, grid = _base_master(params, n_theta, n_axial)
-    _theta_centre, _axial_centre, patch_j0, patch_k0 = _centred_patch_bounds(
-        params, inlet, q, n_theta, n_axial, support_factor=1
+    theta_centre, axial_centre, patch_j0, patch_k0 = _centred_patch_bounds(
+        params,
+        inlet,
+        q,
+        n_theta,
+        n_axial,
+        support_factor=2 if quality_optimized else 1,
     )
     patch_j1, patch_k1 = patch_j0 + q, patch_k0 + q
     removed = (
@@ -567,6 +579,36 @@ def build_ogrid_master(
     control_tags = _rect_perimeter_tags(
         grid_tags, patch_j0, patch_k0, q
     )
+    radius = _effective_radius(inlet.radius_mm, rim_segments, geometry_mode)
+    control_radius_factor = 1.4 if quality_optimized else None
+    if quality_optimized:
+        mapped = np.empty((q + 1, q + 1, 2), dtype=np.float64)
+        for local_k in range(q + 1):
+            for local_j in range(q + 1):
+                u = -(local_j - q / 2.0) / (q / 2.0)
+                v = (local_k - q / 2.0) / (q / 2.0)
+                disk_x, disk_z = _concentric_square_to_disk(u, v)
+                mapped[local_k, local_j] = (
+                    control_radius_factor * radius * disk_x,
+                    inlet.axial_position_mm
+                    + control_radius_factor * radius * disk_z,
+                )
+        support = _harmonic_tensor_support(
+            grid, mapped, theta_centre, axial_centre, q
+        )
+        support_j0, support_k0 = theta_centre - q, axial_centre - q
+        points = points.copy()
+        for local_k in range(1, 2 * q):
+            for local_j in range(1, 2 * q):
+                x_mm, z_mm = support[local_k, local_j]
+                index = (
+                    (support_k0 + local_k) * n_theta
+                    + support_j0
+                    + local_j
+                )
+                points[index] = _project_bore_point(
+                    params, float(x_mm), float(z_mm)
+                )
 
     original_interior = np.asarray(
         [
@@ -590,15 +632,19 @@ def build_ogrid_master(
         node_points[tag] = np.asarray(point, dtype=np.float64)
         return tag
 
-    radius = _effective_radius(inlet.radius_mm, rim_segments, geometry_mode)
-    half_side = 0.5 * radius / math.sqrt(2.0)
+    corner_radius_factor = 0.9 if quality_optimized else 0.5
+    half_side = corner_radius_factor * radius / math.sqrt(2.0)
     central_tags = np.empty((q + 1, q + 1), dtype=np.uint64)
     for k_local in range(q + 1):
+        v = 2.0 * k_local / q - 1.0
         z_mm = inlet.axial_position_mm + half_side * (
-            2.0 * k_local / q - 1.0
+            math.tan(math.pi * v / 4.0) if quality_optimized else v
         )
         for j_local in range(q + 1):
-            x_mm = half_side * (1.0 - 2.0 * j_local / q)
+            u = 1.0 - 2.0 * j_local / q
+            x_mm = half_side * (
+                math.tan(math.pi * u / 4.0) if quality_optimized else u
+            )
             central_tags[k_local, j_local] = add_node(
                 _project_bore_point(params, x_mm, z_mm)
             )
@@ -710,8 +756,20 @@ def build_ogrid_master(
     all_points = np.asarray(
         [node_points[int(tag)] for tag in sorted_tags], dtype=np.float64
     )
-    original_tags = tags[retained_mask]
-    original_points = points[retained_mask]
+    if quality_optimized:
+        logical_j = np.arange(len(tags), dtype=np.int64) % n_theta
+        logical_k = np.arange(len(tags), dtype=np.int64) // n_theta
+        support_interior = (
+            (logical_j > support_j0)
+            & (logical_j < support_j0 + 2 * q)
+            & (logical_k > support_k0)
+            & (logical_k < support_k0 + 2 * q)
+        )
+        unchanged_mask = retained_mask & ~support_interior
+    else:
+        unchanged_mask = retained_mask
+    original_tags = tags[unchanged_mask]
+    original_points = points[unchanged_mask]
     expected = n_theta * n_axial + 4 * q * (inner_layers + outer_layers)
     if len(all_quads) != expected:
         raise BodyFittedError(
@@ -730,11 +788,20 @@ def build_ogrid_master(
         "inserted_quads": len(inserted),
         "pressure_quad_count": q**2 + 4 * q * inner_layers,
         "expected_master_quad_count": expected,
-        "central_square_corner_radius_mm": 0.5 * radius,
+        "central_square_corner_radius_mm": corner_radius_factor * radius,
         "central_square_corner_node_tags": [
             int(tag) for tag in central_corner_tags
         ],
-        "initialization": "piecewise transfinite linear/Coons ring interpolation",
+        "initialization": (
+            "radial-spoke central square, concentric rings, harmonic far-field support"
+            if quality_optimized
+            else "piecewise transfinite linear/Coons ring interpolation"
+        ),
+        "quality_optimized": quality_optimized,
+        "support_size_cells": (
+            [2 * q, 2 * q] if quality_optimized else [q, q]
+        ),
+        "control_loop_radius_factor": control_radius_factor,
         "same_total_count_claim": "retired",
         "exact_budget_transition_templates": "out_of_scope",
         "block_names": {
@@ -2893,6 +2960,12 @@ def _validate_case_inputs(inputs: BodyFittedCaseInputs) -> None:
         raise BodyFittedError(f"unknown geometry mode {inputs.geometry_mode!r}")
     if inputs.n_gap < 1:
         raise BodyFittedError("n_gap must be positive")
+    if inputs.smoothing_iterations < 0:
+        raise BodyFittedError("smoothing_iterations must be nonnegative")
+    if inputs.quality_optimized_ogrid and inputs.topology != "ogrid":
+        raise BodyFittedError(
+            "quality_optimized_ogrid is only valid for the ogrid topology"
+        )
     if inputs.openfoam not in ("auto", "required", "skip"):
         raise BodyFittedError("openfoam must be auto, required, or skip")
     if inputs.ansys not in ("auto", "required", "skip"):
@@ -3020,8 +3093,13 @@ def run_body_fitted_case(inputs: BodyFittedCaseInputs) -> dict[str, Any]:
                 geometry_mode=inputs.geometry_mode,
                 n_theta=inputs.n_theta,
                 n_axial=inputs.n_axial,
+                quality_optimized=inputs.quality_optimized_ogrid,
             )
-        master = smooth_master_mesh(master, params)
+        master = smooth_master_mesh(
+            master,
+            params,
+            iterations=inputs.smoothing_iterations,
+        )
         master = replace(
             master,
             metadata=dict(master.metadata) | {"case_name": inputs.case_name},

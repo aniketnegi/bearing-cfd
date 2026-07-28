@@ -79,6 +79,8 @@ def test_native_fluent_ascii_round_trip(tmp_path: Path) -> None:
     assert report["quad4_faces"] == 11
     assert report["face_zones"]["interior"] == 1
     assert report["face_zones"]["pressure_feed"] == 2
+    assert report["fluent_equivalent_orthogonal_quality"]["minimum"] == pytest.approx(1.0)
+    assert report["fluent_equivalent_orthogonal_quality"]["threshold_passed"] is True
     text = output.read_text()
     for record in (
         "(45 (2 interior interior 1)())",
