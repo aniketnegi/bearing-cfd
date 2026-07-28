@@ -1,14 +1,16 @@
-#+UPDATED_AT: [2026-07-16 Thu 19:34]
+#+UPDATED_AT: [2026-07-29 Wed]
 #+TITLE: Eccentric Conical Bearing — Engineering Notebook
-#+SUBTITLE: Programmatic CAD, mesh construction, and solver-neutral transfer
+#+SUBTITLE: Programmatic CAD, mesh construction, solver transfer, and OpenFOAM evidence
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
 * Purpose
 
-This notebook explains how the geometry and meshes are constructed.  It assumes
-familiarity with Python and basic journal-bearing physics; it concentrates on
-programmatic B-rep modelling, mesh topology, data exchange, and solver hand-off.
+This notebook explains how the geometry and meshes are constructed, transferred,
+and used in the downstream OpenFOAM study.  It assumes familiarity with Python
+and basic journal-bearing physics; it concentrates on programmatic B-rep
+modelling, mesh topology, data exchange, evidence boundaries, and solver
+handoff.
 
 * Current state
 
@@ -22,9 +24,15 @@ programmatic B-rep modelling, mesh topology, data exchange, and solver hand-off.
 | Surface-inlet analytic Hex8 mesh | PASS              | Clustered film-only Hex8 mesh; near-circular pressure patch and no feed column.             |
 | Central-feed layered Prism6 mesh | PASS              | Film and tube are one conformal fluid mesh with an open internal mouth.                     |
 | Clean MSH/CGNS interchange       | static PASS       | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
-| Fluent import                    | not run           | PyFluent/Fluent was unavailable; outputs are =STATICALLY_VALIDATED_NOT_IMPORTED=.           |
-| OpenFOAM conversion              | conditional       | Audited when =gmshToFoam= and =checkMesh= are installed; otherwise explicitly skipped.      |
-| CFD solution                     | not started       | No viscosity, rotation, cavitation, turbulence, or boundary values are assigned here.       |
+| Canonical Fluent import audit    | not accepted      | The earlier S100 solve diverged; it is evidence, not =FLUENT_IMPORT_PASS=.                   |
+| OpenFOAM 14 source build         | accepted          | The solver and conversion tools were built and run locally.                                  |
+| S100 OpenFOAM mesh import        | accepted          | =gmshToFoam=, patch correction, and standard =checkMesh= accepted 294,912 Hex8 cells.         |
+| Zero-flow solver proof           | accepted          | Fields, patches, numerics, and solver plumbing are consistent.                               |
+| Pressure-fed 0-rpm case          | accepted          | A stationary 0.5 MPa commissioning case converges; it is not pure hydrodynamic operation.    |
+| 200-rpm liquid-only diagnostic   | rejected          | It drives pressure below absolute vacuum and demonstrates missing rupture physics.           |
+| Zero-bias liquid continuation    | accepted to 20 rpm | The 0, 1, 5, 10, 12, 14, 15, and 20-rpm checkpoints remain bounded and single-liquid.       |
+| First 20-to-50-rpm update        | guarded stop      | At 20.2 rpm, ~p_min=-0.177 Pa < pSat=0.5 Pa~; this is a threshold bracket, not cavitation.    |
+| Native Reynolds/JFO result       | unvalidated candidate | It reaches 2000 rpm but predicts a severe 64.455% rupture region; external benchmark and three-grid evidence are missing. |
 
 The STEP result does not invalidate the native CAD or BREP mesh path.  See
 [[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
@@ -77,6 +85,16 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - [[file:operations/openfoam-handoff.org][OpenFOAM conversion boundary]]
 - [[file:interchange/fluent-import-audit.org][Fluent import boundary]]
 
+** OpenFOAM CFD study
+
+- [[file:handoff/00-index.org][Current status and reading order]]
+- [[file:handoff/03-zero-flow-proof.org][Zero-flow solver proof]]
+- [[file:handoff/05-single-phase-results.org][Pressure-fed commissioning and rejected 200-rpm diagnostic]]
+- [[file:handoff/11-pure-hydrodynamic-ramp.org][Zero-pressure-bias continuation]]
+- [[file:handoff/12-five-rpm-jump-diagnosis.org][Direct-jump diagnosis and accepted native ramp]]
+- [[file:handoff/13-guarded-2000rpm-ramp.org][Accepted 20-rpm point and guarded 20.2-rpm stop]]
+- [[file:handoff/14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate and validation blockers]]
+
 ** Rationale and provenance
 
 - [[file:project/decisions.org][Decision register]]
@@ -96,15 +114,19 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - Solver-neutral export: [[file:../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
 - Live Fluent audit: [[file:../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
 - Tests: [[file:../tests][tests/]]
+- OpenFOAM study: [[file:handoff/00-index.org][CFD handoff]]
 
 * Scope boundary
 
-This repository currently proves geometry, mesh topology/quality, and static
-solver-neutral transfer. Patch names describe intended physical roles, but they
-are not yet numerical CFD boundary conditions. In particular, =pressure_feed= is
-an inlet candidate and the two axial end patches are outlet candidates; no
-pressure, flow rate, journal speed, lubricant model, initialization, or
-iteration is assigned in this stage.
+The CAD and mesh-generation stages prove geometry, topology/quality, and static
+solver-neutral transfer without assigning CFD physics.  The later OpenFOAM
+study assigns its own boundary conditions and material/model inputs in isolated
+cases documented under [[file:handoff/00-index.org][=docs/handoff/=]].  Its
+accepted result boundary is currently the single-liquid branch through 20 rpm.
+The 20.2-rpm threshold crossing, rejected 200-rpm liquid-only run, and rejected
+exploratory cavitation runs must not be reported as physical bearing
+performance.  The separate native Reynolds/JFO high-speed result is likewise
+an unvalidated numerical candidate, not a promoted physical result.
 
 * Maintenance
 

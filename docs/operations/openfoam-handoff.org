@@ -6,6 +6,11 @@ This stage audits mesh conversion only.  It does not create CFD boundary
 conditions, material properties, journal rotation, cavitation, turbulence, or
 a solver run.
 
+This is a boundary of the canonical *mesh-generation stage*, not the current
+boundary of the whole repository.  The later S100 import, solver commissioning,
+low-speed continuation, and guarded saturation-threshold campaign are recorded
+separately in [[file:../handoff/00-index.org][the OpenFOAM CFD handoff]].
+
 * Modes
 
 Both volume-mesh CLIs support:
@@ -18,7 +23,8 @@ Both volume-mesh CLIs support:
 
 The current production reports were generated with =--openfoam skip=, so their
 OpenFOAM status is intentionally =SKIPPED=.  That does not weaken the native
-mesh PASS, but it is not evidence that OpenFOAM accepted the mesh.
+mesh PASS, but those reports are not the later S100 import evidence.  The S100
+study performed a separate accepted conversion and standard =checkMesh= audit.
 
 Check availability first:
 
@@ -127,7 +133,9 @@ find out/ported_prism_default/nGap_08 -maxdepth 1 \
 
 A =PASS= here means format conversion and mesh topology/geometry passed the
 installed OpenFOAM utilities.  It still does not mean that a physically valid
-CFD problem has been configured or solved.
+CFD problem has been configured or solved.  Solver evidence must instead meet
+the acceptance boundaries stated in
+[[file:../handoff/00-index.org][the CFD handoff]].
 
 * External documentation
 

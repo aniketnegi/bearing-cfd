@@ -138,17 +138,20 @@ trust.  Derivations remain in the subsystem chapters.
 - Consequence :: no partial artifact from the current attempt reaches the
   publication path.
 
-* D012 — Stop before assigning CFD physics
+* D012 — Keep CFD physics out of mesh generation
 
-- Status :: accepted for the current stage
+- Status :: accepted stage boundary; downstream CFD stage implemented separately
 - Context :: mesh boundary names do not determine pressure, mass flow, rotation
   speed, lubricant rheology, cavitation, or turbulence assumptions.
-- Decision :: stop after geometry, mesh, optional format conversion, and
-  =checkMesh=.
+- Decision :: keep the canonical geometry/mesh pipeline ending after geometry,
+  mesh, optional format conversion, and =checkMesh=.  Build solver cases as a
+  separate evidence stream with explicit physical assumptions and acceptance
+  gates.
 - Rejected :: add placeholder solver dictionaries that appear physically
   authoritative.
-- Consequence :: the later CFD stage must make and document its own physics
-  decisions.
+- Consequence :: the later OpenFOAM S100 study makes and documents its own
+  physics decisions under [[file:../handoff/00-index.org][=docs/handoff/=]]
+  without weakening the mesh-stage contract.
 
 * D013 — Reject concentric ported cases until BREP classification is unambiguous
 
@@ -256,3 +259,20 @@ trust.  Derivations remain in the subsystem chapters.
   =FLUENT_IMPORT_PASS= until Fluent reads, checks, and saves the native mesh.
 - Evidence :: [[file:../../interchange/fluent_legacy_msh.py][native Fluent writer]]
   and [[file:../interchange/formats-and-cgns.org][format rationale]].
+
+* D020 — Preserve the native JFO result as an unvalidated candidate
+
+- Status :: accepted evidence boundary
+- Context :: the native OpenFOAM Reynolds/JFO application converges to 2000
+  rpm and agrees with a second implementation, but both implementations encode
+  the same equations and predict a severe 64.455% rupture region.
+- Decision :: preserve source, checkpoints, plots, and diagnostics while
+  withholding physical validation until a published JFO benchmark,
+  manufactured-solution checks, local conservation, and a three-grid study
+  pass.
+- Rejected :: call internal convergence, global balance, Python/C++ agreement,
+  or one maximum-pressure match to the paper a validation of cavity fraction,
+  load, flow, or torque.
+- Consequence :: Fluent is an independent model comparison unless a separately
+  verified UDF implements the same pressure--fill complementarity law.
+- Evidence :: [[file:../handoff/14-native-jfo-candidate.org][Native JFO candidate]].

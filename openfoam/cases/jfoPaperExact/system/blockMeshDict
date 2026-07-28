@@ -1,0 +1,64 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+convertToMeters 1;
+
+vertices
+(
+    (0              0      0)
+    (0.314159265359 0      0)
+    (0.314159265359 0.001  0)
+    (0              0.001  0)
+    (0              0      0.100)
+    (0.314159265359 0      0.100)
+    (0.314159265359 0.001  0.100)
+    (0              0.001  0.100)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (256 1 80) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    thetaMin
+    {
+        type cyclic;
+        neighbourPatch thetaMax;
+        faces ((0 4 7 3));
+    }
+
+    thetaMax
+    {
+        type cyclic;
+        neighbourPatch thetaMin;
+        faces ((1 2 6 5));
+    }
+
+    axialEndZ0
+    {
+        type patch;
+        faces ((0 3 2 1));
+    }
+
+    axialEndZL
+    {
+        type patch;
+        faces ((4 5 6 7));
+    }
+
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 1 5 4)
+            (3 7 6 2)
+        );
+    }
+);

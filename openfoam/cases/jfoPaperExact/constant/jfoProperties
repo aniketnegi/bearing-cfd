@@ -1,0 +1,28 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      jfoProperties;
+}
+
+length                      [0 1 0 0 0 0 0] 0.100;
+meanRadius                  [0 1 0 0 0 0 0] 0.050;
+semiconeAngleDegrees        10;
+radialClearance             [0 1 0 0 0 0 0] 0.000050;
+eccentricity                [0 1 0 0 0 0 0] 0.000030;
+eccentricityAngleDegrees    -90;
+
+feedDiameter                [0 1 0 0 0 0 0] 0.004;
+feedAxialPosition           [0 1 0 0 0 0 0] 0.050;
+feedGaugePressure           [1 -1 -2 0 0 0 0] 500000;
+ambientPressure             [1 -1 -2 0 0 0 0] 101325;
+cavitationPressure          [1 -1 -2 0 0 0 0] 101325;
+
+dynamicViscosity            [1 -1 -1 0 0 0 0] 0.0277;
+rpm                         0;
+nTheta                      256;
+maxRevolutions              8;
+maxActiveIterations         200;
+convergenceTolerance        1e-8;
+policyTolerance             1e-7;
+logInterval                 32;

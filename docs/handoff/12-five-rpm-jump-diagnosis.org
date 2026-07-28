@@ -1,0 +1,259 @@
+#+title: 12 - Five-RPM Jump Diagnosis
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:11-pure-hydrodynamic-ramp.org][Previous: zero-pressure-bias ramp]] | [[file:00-index.org][Index]] | [[file:13-guarded-2000rpm-ramp.org][Next: guarded ramp automation]]
+
+* Question and status
+
+The accepted 10-rpm field failed when its wall speed was replaced directly
+with 15 rpm.  This chapter isolates why; it does not promote the rejected
+transient into bearing physics.
+
+All runs use =incompressibleVoF=, Schnerr-Sauer, the same S100 mesh, equal
+101325-Pa openings, and =localEuler=.  Thus each time label is a *steady
+pseudo-time continuation index*, not seconds.  Neither the manual RPM ladder
+nor the native =omega= ramp is a physical spin-up calculation.
+
+| Experiment | Result | Diagnostic meaning |
+|---+---+---|
+| direct 10 -> 15 rpm | rejected | first update crosses =pSat=; phase/pressure runaway follows |
+| accepted 14 -> 15 rpm | accepted | 15 rpm itself has a bounded liquid solution |
+| direct jump, lower Co limits | rejected | smaller local steps soften but do not remove the trigger |
+| fresh start with =correctPhi= path | rejected | startup flux correction is not the missing mechanism |
+| direct jump, =pSat=-1e9 Pa= | control only | suppressing mass transfer prevents collapse |
+| =VoFCavitation= removed | secondary control only | bounded, but startup correction confounds the comparison |
+| native 10 -> 15 =omega= ramp and hold | accepted diagnostic | continuous continuation reaches the same target cleanly |
+
+* Decisive comparison
+
+The direct jump copied =checkpoints/10rpm/225=, changed only wall =omega= to
+15 rpm, and ran to 250.  Its first new step already had =pmin=-1.44820 Pa=,
+below the configured =pSat= of 0.5 Pa.  At 227, =pmin=-1168.97 Pa= and
+=alpha.oil_min=0.580278=.  At 250, =pmin=-3478.14 Pa=, =alpha.oil= was
+=0.0637792/0.995928/1=, and corrected local continuity was 122.656.
+
+All three openings were inward and no monitored quantity plateaued.  The run
+ended numerically, but the state is rejected.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/15rpm-from-10rpm-unstable/README.md][diagnostic README]] and
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/15rpm-from-10rpm-unstable/log.ramp-15rpm-225-250][complete direct-jump log]].
+
+By contrast, the accepted 14-rpm checkpoint at 350 was changed to 15 rpm and
+held through 400.  At its first new step, 351, =pmin= was 22739.98 Pa,
+=alpha.oil= remained one, and corrected local continuity was =2.28e-8=.
+At 400, =pmin/pmax= was =26770.25/175874.34 Pa=, =alpha.oil= was
+=1/1/1=, and corrected local continuity was =2.00e-8=.  The opening-flow
+imbalance was =4.72e-6= as a fraction of the sum of absolute opening flows;
+five-step viscous-torque drift was
+0.174%.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/log.ramp-15rpm-from-14-350-375][350--375 log]],
+[[file:../../out/openfoam_s100_pure_hydrodynamic/log.ramp-15rpm-from-14-375-400][375--400 log]], and
+[[file:../../out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/][accepted checkpoint]].
+
+* Controls
+
+** Lower Courant and pseudo-step ceilings
+
+The direct jump was repeated with =maxCo= 0.25, =maxAlphaCo= 0.125, and
+=maxDeltaT= 0.1.  The first-step =pmin=-1.44814 Pa= was effectively
+unchanged.  At 250, =pmin=-1010.18 Pa=, =alpha.oil_min=0.524214=, and
+corrected local continuity was 46.30.  Damping reduced the final excursion
+but did not stabilize the branch.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-damped-case/log.direct-10to15-damped-225-250][lower-Co log]].
+
+** Fresh-start =correctPhi= control
+
+The same checkpoint was relabelled as time 0 and started with =startFrom
+startTime=.  This forced the startup =pcorr= path before the time loop:
+residual =0.999999= to =2.25992e-5= in 100 iterations.  Nevertheless, time 1
+gave =pmin=-1.44818 Pa=, matching the original first update.  By time 25,
+=pmin=-2493.67 Pa=, =alpha.oil_min=0.0636895=, and corrected local
+continuity was 123.77.  The =pcorr= solve hit its iteration limit, so this is
+not proof that every possible flux correction is irrelevant; it does show
+that the observed startup correction does not cure this jump.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-fresh-start-flux-corrected-case/log.direct-10to15-fresh-start-flux-corrected-0-25][fresh-start log]].
+
+** Inactive-cavitation threshold control
+
+Schnerr-Sauer remained loaded, but =pSat= was set to =-1e9 Pa= so its source
+could not activate on this trajectory.  The direct jump then stayed
+single-liquid: at 226, =pmin=9997.75 Pa= and corrected local continuity was
+=1.42e-7=; at 250, =pmin=26950.53 Pa=, =alpha.oil= was =1/1/1=, and all
+opening flows balanced.  Loads were still settling, so this is a diagnostic,
+not an accepted operating point.  The threshold is deliberately unphysical
+and must not replace the declared 0.5-Pa model value.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-cavitation-inactive-case/log.direct-10to15-cavitation-inactive][inactive-cavitation log]].
+
+** Model-removal secondary control
+
+A secondary copy removed =VoFCavitation= completely.  It stayed bounded
+through 250, with =pmin=51687.49 Pa= and corrected local continuity
+=1.15e-8=.  However, removing the model also caused the startup =pcorr= path
+to run, and the interior field advanced only slightly from its 10-rpm seed.
+It is therefore consistent with the threshold control but is not the causal
+comparison.  Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-no-cavitation-case/log.direct-10to15-no-cavitation-225-250][model-removal log]].
+
+** Native =omega Function1= ramp
+
+The accepted 10-rpm checkpoint used OpenFOAM's native table:
+=values ((225 1.0471975511965976) (250 1.5707963267948966) (1000 1.5707963267948966))=.
+
+At 250, after the ramp, =pmin= was 24642.20 Pa, =alpha.oil= was =1/1/1=,
+and corrected local continuity was =1.26e-8=.  The first 15-rpm hold to 275
+remained bounded, but its five-step viscous-torque drift was still 2.02%;
+it was evidence of recovery, not yet the settled gate.  A second hold to 300
+ended with =pmin/pmax= =26860.42/175787.75 Pa=, =alpha.oil= =1/1/1=,
+corrected local continuity =1.75e-8=, and relative opening-flow imbalance
+=4.71e-7=.  Pressure and loads were close, but the feed and z0 flows still
+changed by 2.27% and 2.73% over five steps, so time 300 did not pass the full
+plateau gate.
+
+The unchanged 15-rpm hold therefore continued to time 400.  Its final values
+were =pmin/pmax= =26760.11/175883.51 Pa=, =alpha.oil= =1/1/1=, and
+corrected local continuity =1.81e-8=.  The feed, z0, and zL flows were
+=-1.67681e-10=, =+1.45378e-10=, and =+2.23024e-11 m3/s=; their relative
+sum imbalance was =2.09e-6=.  Over the final five steps those three flow
+magnitudes changed by 0.0553%, 0.1077%, and 0.2790%.  =Umax= changed by
+0.0000173%, pressure force X by 0.00596%, and viscous torque by 0.0000553%.
+The native ramp and hold therefore pass the complete diagnostic gate.
+Against the independently accepted 15-rpm checkpoint, pressure, =Umax=, and
+load differences are all below 0.7%.  Individual opening-flow percentages
+differ more because each signed integral is only of order =1e-10 m3/s=; both
+states have negligible, well-balanced net exchange.
+
+Evidence:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-native-omega-ramp-case/log.native-omega-ramp][225--250 ramp log]],
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-native-omega-ramp-case/log.native-omega-hold-250-275][250--275 hold log]], and
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-native-omega-ramp-case/log.native-omega-hold-275-300][275--300 hold log]],
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-native-omega-ramp-case/log.native-omega-hold-300-350][300--350 hold log]], and
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-10to15-native-omega-ramp-case/log.native-omega-hold-350-400][350--400 hold log]].
+
+* What is evidence and what is inference
+
+*Evidence:* 15 rpm is solvable from 14 rpm; lower Co limits and startup
+=correctPhi= do not prevent the direct jump's first =pSat= crossing;
+disabling source activation lets the direct jump recover; and a continuous
+wall-speed ramp stays above =pSat= with the declared model active.
+
+*Inference:* the discontinuous 50% wall-speed change leaves 10-rpm interior
+fields inconsistent with the boundary, creates the pressure undershoot, and
+active phase change amplifies that transient.  The controls identify this as
+the mechanism of the observed failure, not as a proof about every coupling
+scheme.
+
+The controls do *not* prove that physical cavitation is absent, validate
+Schnerr-Sauer for this oil, justify changing =pSat=, or turn pseudo-time into
+a physical acceleration history.
+
+* Exact isolated reruns
+
+Run the following in one Bash shell.  Each replay path must be absent; the
+guard preserves all original checkpoints, logs, and diagnostic directories.
+
+#+begin_src sh
+repo=/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing
+root="$repo/out/openfoam_s100_pure_hydrodynamic"
+source /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14/etc/bashrc
+set -eo pipefail
+seed_case () {
+  local target=$1 checkpoint=$2
+  test ! -e "$target" || { echo "Refusing to overwrite $target"; return 1; }
+  mkdir -p "$target"
+  cp -a "$root/constant" "$root/system" "$target/"
+  cp -a "$checkpoint" "$target/"
+}
+set_15rpm () {
+  foamDictionary -writePrecision 17 "$1/U" -entry \
+    boundaryField/journal_wall/omega -set '1.5707963267948966 [rad/s]'
+}
+run_to () {
+  local target=$1 end=$2 log=$3
+  foamDictionary "$target/system/controlDict" -entry startFrom -set latestTime
+  foamDictionary "$target/system/controlDict" -entry endTime -set "$end"
+  foamRun -case "$target" 2>&1 | tee "$target/$log"
+}
+#+end_src
+
+Accepted 14 -> 15 control and rejected direct 10 -> 15 baseline:
+
+#+begin_src sh
+case="$root/diagnostics/replay-accepted-14to15"
+seed_case "$case" "$root/checkpoints/14rpm/350"
+set_15rpm "$case/350"
+run_to "$case" 375 log.accepted-14to15-350-375
+run_to "$case" 400 log.accepted-14to15-375-400
+case="$root/diagnostics/replay-direct-10to15"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+set_15rpm "$case/225"
+run_to "$case" 250 log.direct-10to15
+#+end_src
+
+Lower-Co and inactive-cavitation controls:
+
+#+begin_src sh
+case="$root/diagnostics/replay-direct-10to15-lower-Co"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+set_15rpm "$case/225"
+foamDictionary "$case/system/fvSolution" -entry PIMPLE/maxCo -set 0.25
+foamDictionary "$case/system/fvSolution" -entry PIMPLE/maxAlphaCo -set 0.125
+foamDictionary "$case/system/fvSolution" -entry PIMPLE/maxDeltaT -set 0.1
+run_to "$case" 250 log.direct-10to15-lower-Co
+case="$root/diagnostics/replay-direct-10to15-inactive-cavitation"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+set_15rpm "$case/225"
+foamDictionary "$case/constant/fvModels" -entry \
+  VoFCavitation/SchnerrSauer/pSat -set -1e9
+run_to "$case" 250 log.direct-10to15-inactive-cavitation
+#+end_src
+
+Secondary model-removal control:
+
+#+begin_src sh
+case="$root/diagnostics/replay-direct-10to15-no-cavitation"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+set_15rpm "$case/225"
+foamDictionary "$case/constant/fvModels" -entry VoFCavitation -remove
+run_to "$case" 250 log.direct-10to15-no-cavitation
+#+end_src
+
+Fresh-start =correctPhi= control:
+
+#+begin_src sh
+case="$root/diagnostics/replay-direct-10to15-fresh-start"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+mv "$case/225" "$case/0"
+for field in U alpha.oil alphaPhi.oil p p_rgh phi rDeltaT rho; do
+  foamDictionary "$case/0/$field" -entry FoamFile/location -set '"0"'
+done
+foamDictionary "$case/0/uniform/time" -entry FoamFile/location -set '"0/uniform"'
+foamDictionary "$case/0/uniform/time" -entry value -set 0
+foamDictionary "$case/0/uniform/time" -entry name -set '"0"'
+foamDictionary "$case/0/uniform/time" -entry index -set 0
+set_15rpm "$case/0"
+foamDictionary "$case/system/controlDict" -entry startFrom -set startTime
+foamDictionary "$case/system/controlDict" -entry startTime -set 0
+foamDictionary "$case/system/controlDict" -entry endTime -set 25
+foamRun -case "$case" 2>&1 | tee "$case/log.fresh-start-correctPhi"
+rg -n 'Solving for pcorr|Starting time loop' "$case/log.fresh-start-correctPhi"
+#+end_src
+
+Native ramp and target-speed holds:
+
+#+begin_src sh
+case="$root/diagnostics/replay-direct-10to15-native-ramp"
+seed_case "$case" "$root/checkpoints/10rpm/225"
+foamDictionary -writePrecision 17 "$case/225/U" \
+  -entry boundaryField/journal_wall/omega -set \
+  '{ type table; values ((225 1.0471975511965976) (250 1.5707963267948966) (1000 1.5707963267948966)); }'
+run_to "$case" 250 log.native-omega-ramp
+run_to "$case" 275 log.native-omega-hold-250-275
+run_to "$case" 300 log.native-omega-hold-275-300
+run_to "$case" 350 log.native-omega-hold-300-350
+run_to "$case" 400 log.native-omega-hold-350-400
+#+end_src
+
+The lower-Co, inactive-cavitation, and native-ramp changes are full control
+recipes.  Do not combine them: doing so would destroy the causal comparison.
+
+[[file:11-pure-hydrodynamic-ramp.org][Previous: zero-pressure-bias ramp]] | [[file:00-index.org][Index]] | [[file:13-guarded-2000rpm-ramp.org][Next: guarded ramp automation]]

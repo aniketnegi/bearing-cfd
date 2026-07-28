@@ -1,0 +1,211 @@
+#+title: Guarded OpenFOAM Ramp toward 2000 RPM
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:12-five-rpm-jump-diagnosis.org][Previous: five-rpm jump diagnosis]] | [[file:00-index.org][Index]] | [[file:14-native-jfo-candidate.org][Next: native JFO candidate]]
+
+* What was automated
+
+The local driver is:
+
+[[file:../../out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py][out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py]]
+
+It starts only from the accepted =checkpoints/15rpm/400= field, creates a
+separate work case, and uses the same native =omega Function1= table that
+survived the controlled 10-to-15-rpm experiment.  It does not repeatedly
+replace a wall-speed constant.
+
+The default requested milestones are:
+
+| RPM | Why it is present |
+|---:|---|
+| 20 | next low-speed threshold test |
+| 50, 100, 150, 200 | widening sequence already declared in the continuation policy |
+| 496.6 | approximately the paper's stated surface-speed operating point |
+| 1000, 1500 | guarded intermediate points |
+| 2000 | later operating point quoted by the paper |
+
+=2000 rpm= is an upper request, not a promised valid result.  Extrapolating
+the accepted 10-rpm and 15-rpm minimum pressures predicts a first
+saturation-pressure crossing near 20.4 rpm.  That estimate is an inference,
+not a computed result.  The driver is therefore expected to pause near the
+first threshold so the cavitation inputs and model can be audited.
+
+* Assumed numerical values
+
+- 15 to 20 rpm: at most 0.05 rpm per pseudo-step, hence 100 ramp steps.
+- Later ramps: at most 0.2 rpm per pseudo-step, matching the demonstrated
+  10-to-15-rpm native-ramp slope.
+- Solver chunks: 25 pseudo-steps.
+- Minimum target hold: 100 pseudo-steps.
+- Maximum target hold: 500 pseudo-steps.
+- Output retention: two rolling field times plus a copied checkpoint for
+  every accepted milestone.
+
+These are =localEuler= continuation steps.  They are not seconds and do not
+describe a physical rotor acceleration.
+
+* Automatic stops and acceptance
+
+The solver is stopped immediately when any monitored line reports:
+
+- =p_min < pSat=, recorded as =SATURATION_THRESHOLD=;
+- two consecutive =alpha.oil_min < 0.999999= observations, recorded as
+  =CAVITATION_ONSET=;
+- final-corrector local continuity at or above =1e-3=;
+- unbounded phase fraction, NaN/Inf, a pressure solve at its iteration
+  ceiling, a fatal error, or a floating-point exception.
+
+A target can be accepted only after its minimum hold and all of these gates:
+
+- finite fields, =alpha.oil= still on the single-liquid branch, and pressure
+  above =pSat=;
+- corrected local continuity below =1e-5=;
+- opening-flow imbalance below 0.5%;
+- last-five-step pressure, velocity, pressure-force, and pressure-moment
+  drift below 0.5%;
+- viscous force, viscous Z torque, and each opening-flow drift below 1%;
+- mean phase-fraction drift below =1e-5=.
+
+This is deliberately a liquid-branch continuation driver.  It will not
+automatically bless a two-phase field.  The first phase onset requires a
+human check of =pSat=, oil vapour properties, nuclei values, Schnerr--Sauer
+applicability, conservation, mesh resolution, and comparison with a
+mass-conserving film-rupture model or experiment.
+
+** Startup-guard correction
+
+The first real invocation stopped before =Create time= completed because the
+guard matched the normal OpenFOAM startup line:
+
+#+begin_example
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+#+end_example
+
+That line says trapping is enabled; it is not an exception.  The field never
+advanced beyond the accepted time-400 seed.  The guard now matches actual
+=Floating point exception= and =FOAM FATAL= messages, while explicitly
+testing that the normal startup line is harmless.  The original log is
+preserved as
+=guarded-ramp-to-2000/logs/guard-false-positive-sigfpe-startup.log=.
+
+The resume loader recognizes only this exact historical false failure when
+the current time and RPM still equal the last accepted checkpoint.  It
+removes the false study row and safely resumes from 15 rpm.
+
+* First guarded campaign result
+
+The corrected campaign accepted 20 rpm after a 100-step ramp and a 100-step
+hold.  At pseudo-time 600:
+
+| Quantity | Accepted value |
+|---+---:|
+| Minimum/maximum absolute pressure | 1836.891944 / 200802.525362 Pa |
+| Minimum/mean/maximum =alpha.oil= | 1 / 1 / 1 |
+| Maximum velocity | 0.1107952821 m/s |
+| Corrected local continuity | 3.01595e-8 |
+| Relative opening-flow imbalance | 6.95131e-6 |
+| Feed / z0 / zL flow | -2.23120e-10 / +2.03440e-10 / +1.96773e-11 m3/s |
+| Largest last-five-step drift | 0.00527273 |
+
+Every declared acceptance gate passed.  The largest drift is the tiny zL
+opening flow and remains below its 1% secondary-field gate.
+
+The next native table requested 20 to 50 rpm at 0.2 rpm per pseudo-step.
+On its first update, pseudo-time 601 and 20.2 rpm:
+
+#+begin_example
+p_min = -0.177021858623 Pa
+pSat  =  0.5 Pa
+alpha.oil_min = 1
+corrected local continuity = 3.82067e-5
+#+end_example
+
+The driver therefore stopped with =SATURATION_THRESHOLD= and preserved
+=accepted/20rpm/600=.  This is a clean bracket for this continuation
+schedule: 20.0 rpm is an accepted liquid point, while the first 20.2-rpm
+update crosses the configured saturation pressure.
+
+It is *not* a converged cavitation result.  The phase field was still exactly
+liquid because the stop occurred before Schnerr--Sauer could evolve a cavity,
+and the 20.2-rpm field had not settled.  The next experiment is a finer
+20.0-to-20.2-rpm onset bracket followed by the already-required vapour versus
+gas/rupture model audit.  The terminal stop must not be bypassed into the
+50-rpm campaign.
+
+* Commands
+
+Run from the repository root:
+
+#+begin_src sh
+cd /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing
+
+uv run python \
+  out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py \
+  --self-test
+
+uv run python \
+  out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py
+#+end_src
+
+The second command is a dry run.  It prints the full speed and pseudo-step
+schedule without copying a case or starting OpenFOAM.
+
+Start the actual isolated campaign:
+
+#+begin_src sh
+uv run python \
+  out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py \
+  --run
+#+end_src
+
+Resume only when interruption occurred between completed ramp chunks:
+
+#+begin_src sh
+uv run python \
+  out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py \
+  --run --resume
+#+end_src
+
+The driver refuses to overwrite an existing work case.  It also refuses to
+resume =HOLDING=, =SATURATION_THRESHOLD=, =CAVITATION_ONSET=, =FAILED=, or
+=COMPLETE=.  An interrupted hold is restarted as a new work case from the
+last accepted checkpoint; this prevents an unfinished hold from being
+mistaken for an accepted speed.
+
+To perform a smaller first campaign, use a distinct output path:
+
+#+begin_src sh
+uv run python \
+  out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py \
+  --target-rpm 20 \
+  --work-case out/openfoam_s100_pure_hydrodynamic/guarded-ramp-to-20 \
+  --run
+#+end_src
+
+* Results and inspection
+
+The default work case is
+=out/openfoam_s100_pure_hydrodynamic/guarded-ramp-to-2000/=.  Its useful
+outputs are:
+
+- =ramp-state.json= -- atomic current status, safe time, current speed, last
+  accepted speed, and stop reason;
+- =ramp-results.csv= -- one compact study row per accepted or stopped target,
+  including the interpolated observed time and speed for a mid-ramp stop;
+- =logs/= -- one solver log per 25-step ramp or hold chunk;
+- =accepted/<rpm>/<time>/= -- preserved field for every accepted milestone;
+- normal =postProcessing/= monitor tables.
+
+Inspect a generated campaign in ParaView:
+
+#+begin_src sh
+touch out/openfoam_s100_pure_hydrodynamic/guarded-ramp-to-2000/case.foam
+paraview out/openfoam_s100_pure_hydrodynamic/guarded-ramp-to-2000/case.foam
+#+end_src
+
+Do not animate a stopped or rejected phase field as physical cavitation.
+The first useful video comes after a two-phase operating point passes a
+separately justified cavitation and conservation audit.
+
+[[file:12-five-rpm-jump-diagnosis.org][Previous: five-rpm jump diagnosis]] | [[file:00-index.org][Index]] | [[file:14-native-jfo-candidate.org][Next: native JFO candidate]]

@@ -139,6 +139,16 @@ utilities exist.  The Fluent branch imports CGNS in a real 3-D,
 double-precision process and saves native =.msh.h5= only after live checks
 match the canonical source.  Neither branch initializes or solves a flow.
 
+That last sentence is the boundary of the canonical mesh-production
+automation.  A separate downstream study later imported the validated S100
+surface-inlet Hex8 mesh into OpenFOAM 14, commissioned the solver, and continued
+the zero-pressure-bias liquid branch through an accepted 20-rpm checkpoint.
+See [[file:../handoff/00-index.org][the OpenFOAM CFD handoff]].  The first
+20-to-50-rpm update stopped at the configured saturation threshold; it is not
+an accepted cavity solution.  A later native midsurface Reynolds/JFO
+application is preserved separately as an unvalidated numerical candidate;
+its internal convergence must not be confused with physical validation.
+
 - [[file:../operations/openfoam-handoff.org][OpenFOAM hand-off boundary]]
 - [[file:../interchange/fluent-import-audit.org][Fluent import-only boundary]]
 
@@ -160,6 +170,7 @@ hash instead of trusting a filename.
 - Surface-inlet mesh family: =out/structured_surface_inlet_default/run_report.json=
 - Ported mesh family: =out/ported_prism_default/run_report.json=
 - Solver-neutral handoff: =out/interchange_default/nGap_04/interchange_report.json=
+- Downstream OpenFOAM evidence: [[file:../handoff/09-artifact-map.org][CFD artifact map]]
 
 Generated outputs are evidence, not source.  Recreate them with the commands in
 [[file:../operations/running-and-testing.org][Running and testing]].

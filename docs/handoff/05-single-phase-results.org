@@ -1,0 +1,268 @@
+#+title: 05 - Paper-Grounded Single-Phase Run
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:04-paper-inputs.org][Previous: paper inputs]] | [[file:00-index.org][Index]] | [[file:06-cavitation-model.org][Next: cavitation model]]
+
+* Case creation
+
+The accepted zero-flow case was preserved.  A separate case copied its mesh
+and dictionaries:
+
+#+begin_src sh
+repo=/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing
+source_case="$repo/out/openfoam_s100_zero_flow"
+target_case="$repo/out/openfoam_s100_paper_baseline"
+
+mkdir -p "$target_case/0" "$target_case/constant" "$target_case/system"
+cp -a "$source_case/constant/polyMesh" "$target_case/constant/polyMesh"
+cp -a "$source_case/0/U" "$source_case/0/p" "$target_case/0/"
+cp -a "$source_case/constant/physicalProperties" \
+      "$source_case/constant/momentumTransport" "$target_case/constant/"
+cp -a "$source_case/system/controlDict" \
+      "$source_case/system/fvSchemes" \
+      "$source_case/system/fvSolution" \
+      "$source_case/system/functions" "$target_case/system/"
+cp -a "$source_case/S100-zero-flow.foam" \
+      "$target_case/S100-paper-baseline.foam"
+#+end_src
+
+The copied text files were then edited to contain the values in
+[[file:04-paper-inputs.org][the paper-input chapter]].  The current case files,
+not the copy command, are the canonical record.
+
+* File roles
+
+| File | Important choice |
+|---+---|
+| [[file:../../out/openfoam_s100_paper_baseline/0/U][0/U]] | =rotatingWallVelocity= on journal; initially 0 rpm |
+| [[file:../../out/openfoam_s100_paper_baseline/0/p][0/p]] | Feed 581.395348837; both axial ends zero gauge |
+| [[file:../../out/openfoam_s100_paper_baseline/constant/physicalProperties][constant/physicalProperties]] | =nu= = 3.22093023256e-5 m2/s |
+| [[file:../../out/openfoam_s100_paper_baseline/constant/momentumTransport][constant/momentumTransport]] | laminar |
+| [[file:../../out/openfoam_s100_paper_baseline/system/controlDict][system/controlDict]] | =incompressibleFluid=, steady run, binary writes |
+| [[file:../../out/openfoam_s100_paper_baseline/system/fvSchemes][system/fvSchemes]] | =steadyState=, upwind convection, corrected gradients |
+| [[file:../../out/openfoam_s100_paper_baseline/system/fvSolution][system/fvSolution]] | GAMG pressure, smooth velocity, SIMPLE residual controls |
+| [[file:../../out/openfoam_s100_paper_baseline/system/functions][system/functions]] | flows, extrema, journal forces and moments at rho 860 |
+| [[file:../../out/openfoam_s100_paper_baseline/system/decomposeParDict][system/decomposeParDict]] | four domains using Scotch |
+
+* Pressure-only, 0 rpm initialization
+
+Several serial tuning attempts preceded the accepted run.  The first used
+one non-orthogonal corrector and pressure =relTol 0.01=; pressure took 334
+then 1000 linear iterations and the run was stopped at time 4.  Later trials
+used zero non-orthogonal correctors, =relTol 0.1=, a pressure
+=maxIter 100= cap, and velocity relaxation 0.7.  Serial progress reached
+about time 106 but remained slow.  =log.pressure-only= was overwritten during
+that tuning and ends mid-iteration, so it is diagnostic history, not the
+accepted evidence.
+
+The final stage was run in four partitions:
+
+#+begin_src sh
+foam_root=/home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14
+case_dir=/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/openfoam_s100_paper_baseline
+
+bash -lc "
+  source '$foam_root/etc/bashrc'
+  decomposePar -case '$case_dir' -latestTime
+  mpirun -np 4 foamRun -parallel -case '$case_dir' 2>&1 |
+    tee '$case_dir/log.pressure-only-parallel'
+  reconstructPar -case '$case_dir' -latestTime
+"
+#+end_src
+
+In the managed runner, =mpirun --allow-run-as-root= was required because that
+runner identifies as root.  Do not add that flag in a normal user terminal.
+
+The first sandboxed MPI attempt also printed:
+
+#+begin_example
+pmix_ifinit: socket() failed with errno=1
+#+end_example
+
+MPI needed permission to create local loopback sockets.  Once allowed, the
+same four-rank command ran normally.  This was an execution-sandbox problem,
+not a mesh or decomposition failure.
+
+The solution converged at time/iteration 285:
+
+#+begin_example
+SIMPLE solution converged in 285 iterations
+#+end_example
+
+Final state:
+
+| Quantity | Value |
+|---+---:|
+| Maximum velocity | 2.518357103601 m/s |
+| Minimum kinematic gauge pressure | 0.04072111336 m2/s2 |
+| Maximum kinematic gauge pressure | 582.6261478525 m2/s2 |
+| Feed flow | -1.466299141522e-6 m3/s |
+| z0 outlet flow | +7.722772418870e-7 m3/s |
+| zL outlet flow | +6.940219014703e-7 m3/s |
+| Relative flux imbalance | 1.25165e-9 |
+
+The negative feed sign means flow enters the domain.  Positive axial flows
+leave it.
+
+OpenFOAM integrates =U dot n= using each patch's *outward* normal.  Inlet flow
+therefore has a negative sign; it does not mean that the result or pressure
+direction is wrong.
+
+Zero journal speed does not imply zero fluid speed in this case because the
+feed is held 0.5 MPa above the axial ends.  That pressure difference is an
+energy source.  The logged feed area is
+=1.28571014247e-5 m2=, so the mean feed-normal speed is:
+
+#+begin_example
+abs(Qfeed)/Afeed
+= 1.466299141522e-6 / 1.28571014247e-5
+= 0.1140458563 m/s
+#+end_example
+
+The reported =2.518357 m/s= is the maximum magnitude in any cell, not the
+mean speed through the feed.  It is produced by the pressure-driven flow
+accelerating through the thin film even though the wall is stationary.
+
+Useful commissioning quantities are:
+
+| Quantity | Value |
+|---+---:|
+| Hydraulic resistance =Delta p/Q= | 3.40994539137e11 Pa.s/m3 |
+| Conductance =Q/Delta p= | 2.93259828304e-12 m3/(Pa.s) |
+| Flow leaving through z0 | 52.6685% |
+| Flow leaving through zL | 47.3315% |
+
+Final journal loads:
+
+#+begin_example
+pressure force  = ( 2.39734e-05, -431.426517, -95.091235 ) N
+viscous force   = ( 1.2998e-09, -0.2897636, -0.0684192 ) N
+pressure moment = ( -3.93130266, -2.409e-08, approximately 0 ) N.m
+viscous moment  = ( -0.00300512, approximately 0, -4.878e-10 ) N.m
+#+end_example
+
+This result is numerically accepted and physically valid for a continuously
+pressure-fed stationary bearing.  It is not accepted as a pure-hydrodynamic
+bearing result.  The feed remained connected and pressurized throughout; it
+was never used merely to fill the mesh and then close.
+
+The clean zero-bias experiment therefore does not restart from time 285.  It
+is documented in
+[[file:11-pure-hydrodynamic-ramp.org][the hydrodynamic-ramp chapter]].
+
+* The 200 rpm diagnostic
+
+Rotation was enabled from the converged field:
+
+#+begin_src sh
+foamDictionary "$case_dir/285/U" \
+  -entry boundaryField/journal_wall/omega -set '200 [rpm]'
+decomposePar -case "$case_dir" -latestTime -force
+mpirun -np 4 foamRun -parallel -case "$case_dir" 2>&1 |
+  tee "$case_dir/log.rpm-200"
+reconstructPar -case "$case_dir" -latestTime
+#+end_src
+
+At the first new update:
+
+#+begin_example
+min(all) of p = -119.899239344
+#+end_example
+
+The physical zero-absolute-pressure floor is =-117.819767442 m2/s2=.
+Therefore the liquid-only solution became nonphysical immediately.  The
+first update was already about -1,788 Pa absolute.
+
+By diagnostic time 359:
+
+#+begin_example
+GAMG ... No Iterations 100
+min(all) of p = -1155.49896434
+max(all) of p = 1158.55941024
+maxMag(all) of U = 2.8577664739
+#+end_example
+
+Converted back to absolute pressure:
+
+#+begin_example
+p_abs = 101325 + 860*(-1155.49896434)
+      = approximately -892404 Pa
+#+end_example
+
+That is impossible.  Pressure GAMG was also repeatedly reaching its
+100-iteration cap, so the field was neither physically valid nor numerically
+converged.  The run was manually interrupted during time 360; it has no
+normal =End= record, and the latest written/reconstructed field is time 340.
+The 500, 1000, and 2000 rpm stages were not attempted with the same
+single-liquid model.
+
+At the retained diagnostic time, boundary flux was still nearly closed
+(relative imbalance 3.6669e-5).  This and the passing mesh evidence show that
+mesh import remained coherent; they do not rescue the missing cavitation
+physics.
+
+* Relation to the earlier Fluent failure
+
+The supplied Fluent S100 log first confirms that import completed with the
+same 322,816 nodes, 294,912 Hex8 cells, expected patch counts, positive
+minimum volume, and =Checking mesh... Done.=.  It also contains material
+setup warnings:
+
+#+begin_example
+Error: lubricant already exists.
+delete-material: still in use by fluid
+delete-material: still in use by air
+#+end_example
+
+Hybrid initialization did not meet its tolerance.  The residual history then
+diverged catastrophically:
+
+#+begin_example
+4 continuity 0.55689 ...
+5 continuity 1 ...
+6 continuity 21.591 ...
+7 continuity 1.1320e+3 ...
+201 continuity 5.9914e+150 ... monitors nan ...
+Divergence detected in AMG solver ...
+Error at Node ... floating point exception
+Operation stopped.
+#+end_example
+
+See [[file:../../out/cfd/log-inlet-100.txt][log-inlet-100.txt]].
+
+All 100 inlet faces were reporting reversed flow near failure.  These values
+are numerical overflow, not forces or flow rates.
+
+This is supporting evidence that the problem is not unique to the OpenFOAM
+executable.  It is not proof that both solvers used identical boundary
+conditions or failed for one identical numerical reason.  The text log does
+not establish the final material assignment, pressure units, rotation
+axis/origin/speed, turbulence choice, or initialization.  A native Fluent
+=.cas.h5= or complete setup journal is needed for that audit.
+
+* Inspecting the result
+
+Generate or refresh VTK:
+
+#+begin_src sh
+foamToVTK -case "$case_dir" -time 285,340 \
+  -fields '(p U)' -allPatches -useTimeName
+#+end_src
+
+Open the case:
+
+#+begin_src sh
+paraview "$case_dir/S100-paper-baseline.foam"
+#+end_src
+
+Useful images:
+
+- [[file:../../out/openfoam_s100_paper_baseline/S100-0rpm-pressure.png][accepted 0 rpm pressure]]
+- [[file:../../out/openfoam_s100_paper_baseline/S100-200rpm-rejected-pressure.png][rejected 200 rpm pressure]]
+- [[file:../../out/openfoam_s100_paper_baseline/S100-200rpm-rejected-velocity.png][rejected 200 rpm velocity]]
+
+Full result summary:
+[[file:../../out/openfoam_s100_paper_baseline/RUN_RESULTS.md][RUN_RESULTS.md]].
+
+[[file:04-paper-inputs.org][Previous: paper inputs]] | [[file:00-index.org][Index]] | [[file:06-cavitation-model.org][Next: cavitation model]]

@@ -28,13 +28,22 @@ does not rewrite the result of another stage.
 | No-port Hex8 baseline | =structured_hex_no_port.py= | =PASS= | Full-360 analytic structured mesh with no feed passage. |
 | Ported Prism6 mesh | =layered_prism_central_feed.py= | =PASS= | Full-360 conformal film plus open central feed passage. |
 | Solver-neutral export | =export_solver_neutral.py= | =STATIC_PASS_FLUENT_NOT_RUN= | Clean MSH/CGNS round trips match canonical nGap_04 and nGap_08 arrays. |
-| Fluent import | =fluent_import_check.py= | =NOT_RUN= | PyFluent/Fluent unavailable; no import acceptance or native Fluent mesh. |
-| OpenFOAM audit | optional | =SKIPPED= in current production reports | The mesh utilities were disabled with =--openfoam skip=; no solver was run. |
+| Canonical Fluent import audit | =fluent_import_check.py= | =NOT_ACCEPTED= | The earlier S100 Fluent solve diverged and does not establish =FLUENT_IMPORT_PASS=. |
+| OpenFOAM audit in production mesh reports | optional | =SKIPPED= | These mesh-generation runs used =--openfoam skip=; the status is scoped to those reports. |
+| Downstream S100 OpenFOAM import | [[file:../handoff/02-mesh-import.org][handoff import procedure]] | =ACCEPTED= | =gmshToFoam=, patch correction, and standard =checkMesh= accepted the 294,912-cell Hex8 mesh. |
+| Downstream OpenFOAM solution study | [[file:../handoff/00-index.org][CFD handoff]] | accepted liquid branch through 20 rpm | The first 20-to-50-rpm update stopped at 20.2 rpm on =p_min < pSat=; no two-phase point is accepted. |
+| Native Reynolds/JFO application | =bash openfoam/check_jfoBearingFoam.sh= | =UNVALIDATED_CANDIDATE= | The zero-speed check and high-speed continuation pass internal gates; external JFO benchmark and three-grid checks remain mandatory. |
 
 The strict CAD command is therefore expected to return nonzero on the currently
 recorded build.  Inspect its =params.json= rather than changing the tolerance or
 using the rejected STEP.  The trusted native BREP files remain published for
 the downstream open-source path.
+
+The commands below rebuild the canonical CAD and mesh contracts.  They do not
+replay the later solver study.  OpenFOAM case construction, replay, checkpoint,
+and guarded-ramp commands live in
+[[file:../handoff/08-replay-commands.org][the replay handoff]] and
+[[file:../handoff/13-guarded-2000rpm-ramp.org][the guarded-ramp handoff]].
 
 * Generate the default geometry contracts
 

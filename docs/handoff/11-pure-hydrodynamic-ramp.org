@@ -1,0 +1,423 @@
+#+title: 11 - Zero-Pressure-Bias Hydrodynamic Ramp
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:10-problems-and-next.org][Previous: problems and decisions]] | [[file:00-index.org][Index]] | [[file:12-five-rpm-jump-diagnosis.org][Next: five-rpm jump diagnosis]]
+
+* What changed
+
+The new branch answers a different question from the old 0.5 MPa case:
+
+#+begin_quote
+Can journal rotation alone generate a stable hydrodynamic pressure field when
+all openings have the same ambient pressure and rupture/cavitation physics is
+active before rotation starts?
+#+end_quote
+
+Case:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/][out/openfoam_s100_pure_hydrodynamic]]
+
+This case does *not* use the pressure-fed time-285 field.  It starts from the
+exact zero-velocity field in
+[[file:../../out/openfoam_s100_zero_flow/][openfoam_s100_zero_flow]].
+
+* Four experiments that must not be mixed
+
+| Rotation | Pressure bias | Meaning |
+|---+---+---|
+| 0 rpm | 0 | quiescent solver/cavitation equilibrium |
+| 0 rpm | 0.5 MPa | stationary pressure-driven commissioning case |
+| greater than 0 | 0 | pure hydrodynamic bearing experiment |
+| greater than 0 | 0.5 MPa | hybrid hydrostatic/hydrodynamic experiment |
+
+Here, "pure hydrodynamic" means that rotation is the only imposed energy
+source.  The feed and axial ends remain connected to ambient reservoirs so
+that oil can enter or leave as the solution requires.  It does not mean
+"fill the domain and then close the feed."
+
+Closing the feed would change =pressure_feed= into a wall.  That is a separate
+sealed-cavity experiment, not an initialization step for the present
+reservoir-connected bearing.
+
+* Exact initial state and boundary meaning
+
+- Mesh: byte-for-byte copy of
+  =openfoam_s100_zero_flow/constant/polyMesh=.
+- Velocity: copy of =openfoam_s100_zero_flow/0/U=; internal =U= is zero and
+  journal speed is 0 rpm.
+- Pressure: uniform =p_rgh = 101325 Pa= absolute.
+- Oil fraction: uniform =alpha.oil = 1=.
+- =pressure_feed=, =axial_end_z0=, and =axial_end_zL= all use
+  =p_rgh = 101325 Pa=.
+- All three opening =alpha.oil= conditions are =inletOutlet= with oil
+  fraction one on inflow.  Vapour can be advected out instead of being
+  overwritten by a fixed oil value.
+- =journal_wall= and =stationary_wall= remain no-slip walls.
+- Gravity is zero, so =p_rgh= is absolute pressure.
+
+The 0.5 MPa field, =285/U=, =285/p=, and all pressure-mapping helper fields
+were deliberately excluded.
+
+* Rupture/cavitation treatment
+
+The model is active from the 0-rpm gate:
+
+#+begin_example
+solver              incompressibleVoF
+fvModel             VoFCavitation
+mass transfer       SchnerrSauer
+time treatment      localEuler steady pseudo-time
+#+end_example
+
+This is preferable to allowing a single liquid to carry negative absolute
+pressure or clipping pressure after the solve.  It conserves a transported
+liquid/vapour fraction and supplies mass-transfer source terms.
+
+It is not yet a validated oil-bearing cavitation law.  The direct conical
+paper uses a Reynolds rupture condition, not three-dimensional
+Schnerr-Sauer.  The current =pSat= is a lubricant screening value, while
+surface tension, vapour properties, nuclei density, and nucleus diameter are
+declared assumptions copied or adapted from available OpenFOAM practice.
+Those inputs need oil-specific calibration or sensitivity study.
+
+An important physical distinction remains:
+
+- pure oil vapour needs pressure close to the very low vapour pressure;
+- dissolved or entrained air can appear at much higher pressure;
+- a Reynolds/JFO rupture model represents a broken film without resolving
+  individual bubbles.
+
+The present branch is therefore a native liquid/vapour baseline, not proof
+that real bearing cavities contain pure oil vapour.
+
+* Force-reference correction
+
+Absolute ambient pressure acting on a conical surface has a nonzero resultant.
+OpenFOAM's force object defaults =pRef= to zero, so an absolute-pressure field
+would include a large meaningless atmospheric load.
+
+The new monitor uses:
+
+#+begin_example
+pRef  101325;
+CofR  (0 -3e-05 0.03);
+#+end_example
+
+Loads are therefore gauge loads, and moments are taken about the bearing
+midpoint.  Without =pRef=, even the exact ambient 0-rpm field reported a
+spurious axial force.  This was a monitoring error, not a fluid force.
+
+* Verification and results
+
+** Mesh gate
+
+=checkMesh= retained the accepted imported topology:
+
+#+begin_example
+points: 322816
+cells: 294912
+hexahedra: 294912
+regions: 1
+max non-orthogonality: 9.99988191989 degrees
+max skewness: 0.440812139371
+Mesh OK.
+#+end_example
+
+** 0 rpm cavitation-enabled gate
+
+The three-step gate ended normally:
+
+| Quantity | Result |
+|---+---:|
+| Maximum velocity | 1.40308779143e-10 m/s |
+| Absolute pressure range | 101324.999199 to 101325.000001 Pa |
+| Minimum/mean/maximum =alpha.oil= | 1 / 1 / 1 |
+| Opening flows | order 1e-16 m3/s |
+
+This proves that adding the phase model does not disturb the exact
+zero-pressure-bias equilibrium.  The checkpoint is
+=checkpoints/0rpm/3=.
+
+** Why the direct 20 rpm jump was rejected
+
+A diagnostic jump from 0 directly to 20 rpm was intentionally screened.  By
+pseudo-time 8 it had:
+
+| Quantity | Result |
+|---+---:|
+| Minimum absolute pressure | -839.93 Pa |
+| Maximum absolute pressure | 206215 Pa |
+| Minimum =alpha.oil= | 0.42547 |
+| Mean =alpha.oil= | 0.971189 |
+
+Local continuity errors were still very large and all three openings showed
+inflow.  Those values describe an abrupt numerical transient, not a stable
+cavity.  The complete diagnostic was moved, not deleted:
+
+[[file:../../out/openfoam_s100_pure_hydrodynamic/diagnostics/direct-20rpm-from-zero/][diagnostics/direct-20rpm-from-zero]]
+
+** Accepted 1 rpm checkpoint
+
+The 0-rpm field was restored and held at 1 rpm through pseudo-time 75:
+
+| Quantity | Pseudo-time 75 |
+|---+---:|
+| Maximum velocity | 5.536280758681e-3 m/s |
+| Absolute pressure range | 96371.0996 to 106278.9770 Pa |
+| Minimum/mean/maximum =alpha.oil= | 1 / 1 / 1 |
+| Feed flow | -8.773155737709e-12 m3/s |
+| z0 flow | +4.731998688713e-12 m3/s |
+| zL flow | +4.040026601934e-12 m3/s |
+| Relative boundary-flow imbalance | 6.4431e-5 |
+| Hydrodynamic pressure force, X | 17.2442084 N |
+| Hydrodynamic pressure moment, Y | -0.1617377 N.m |
+| Viscous torque, Z | -0.00387446 N.m |
+
+From pseudo-time 74 to 75, maximum velocity changed by 0.0045%, pressure
+force by 0.0050%, and viscous torque by 0.0923%.  This passes the low-speed
+continuation gate.
+
+No vapour formed at 1 rpm because pressure remained far above =pSat=.  The
+cavitation model was active; its source simply had no physical reason to
+create vapour at this speed.
+
+Checkpoint: =checkpoints/1rpm/75=.
+
+** Accepted 5 rpm checkpoint
+
+The accepted 1-rpm field was restarted at 5 rpm and held through pseudo-time
+150. Time 100 was not accepted because the last-step viscous-torque drift was
+1.56%. Time 125 was also held back because torque and viscous force were
+still changing by 0.33% and 0.46% per step. No speed change was made during
+those extensions.
+
+At time 150:
+
+| Quantity | Pseudo-time 150 |
+|---+---:|
+| Maximum velocity | 2.76875124245e-2 m/s |
+| Absolute pressure range | 76544.1090 to 126106.2355 Pa |
+| Minimum/mean/maximum =alpha.oil= | 1 / 1 / 1 |
+| Feed flow | -4.698286385345e-11 m3/s |
+| z0 flow | +2.865263203689e-11 m3/s |
+| zL flow | +1.832932999584e-11 m3/s |
+| Relative boundary-flow imbalance | 9.59743e-6 |
+| Pressure-force magnitude | 86.2697629 N |
+| Pressure-moment magnitude | 0.8089296 N.m |
+| Viscous-force magnitude | 0.0975269 N |
+| Viscous torque, Z | -0.01928550 N.m |
+
+Last-step drifts were 0.0030% for maximum velocity, 0.0047% for pressure
+force, 0.0874% for viscous force, and 0.0603% for viscous torque. Their
+five-step drifts were 0.0170%, 0.0238%, 0.5010%, and 0.3473%. The final
+corrected local continuity error was 5.44e-9.
+
+Pressure stayed far above =pSat= and =alpha.oil= remained exactly one, so
+this is a settled single-liquid point within the cavitation-enabled branch,
+not a cavity result.
+
+Checkpoint: =checkpoints/5rpm/150=.
+
+Case-local summary:
+[[file:../../out/openfoam_s100_pure_hydrodynamic/RUN_RESULTS.md][RUN_RESULTS.md]].
+
+* Recreate the clean branch
+
+The shortest exact replay reuses only the retained clean inputs, not any
+generated high-pressure field:
+
+#+begin_src sh
+repo=/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing
+zero="$repo/out/openfoam_s100_zero_flow"
+template="$repo/out/openfoam_s100_pure_hydrodynamic"
+case="$repo/out/openfoam_s100_pure_hydrodynamic_replay"
+
+test ! -e "$case" || {
+  echo "Refusing to overwrite $case"
+  return 1
+}
+
+mkdir -p "$case/0" "$case/constant" "$case/system"
+cp -a "$zero/constant/polyMesh" "$case/constant/"
+cp -a "$zero/0/U" "$case/0/"
+cp -a "$template/0/alpha.oil" "$template/0/p_rgh" "$case/0/"
+cp -a "$template/constant/fvModels" \
+      "$template/constant/g" \
+      "$template/constant/momentumTransport" \
+      "$template/constant/phaseProperties" \
+      "$template/constant/physicalProperties.oil" \
+      "$template/constant/physicalProperties.vapour" "$case/constant/"
+cp -a "$template/system/controlDict" \
+      "$template/system/decomposeParDict" \
+      "$template/system/functions" \
+      "$template/system/fvSchemes" \
+      "$template/system/fvSolution" "$case/system/"
+touch "$case/S100-pure-hydrodynamic.foam"
+
+foam_root=/home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14
+
+bash -lc "
+  source '$foam_root/etc/bashrc'
+  foamDictionary '$case/system/controlDict' -entry startFrom -set startTime
+  foamDictionary '$case/system/controlDict' -entry endTime -set 3
+  foamDictionary '$case/system/controlDict' -entry writeInterval -set 1
+"
+#+end_src
+
+The source =0/U= still contains =omega 0 [rpm]=.  Verify before running:
+
+#+begin_src sh
+bash -lc "
+  source '$foam_root/etc/bashrc'
+  foamDictionary '$case/0/U' \
+    -entry boundaryField/journal_wall/omega
+  foamDictionary '$case/0/p_rgh' \
+    -entry boundaryField/pressure_feed/value
+  foamDictionary '$case/system/functions' \
+    -entry journalForces/pRef
+"
+#+end_src
+
+Run the 0-rpm gate:
+
+#+begin_src sh
+bash -lc "
+  set -o pipefail
+  source '$foam_root/etc/bashrc'
+  checkMesh -case '$case' 2>&1 | tee '$case/log.checkMesh.standard'
+  foamRun -case '$case' 2>&1 | tee '$case/log.equilibrate-0rpm'
+"
+#+end_src
+
+Preserve it, then start the first constant-speed stage:
+
+#+begin_src sh
+mkdir -p "$case/checkpoints/0rpm"
+cp -a "$case/3" "$case/checkpoints/0rpm/3"
+
+bash -lc "
+  set -o pipefail
+  source '$foam_root/etc/bashrc'
+  foamDictionary '$case/3/U' \
+    -entry boundaryField/journal_wall/omega -set '1 [rpm]'
+  foamDictionary '$case/system/controlDict' -entry startFrom -set latestTime
+  foamDictionary '$case/system/controlDict' -entry endTime -set 75
+  foamDictionary '$case/system/controlDict' -entry writeInterval -set 5
+  foamRun -case '$case' 2>&1 | tee '$case/log.ramp-1rpm'
+"
+#+end_src
+
+Do not automate speed advancement blindly.  Inspect the monitors and keep the
+same speed until the gate passes.
+
+* Next controlled stages
+
+The accepted branch is now:
+
+#+begin_example
+0 -> 1 -> 5 -> 10 -> 12 -> 14 -> 15 rpm
+#+end_example
+
+All seven checkpoints are liquid states: =alpha.oil= is exactly one and
+minimum absolute pressure stays above =pSat=.  The accepted 15-rpm state is
+=checkpoints/15rpm/400=.
+
+The manual intermediate ladder was useful for diagnosis, but it is not the
+future operating procedure.  A direct restart from the accepted 10-rpm field
+to 15 rpm failed even though 15 rpm itself is solvable.  Controlled copies
+showed:
+
+- lower =maxCo=, =maxAlphaCo=, and =maxDeltaT= did not change the first
+  negative-pressure update;
+- forcing startup =correctPhi= did not change it;
+- preventing Schnerr-Sauer activation while leaving the model loaded let the
+  same direct jump recover;
+- OpenFOAM's native continuous =omega= ramp reached 15 rpm with the actual
+  cavitation model active, =alpha.oil= equal to one, and corrected local
+  continuity of order =1e-8=.
+
+The failure mechanism is therefore a discontinuous nonlinear update.  The
+wall velocity changes by 50% at restart while the interior fields still
+describe 10 rpm.  The first coupled pressure update briefly crosses =pSat=;
+active phase-change feedback then amplifies the transient.  This conclusion
+comes from the controlled calculations, not from the paper.
+
+The detailed evidence, commands, and control cases are in
+[[file:12-five-rpm-jump-diagnosis.org][the five-rpm jump diagnosis]].
+
+** Continuation policy
+
+Use a native =Function1= table for wall =omega=:
+
+#+begin_example
+omega
+{
+    type table;
+    values
+    (
+        (225 1.0471975511965976)
+        (250 1.5707963267948966)
+        (1000 1.5707963267948966)
+    );
+}
+#+end_example
+
+This example changes 10 to 15 rpm over 25 pseudo-steps and then holds
+15 rpm.  It is a solver homotopy, not a physical acceleration schedule:
+=localEuler= time labels are not seconds.
+
+For the next target:
+
+1. copy an accepted checkpoint to an isolated case;
+2. ramp =omega= continuously instead of replacing it with a new constant;
+3. hold the target speed until loads and flows plateau;
+4. promote only after all gates pass.
+
+Near the expected pressure threshold, make the native ramp shallower and
+stop at the first sustained =alpha.oil < 1=.  That point requires a separate
+audit of the uncalibrated cavitation inputs and coupling; it must not be
+forced through by pressure clipping.
+
+For every stage require:
+
+- =0 <= alpha.oil <= 1=;
+- no material negative-pressure undershoot after settling;
+- pressure, phase fraction, flows, force, and moment have plateaued;
+- relative opening-flow imbalance below 0.5% for continuation and preferably
+  below 0.1% for a reported point;
+- no fatal error, floating-point exception, or growing continuity failure.
+
+Only after a ramped 20-rpm state passes should the study widen toward
+=50, 100, 150, 200 rpm= and then the paper's approximately =496.6 rpm=
+surface-speed point.  The paper's separately quoted 2000 rpm remains a
+later operating point.
+
+* Animation decision
+
+No scientific animation has been produced through 15 rpm.  Every accepted
+field has =alpha.oil= exactly one everywhere, so an oil-fraction video would
+show no cavity motion.  The rejected jump is failure evidence, not a physical
+cavity animation.
+
+Generate the first scientific animation only after a rotating stage both
+forms a nontrivial phase/pressure structure and passes the conservation and
+drift gates.  Animate the held-speed convergence separately from any future
+physical-time startup; pseudo-time frames must never be labelled as seconds.
+
+* Inspect in ParaView
+
+#+begin_src sh
+case=/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/openfoam_s100_pure_hydrodynamic
+
+paraview "$case/S100-pure-hydrodynamic.foam"
+
+foamToVTK -case "$case" -time '0,3,75,150,225,300,350,400' \
+  -fields '(U p p_rgh alpha.oil)' -allPatches -useTimeName
+#+end_src
+
+The existing explicit =VTK/= export covers the exact zero seed and accepted
+1-rpm and 5-rpm fields; the command above adds all later accepted
+checkpoints.  Gmsh remains best for the original mesh; ParaView is best for
+pressure, velocity, oil fraction, streamlines, and cutaways.
+
+[[file:10-problems-and-next.org][Previous: problems and decisions]] | [[file:00-index.org][Index]] | [[file:12-five-rpm-jump-diagnosis.org][Next: five-rpm jump diagnosis]]

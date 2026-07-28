@@ -10,8 +10,10 @@ Commands assume the repository root as the working directory.
   diagnostic subsets with solver meshes.
 - [[file:outputs-and-reports.org][Outputs and reports]] :: artifact contracts, units, hashes, stage statuses,
   and atomic failure behavior.
-- [[file:openfoam-handoff.org][OpenFOAM handoff]] :: optional =gmshToFoam= and =checkMesh= audit only; no CFD
-  setup or solver run.
+- [[file:openfoam-handoff.org][OpenFOAM mesh handoff]] :: optional =gmshToFoam= and =checkMesh= integration in
+  the canonical mesh-generation CLIs.
+- [[file:../handoff/00-index.org][OpenFOAM CFD handoff]] :: accepted S100 import and commissioning evidence,
+  rejected diagnostics, low-speed continuation, and the current guarded stop.
 - [[file:../interchange/operations-and-reports.org][Solver-neutral and Fluent handoff]] :: clean MSH/CGNS exports, static reports,
   live-import promotion, and Workbench boundary.
 - [[file:code-reading-guide.org][Code-reading guide]] :: shortest route from entry points through geometry,

@@ -1,6 +1,6 @@
-#+UPDATED_AT: [2026-07-16 Thu 19:34]
+#+UPDATED_AT: [2026-07-29 Wed]
 #+TITLE: Eccentric Conical Journal Bearing
-#+SUBTITLE: Exact fluid CAD, layered volume meshes, and solver-neutral interchange
+#+SUBTITLE: Exact fluid CAD, validated meshes, and guarded OpenFOAM continuation
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
@@ -15,16 +15,21 @@ eccentric conical journal bearing with a radial central feed.  It contains:
 - a film-only structured Hex8 mesh with a surface pressure-inlet patch;
 - a retained conformal central-feed layered Prism6 full-passage mesh;
 - clean MSH 4.1, MSH 2.2, and CGNS interchange from canonical NumPy arrays;
-- optional OpenFOAM and Fluent import audits.
+- optional OpenFOAM and Fluent import audits in the mesh-generation pipeline;
+- a separately documented OpenFOAM 14 study on the validated S100
+  surface-inlet Hex8 mesh.
 
 Solver meshes describe the lubricant control volume, not the metal assembly.
 Their annular centre is empty because the journal occupies that space
 physically; separately exported journal/bushing STEP solids are visual context,
 not additional fluid zones.
 
-It does not configure or run a CFD solution.  Rotation rate, lubricant model,
-supply/outlet conditions, cavitation, turbulence, thermal coupling, and solver
-selection remain separate decisions.
+The canonical CAD and mesh-generation commands stop before assigning CFD
+physics.  The downstream OpenFOAM study is intentionally separate and is
+recorded in [[file:docs/handoff/00-index.org][the CFD handoff]].  It includes
+accepted commissioning and low-speed liquid checkpoints, rejected diagnostics,
+and a guarded saturation-threshold stop.  It does not yet contain an accepted
+two-phase cavitation result.
 
 * Current state
 
@@ -38,11 +43,27 @@ selection remain separate decisions.
 | Surface-inlet structured Hex8 mesh                | PASS                          |
 | Central-feed layered Prism6 mesh                  | PASS                          |
 | Clean MSH/CGNS static interchange                 | PASS                          |
-| Live Fluent import                                | NOT RUN                       |
-| OpenFOAM conversion                               | optional; tool-dependent      |
+| Canonical Fluent import audit                     | NOT ACCEPTED                  |
+| OpenFOAM 14 source build                          | ACCEPTED                      |
+| S100 =gmshToFoam= import and standard =checkMesh= | ACCEPTED                      |
+| Zero-flow solver proof                            | ACCEPTED                      |
+| 0 rpm, 0.5 MPa pressure-fed commissioning case   | ACCEPTED                      |
+| 200 rpm single-liquid diagnostic                  | REJECTED                      |
+| Zero-bias liquid continuation through 20 rpm      | ACCEPTED                      |
+| First 20-to-50-rpm update at 20.2 rpm             | GUARDED SATURATION STOP       |
+| Native Reynolds/JFO high-speed result             | UNVALIDATED CANDIDATE         |
 
 The STEP failure is isolated to neutral-format translation; native BREP is the
 accepted CAD handoff to the open-source mesh pipeline.
+
+The earlier Fluent S100 solve log is rejected divergence evidence, not a
+canonical import-pass result.  At 20 rpm the OpenFOAM branch remains
+single-liquid and passes its acceptance gates; the 20.2-rpm update crossed the
+configured =pSat= threshold and was stopped before being treated as cavitation.
+The later native Reynolds/JFO midsurface application reaches 2000 rpm, but its
+64.455% severe rupture region has not passed an external benchmark or a
+three-grid study.  It is preserved for validation, not reported as trusted
+bearing performance.
 
 * Pipeline
 
@@ -56,6 +77,7 @@ accepted CAD handoff to the open-source mesh pipeline.
 | Prism6 mesh    | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
 | Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]]      | clean MSH/CGNS files reconstructed from canonical arrays         |
 | Fluent audit   | [[file:interchange/fluent_import_check.py][fluent_import_check.py]]        | live import, zone/count/quality checks, guarded native save      |
+| CFD study      | [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]                  | accepted, exploratory, and rejected solver evidence              |
 
 * Environment and regression
 
@@ -75,6 +97,7 @@ Production commands and output contracts are maintained in
 - [[file:docs/geometry/index.org][CAD geometry and validation]]
 - [[file:docs/meshing/index.org][Mesh construction and topology]]
 - [[file:docs/interchange/index.org][Solver-neutral interchange]]
+- [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]
 - [[file:docs/project/decisions.org][Decision register]]
 - [[file:docs/references/literature.org][Literature]]
 

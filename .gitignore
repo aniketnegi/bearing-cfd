@@ -1,6 +1,6 @@
 .venv/
 .uv-cache/
 .pytest_cache/
+build/
 out/
 __pycache__/
-/docs/handoff/

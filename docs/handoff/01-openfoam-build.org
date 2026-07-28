@@ -1,0 +1,233 @@
+#+title: 01 - Building OpenFOAM 14
+#+startup: overview
+#+options: toc:2 num:nil
+
+[[file:00-index.org][Index]] | [[file:02-mesh-import.org][Next: mesh import]]
+
+* Why we built from source
+
+The first attempt used Arch packaging:
+
+#+begin_src sh
+pacman -Ss openfoam
+pacman -S openfoam-org
+paru -S openfoam-org
+#+end_src
+
+=pacman -Ss= returned no repository package.  The direct installation then
+failed correctly because it was not run as root:
+
+#+begin_example
+error: you cannot perform this operation unless you are root.
+#+end_example
+
+The first AUR retry failed while cloning Zoltan:
+
+#+begin_example
+fatal: unable to access 'https://aur.archlinux.org/zoltan/':
+OpenSSL SSL_read: OpenSSL/3.6.3: error:0A000126:SSL routines::unexpected eof
+while reading, errno 0
+#+end_example
+
+That was a network transfer failure, so retrying was reasonable.  The second
+attempt got further: it installed =fast_float=, =scotch=, =boost=, =eigen=,
+=cgal=, and =utf8cpp= and built =gklib= and =metis=.  It then failed in the
+AUR =parmetis= recipe:
+
+#+begin_example
+CMake Error: The warning category "l,-z,relro,-z,now" is not known.
+make: *** [Makefile:77: config] Error 1
+==> ERROR: A failure occurred in prepare().
+error: failed to build 'parmetis-1:4.0.3+p7-1':
+error: can't build zoltan-3.901-1, deps not satisfied: parmetis
+error: can't build openfoam-13.20250911+cde978a-1 (openfoam-org),
+deps not satisfied: parmetis  zoltan
+#+end_example
+
+This was not an OpenFOAM solver failure.  The AUR =parmetis= recipe passed
+linker flags as separate CMake arguments, and CMake 4.4 interpreted
+=-Wl,...= as a warning-category option.  Patching a chain of out-of-tree
+packages would have added more uncertainty than building the Foundation
+release by its documented route.
+
+OpenFOAM's own Linux instructions say that users of non-Ubuntu distributions
+should compile the source.  See [[https://openfoam.org/download/14-linux/][OpenFOAM 14 for Linux]],
+[[https://openfoam.org/download/14-source/][source download]], and
+[[https://openfoam.org/download/source/third-party-software/][third-party software]].
+
+* Source checkout
+
+The source was kept inside the project workspace rather than installed
+system-wide:
+
+#+begin_src sh
+mkdir -p /home/aniketnegi/code/ankt/btp/.openfoam
+cd /home/aniketnegi/code/ankt/btp/.openfoam
+
+git clone --depth 1 https://github.com/OpenFOAM/OpenFOAM-14.git
+git clone --depth 1 https://github.com/OpenFOAM/ThirdParty-14.git
+#+end_src
+
+The exact revisions used are:
+
+| Tree | Revision |
+|---+---|
+| OpenFOAM-14 | =7b05503f98a85be88af930df48623b4d152bfc35= |
+| ThirdParty-14 | =6f75cb6aa1a3d8f1ba768840f9ee535244b4c70a= |
+| OpenFOAM build label | =14-7b05503f98a8= |
+
+Verify the local checkout:
+
+#+begin_src sh
+git -C /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14 rev-parse HEAD
+git -C /home/aniketnegi/code/ankt/btp/.openfoam/ThirdParty-14 rev-parse HEAD
+cat /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14/.build
+#+end_src
+
+* First build problem: environment not loaded
+
+The first build command was:
+
+#+begin_src sh
+cd /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14
+./Allwmake -q -j 6
+#+end_src
+
+It stopped immediately:
+
+#+begin_example
+Allwmake error: The OpenFOAM environment is not set.
+Check the OpenFOAM entries in your dot-files and source them.
+#+end_example
+
+The solution was to source the release environment in the same shell:
+
+#+begin_src sh
+cd /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14
+source etc/bashrc
+./Allwmake -q -j 6
+#+end_src
+
+=Allwmake= called the adjacent =ThirdParty-14/Allwmake= automatically; no
+separate third-party build command was run.  The main build began at
+2026-07-25 11:45:19 UTC and was verified complete at 13:58:37 UTC, about two
+hours and thirteen minutes later.  An incremental repeat completed in about
+17 seconds.  These are historical observations, not portable build-time
+promises.
+
+* Build warning and why it did not block us
+
+The managed execution environment printed:
+
+#+begin_example
+mkdir: cannot create directory '/home/aniketnegi/.OpenFOAM':
+Read-only file system
+#+end_example
+
+The source and platform output directories under the writable workspace were
+still built.  A normal interactive user shell has a writable home directory,
+so this sandbox-specific warning should not appear there.
+
+* ParaView preference
+
+Before the final build environment was settled, Bash emitted:
+
+#+begin_example
+.../etc/config.sh/paraview: line 95: [: !=: unary operator expected
+#+end_example
+
+OpenFOAM had defaulted to =ParaView_TYPE=system=.  We did not need to compile
+OpenFOAM's ParaView reader because =foamToVTK= and the system ParaView
+application cover this project.  The site preference was:
+
+[[file:../../../../.openfoam/site/14/etc/prefs.sh][.openfoam/site/14/etc/prefs.sh]]
+
+#+begin_src sh
+export ParaView_TYPE=none
+#+end_src
+
+The verified environment then used =SYSTEMOPENMPI=, ThirdParty
+Scotch/PT-Scotch and Zoltan, and =ParaView_TYPE=none=.
+
+* Verification
+
+Running the same build command again returned successfully and mostly said
+that no work was required.  The third-party summary included:
+
+#+begin_example
+ThirdParty installation of Scotch decomposition found
+ThirdParty installation of PT-Scotch decomposition found
+METIS decomposition is disabled
+ParMETIS decomposition is disabled
+ThirdParty installation of Zoltan decomposition found
+Done ThirdParty Allwmake
+#+end_example
+
+ParMETIS was not required for the serial tests or the four-way decomposition
+used here.  Scotch was available and was used by =decomposePar=.
+
+The active build reports:
+
+#+begin_example
+WM_PROJECT_VERSION=14
+WM_OPTIONS=linux64GccDPInt32Opt
+#+end_example
+
+The required executables were verified:
+
+#+begin_src sh
+bash -lc '
+  source /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14/etc/bashrc
+  foamVersion
+  for command_name in foamRun gmshToFoam checkMesh decomposePar \
+      reconstructPar foamToVTK foamDictionary foamPostProcess; do
+    command -v "$command_name"
+  done
+'
+#+end_src
+
+The resulting build configuration was Linux/GCC, double precision, 32-bit
+labels, optimized, and system OpenMPI.  Versions recorded on the build
+machine were GCC 16.1.1, Make 4.4.1, Flex 2.6.4, Bison 3.8.2, CMake 4.4.0,
+OpenMPI 5.0.10, and Scotch 7.0.12.  The local trees occupied about 2.4 GiB
+for OpenFOAM and 85 MiB for ThirdParty, with 151 executables and 152 shared
+libraries at audit time.
+
+* Zsh activation detail
+
+Sourcing =etc/bashrc= directly in the current zsh currently emits:
+
+#+begin_example
+.../etc/config.sh/paraview:42: no matches found:
+.../ThirdParty-14/platforms/linux64Gcc/cmake-*
+#+end_example
+
+This comes from zsh's unmatched-glob behavior and the absent locally built
+ParaView/CMake directory.  It is not a failure of =foamRun= or =checkMesh=.
+The shortest reliable approach is to execute OpenFOAM commands through Bash:
+
+#+begin_src sh
+bash -lc '
+  source /home/aniketnegi/code/ankt/btp/.openfoam/OpenFOAM-14/etc/bashrc
+  foamVersion
+'
+#+end_src
+
+The build also reported:
+
+#+begin_example
+Warning: ParaView not found in . Skipping.
+#+end_example
+
+This was consistent with the explicit =ParaView_TYPE=none= preference.  It
+only skipped OpenFOAM's optional locally built ParaView reader.  The installed
+ParaView application and =foamToVTK= were used for visualization.
+
+* Local references
+
+- [[file:../../../../.openfoam/OpenFOAM-14/README.org][OpenFOAM source README]]
+- [[file:../../../../.openfoam/ThirdParty-14/README.org][ThirdParty source README]]
+- [[file:../../../../.openfoam/OpenFOAM-14/doc/Guides/OpenFOAMUserGuide-A4.pdf][OpenFOAM user guide]]
+- [[https://cpp.openfoam.org/v14/][OpenFOAM 14 source API]]
+
+[[file:00-index.org][Index]] | [[file:02-mesh-import.org][Next: mesh import]]

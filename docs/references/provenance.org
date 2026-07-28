@@ -1,14 +1,15 @@
 #+TITLE: Provenance and Evidence Boundaries
-#+DATE: <2026-07-16>
+#+DATE: <2026-07-29>
 #+OPTIONS: toc:2 num:nil
 #+STARTUP: content
 
 * Scope
 
 This record covers the reproducible CAD, Gmsh preflight, surface-smoke,
-no-port Hex8, and central-feed Prism6 artifacts in this repository.  It records
-where claims come from and prevents screenshots, rejected formats, or an
-unavailable conversation link from becoming unstated technical evidence.
+structured Hex8, central-feed Prism6, solver-neutral interchange, and
+downstream OpenFOAM evidence in this repository.  It records where claims come
+from and prevents screenshots, rejected formats, or an unavailable conversation
+link from becoming unstated technical evidence.
 
 * Data lineage
 
@@ -27,6 +28,12 @@ bearing_film.py + CLI inputs
                  -> clean MSH 4.1 + MSH 2.2 + CGNS (m)
                  -> static format round trips
                  -> optional live Fluent import/check
+
+validated S100 surface-inlet Hex8 mesh
+  -> gmshToFoam + patch correction + checkMesh
+  -> zero-flow solver proof
+  -> isolated pressure-fed and zero-pressure-bias OpenFOAM cases
+  -> accepted checkpoints + rejected diagnostics + guarded ramp state
 #+end_example
 
 The ported mesh reads =resolved_parameters= from =params.json=, including the
@@ -52,9 +59,19 @@ Contract implementation:
 | No-port analytic Hex8 family | PASS | Frozen full-360 no-feed regression reference. |
 | Central-feed analytic Prism6 family | PASS | Conformal full-360 ported volume mesh passes its recorded topology, geometry, quality, and format gates. |
 | Solver-neutral MSH/CGNS for default nGap_04 and nGap_08 | STATIC PASS | Canonical mesh, exact six boundary memberships, metre scale, and internal mouth survive Gmsh/CGNS round trips. |
-| Fluent CGNS import | NOT_RUN | No Fluent/PyFluent runtime was available; no native Fluent mesh or import-pass claim exists. |
-| OpenFOAM conversion in current production outputs | SKIPPED | No claim of OpenFOAM acceptance or CFD readiness beyond the mesh handoff contract. |
-| CFD solution | not attempted | No pressure, load, temperature, cavitation, or performance result exists in this stage. |
+| Canonical Fluent import audit | NOT ACCEPTED | The earlier S100 Fluent solve diverged; it is corroborating failure evidence, not =FLUENT_IMPORT_PASS=. |
+| OpenFOAM conversion in canonical production mesh reports | SKIPPED | Those reports used =--openfoam skip=; this remains true for that artifact family. |
+| Separate S100 OpenFOAM import | ACCEPTED | =gmshToFoam=, patch correction, and standard =checkMesh= accepted 294,912 Hex8 cells and the intended patches. |
+| Zero-flow and 0-rpm pressure-fed commissioning | ACCEPTED | Solver plumbing is proven; the 0.5 MPa case is pressure-driven, not pure hydrodynamic operation. |
+| 200-rpm single-liquid run and exploratory pressure-fed cavitation runs | REJECTED | Retain as failure evidence; do not report as bearing performance. |
+| Zero-bias OpenFOAM continuation | ACCEPTED THROUGH 20 RPM | Checkpoints remain bounded, conservative, and single-liquid through the accepted 20-rpm hold. |
+| First 20-to-50-rpm update | SATURATION_THRESHOLD at 20.2 rpm | The configured =pSat= threshold was crossed before cavity evolution; no two-phase result is accepted. |
+| Native Reynolds/JFO continuation | UNVALIDATED CANDIDATE | Source, checkpoints, and diagnostics are preserved, but the severe 64.455% rupture footprint has not passed an external benchmark or three-grid study. |
+
+The canonical mesh reports and the downstream CFD cases are separate evidence
+families.  A skipped optional audit in an older mesh report does not erase the
+later S100 import, and a successful S100 import does not retroactively promote
+the canonical Fluent interchange audit.
 
 * Hash and unit provenance
 

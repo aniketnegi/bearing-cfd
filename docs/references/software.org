@@ -94,10 +94,14 @@ is not required.
 
 * OpenFOAM
 
-OpenFOAM is not a Python dependency and no OpenFOAM version is pinned here.
-When installed externally, only =gmshToFoam= and =checkMesh= are invoked for
-the optional conversion audit.  The OpenFOAM Foundation source guide describes
-=gmshToFoam= as reading Gmsh =.msh= files:
+OpenFOAM is not a Python dependency.  The mesh-generation scripts discover
+=gmshToFoam= and =checkMesh= only for the optional conversion audit.  The
+downstream S100 study used a local OpenFOAM 14 source build; exact source and
+ThirdParty revisions, environment setup, and build evidence are recorded in
+[[file:../handoff/01-openfoam-build.org][the OpenFOAM build handoff]].
+
+The OpenFOAM Foundation source guide describes =gmshToFoam= as reading Gmsh
+=.msh= files:
 
 - [[https://cpp.openfoam.org/v13/dir_70ca48d6efc076aae6c126917cb7ccc1.html][OpenFOAM Foundation =gmshToFoam= directory reference]]
 
