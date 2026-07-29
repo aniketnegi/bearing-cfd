@@ -1,4 +1,5 @@
 #+TITLE: Literature
+#+UPDATED_AT: [2026-07-29 Wed]
 #+OPTIONS: toc:2 num:nil
 #+STARTUP: content
 
@@ -26,11 +27,66 @@ The paper analyzes the lubricant clearance using a modified Reynolds equation
 in a conical/spherical-coordinate formulation and solves the resulting
 thin-film problem by finite elements on a developed conical surface.  It
 motivates the periodic circumferential/axial master coordinates and the
-thin-film context.  It does not validate this project's three-dimensional feed,
-native-BREP assurance, or Tri3-to-Prism6 construction; those are local design
-decisions implemented in
-[[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][the local master-surface construction]] and
-[[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][explicit Prism6 construction]].
+thin-film context.  Its numerical results are compared with ANSYS Fluent and
+its 10-degree, aspect-ratio-one case is compared with five experimental
+pressure taps.  This makes it the closest target for conical pressure-field
+validation, but not for calibrated three-dimensional cavitation.
+
+The final circular O-grid Fluent candidate now matches its 100 mm length,
+50 mm mean radius, 50 micrometre radial clearance, and 10-degree semi-cone
+angle.  The paper does not establish the operating temperature, exact =V-32=
+product, pressure reference, complete three-dimensional feed treatment, or
+liquid--vapour/air inputs.  It therefore does not validate the local bore-patch
+feed representation or supply a Fluent cavitation material set.
+
+The publisher's current journal page explicitly lists the journal in the
+Science Citation Index Expanded:
+[[https://link.springer.com/journal/40997][Springer journal record]].
+
+* Three-dimensional CFD and cavitation shortlist
+
+Journal indexing is not enough by itself: a usable validation target must also
+disclose compatible geometry, materials, boundaries, model equations, and
+comparison quantities.  No inspected paper supplies all of those for the
+present smooth eccentric conical oil bearing.
+
+| Role | Source | What it can check | Strict limitation |
+|---+---+---+---|
+| Primary conical pressure target | Gangrade, Phalle, and Mantha, [[https://doi.org/10.1007/s40997-018-0217-2][10.1007/s40997-018-0217-2]] | Matching core geometry, liquid baseline, normalized maximum-pressure curve, and experimental circumferential pressure comparison | Main model is modified Reynolds/FEM; temperature, phase/gas properties, pressure reference, and reproducible 3-D cavitation setup are absent |
+| Secondary 3-D conical-method target | Vaziri et al., “Numerical analysis of conical hydrodynamic bearing lubricated with magnetorheological fluid,” [[https://doi.org/10.1007/s40430-023-04616-w][10.1007/s40430-023-04616-w]] | Full three-dimensional conical CFD/FEM practice and comparisons with earlier analytical, numerical, and experimental data | Magnetorheological non-Newtonian fluid and no cavitation; do not transfer its material parameters |
+| Cavitation-physics target | Song and Gu, “Development and Validation of a Three-Dimensional Computational Fluid Dynamics Analysis for Journal Bearings Considering Cavitation and Conjugate Heat Transfer,” [[https://doi.org/10.1115/1.4030633][10.1115/1.4030633]] | Three-dimensional journal-bearing CFD comparison of Half-Sommerfeld, vapour, and gaseous cavitation against experiments | Cylindrical two-groove bearing, not conical; reproduce its own case before using it as method evidence |
+| Closest topical support | Chen et al., “Multi-objective analysis design of spiral groove conical bearing considering cavitation effects,” [[https://doi.org/10.1016/j.rineng.2022.100582][10.1016/j.rineng.2022.100582]] | Multiphase cavitation in a conical bearing and a reported maximum 6.63% deviation from published test data | Spiral-groove geometry; strict SCIE status was not verified from a primary index record, so it is not the project's SCI anchor |
+
+The current Springer page also lists the Vaziri paper's journal in SCIE:
+[[https://link.springer.com/journal/40430][Journal of the Brazilian Society of
+Mechanical Sciences and Engineering]].
+
+** Hierarchical validation rule
+
+Use independent evidence for independent claims:
+
+1. reproduce the Gangrade normalized maximum-pressure curve and pressure-tap
+   comparison as far as its disclosed conditions permit;
+2. reproduce a fully specified Song--Gu cavitation case to check the
+   three-dimensional multiphase procedure;
+3. apply the checked procedure to the present conical mesh and report model,
+   property, mesh, timestep, and boundary-condition sensitivity;
+4. call the combined conical-cavitation result directly validated only after a
+   matching experiment or equally specific independent dataset is available.
+
+Agreement with one scalar, solver convergence, or transferring another
+bearing's phase properties is not validation.
+
+** Physical interpretation sources
+
+- Li et al., “Cavitation Mechanism of Oil-Film Bearing and Development of a
+  New Gaseous Cavitation Model Based on Air Solubility,”
+  [[https://doi.org/10.1115/1.4006702][10.1115/1.4006702]], supports treating
+  dissolved-air release as distinct from pure oil vapour.
+- Shen and Khonsari, “On the Magnitude of Cavitation Pressure of Steady-State
+  Lubrication,” [[https://doi.org/10.1007/s11249-013-0158-2][10.1007/s11249-013-0158-2]],
+  shows that effective lubricant-film cavitation pressure depends on dissolved
+  gas and operating conditions and is not one universal material constant.
 
 * JFO and complementarity verification
 

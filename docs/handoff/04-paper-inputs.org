@@ -1,4 +1,5 @@
 #+title: 04 - Paper Inputs, Unit Conversions, and Assumptions
+#+updated_at: [2026-07-29 Wed]
 #+startup: overview
 #+options: toc:2 num:nil
 
@@ -45,6 +46,20 @@ the same ambient pressure.  Continuous makeup flow is allowed, but rotation
 is the only energy source.  None of the inspected papers established a
 "fill once, then close the feed" procedure for this model.
 
+* Inputs absent from the target paper
+
+The paper labels the experimental lubricant only as =V-32= and gives no
+manufacturer, exact product, or operating/inlet temperature.  It does not
+report a numerical rupture or saturation-vapour pressure, vapour density or
+viscosity, bubble/nuclei calibration, dissolved or entrained air content,
+initial phase fraction, or flooded-versus-vented backflow phase.  Surface
+tension and wall wettability are also absent if an oil--air interface is to be
+resolved.
+
+None of those quantities may be described as paper-derived.  The paper's
+=0.5 MPa= pressure reference and its =2.6 m/s= versus =2000 rpm= operating
+points remain separate declared ambiguities below.
+
 * Values used
 
 | Quantity | Paper value or declared convention | OpenFOAM value |
@@ -73,13 +88,20 @@ In the single-phase incompressible solver, =p= is pressure divided by density,
 not pressure in pascals.  This is why the feed boundary is 581.395 rather
 than 500,000.
 
-* Geometry mismatch retained explicitly
+* Geometry scope and historical mesh distinction
 
-The paper's bearing length is 100 mm.  The current mesh length is 60 mm.
-The radius, clearance, and 10 degree cone match the selected paper values,
-but the length does not.  No hidden scaling was introduced to force a match.
-Therefore even a converged CFD result is a paper-grounded baseline, not an
-exact reproduction of the paper geometry.
+The paper's bearing length is 100 mm.  The historical S100 OpenFOAM mesh used
+by Chapters 01--13 is 60 mm long; results from that branch therefore remain a
+paper-grounded baseline rather than an exact geometric reproduction.
+
+The final body-fitted circular O-grid Fluent mesh is 100 mm long and matches
+the selected paper values for mean radius, radial clearance, and 10-degree
+semi-cone angle:
+
+[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][final native Fluent mesh]]
+
+That geometric match does not remove the paper's material, pressure-reference,
+speed, feed-boundary, or cavity-physics ambiguities.
 
 * Speed inconsistency in the paper
 
@@ -101,9 +123,11 @@ Those are not the same operating point.  The intended ladder therefore was
 500 rpm for 2.6 m/s, and 2000 rpm as the paper's separately stated
 validation point.
 
-Only 0 and 200 rpm were attempted.  The 200 rpm single-liquid state already
-became physically impossible, so higher speeds were deliberately not run
-with the same incomplete model.
+Only 0 and 200 rpm were attempted in the historical three-dimensional
+single-liquid branch.  The 200 rpm state already became physically impossible,
+so higher speeds were deliberately not run with that incomplete model.  The
+later reduced Reynolds/JFO candidate reaches 2000 rpm but remains externally
+unvalidated and does not change this historical statement.
 
 * Boundary and material assumptions
 

@@ -131,6 +131,11 @@ values, initialization, or solution.
 
 * Manual Fluent audit
 
+This section is the older full-passage Prism6/CGNS six-boundary audit only.
+For the current native body-fitted Hex8 mesh with five external boundaries,
+use [[file:../handoff/15-jfo-validation-and-fluent.org::3-D Fluent mesh incident and final handoff][the Chapter 15 audit]] and read the native =.msh= through
+*File > Read > Mesh*.
+
 When automation is unavailable, the equivalent import-only review is:
 
 1. launch Fluent in 3-D, double precision;

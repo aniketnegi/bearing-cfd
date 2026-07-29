@@ -387,16 +387,19 @@ For every stage require:
   below 0.1% for a reported point;
 - no fatal error, floating-point exception, or growing continuity failure.
 
-Only after a ramped 20-rpm state passes should the study widen toward
-=50, 100, 150, 200 rpm= and then the paper's approximately =496.6 rpm=
-surface-speed point.  The paper's separately quoted 2000 rpm remains a
-later operating point.
+The ramped 20-rpm state subsequently passed.  The first 20.2-rpm update crossed
+the configured exploratory =pSat= threshold, so the study stopped for a finer
+onset and physical-model audit instead of widening automatically toward
+=50, 100, 150, 200 rpm=.  The paper's approximately =496.6 rpm=
+surface-speed point and separately quoted 2000 rpm remain later, distinct
+operating points.
 
 * Animation decision
 
-No scientific animation has been produced through 15 rpm.  Every accepted
-field has =alpha.oil= exactly one everywhere, so an oil-fraction video would
-show no cavity motion.  The rejected jump is failure evidence, not a physical
+No scientific cavity animation has been produced through the accepted 20-rpm
+checkpoint.  Every accepted field has =alpha.oil= exactly one everywhere, so
+an oil-fraction video would show no cavity motion.  The rejected jump and
+guarded 20.2-rpm threshold crossing are diagnostic evidence, not a physical
 cavity animation.
 
 Generate the first scientific animation only after a rotating stage both

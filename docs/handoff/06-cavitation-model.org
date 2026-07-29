@@ -63,8 +63,10 @@ These two uses of the word cavitation are related but not interchangeable:
   treatment.  It prevents an unphysical tensile liquid pressure and supplies
   a rule for the ruptured region.
 - Schnerr-Sauer VOF is a three-dimensional liquid/vapour mass-transfer model.
-  It needs vapour properties, saturation pressure, surface tension, and
-  bubble-nuclei parameters.
+  In this retained OpenFOAM =incompressibleVoF/VoFCavitation= configuration it
+  uses vapour properties, saturation pressure, surface tension, and the
+  documented nuclei parameters.  That list is not a universal Fluent
+  Mixture/Schnerr--Sauer or Zwart input contract.
 
 The direct paper does not provide those extra VOF inputs.  Therefore this
 case is an exploratory model branch, not a literal reproduction of the
@@ -91,7 +93,7 @@ not retroactively validate this rejected Schnerr--Sauer experiment.
 | Journal axis/origin | +Z, =(0 -3e-5 0)= m | geometry |
 | Oil density | 860 kg/m3 | direct paper |
 | Oil kinematic viscosity | 3.22093023256e-5 m2/s | direct paper conversion |
-| Feed pressure | 601,325 Pa absolute | 0.5 MPa gauge plus atmosphere |
+| Feed pressure | 601,325 Pa absolute | project-adopted interpretation: 0.5 MPa gauge plus atmosphere; paper reference unspecified |
 | Axial ends | 101,325 Pa absolute | atmosphere |
 
 Gravity is zero.  Consequently =p_rgh= is the absolute static pressure here;
@@ -147,7 +149,25 @@ alphaNuc = Vnuc/(1 + Vnuc)
 #+end_example
 
 For the selected =n= and =dNuc=, =alphaNuc= is about 6.70e-5.  This is not a
-measured value for the present oil.
+measured value for the present oil.  The retained =n=, =dNuc=, =Cc=, and =Cv=
+are OpenFOAM exploratory placeholders and must not be copied into Fluent as
+though they were paper-derived or solver-independent inputs.
+
+* No-single-paper validation rule
+
+No source in the local corpus simultaneously matches the target conical
+geometry, exact lubricant at a stated temperature, complete liquid/vapour/air
+properties, a reproducible Fluent mass-transfer setup, and target-relevant
+experimental cavity data.  Values from another oil, bearing, temperature, or
+phase-change law may be used only in an explicitly named sensitivity set; they
+must not be relabelled as =V-32= properties.
+
+A defensible evidence stack therefore uses the target paper for geometry and
+the liquid baseline, manufacturer data or measurements for the exact oil and
+temperature, Fluent's documented equations, numerical/model-form
+sensitivities, and independent pressure/cavity comparisons.  The ranked
+sources and hierarchical validation route are recorded in
+[[file:../references/literature.org][the literature map]].
 
 * Case construction
 

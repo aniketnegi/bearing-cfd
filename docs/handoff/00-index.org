@@ -30,6 +30,7 @@ The short conclusion is:
 | Direct 10 to 15 rpm restart | rejected diagnostic | The discontinuous wall-speed update briefly crosses =pSat= and triggers a runaway phase/pressure feedback |
 | Native 10 to 15 rpm =omega= ramp | accepted diagnostic | The same target speed is reached with Schnerr-Sauer active, =alpha.oil= equal to one, and clean continuity |
 | Native Reynolds/JFO midsurface model through 2000 rpm | *unvalidated candidate* | Its active-set kernel passes a coarse published graph-consistency check, but the full conical model has a grid-dependent feed mask and its 64.455% severe rupture region is not physically validated |
+| Body-fitted circular 3-D Fluent mesh | *static pass; Fluent not run* | 1,252,800 Hex8 cells in 12 thickness layers; standard Fluent-equivalent minimum OQ 0.922660 with zero cells below 0.9 |
 
 The 200 rpm failure is useful evidence.  Rotation creates a low-pressure
 diverging-film region.  A liquid-only CFD model tries to continue that
@@ -59,7 +60,7 @@ continuous =omega= function followed by a constant-speed hold.
 12. [[file:12-five-rpm-jump-diagnosis.org][Five-rpm jump diagnosis]] -- controlled experiments that isolate the direct-jump failure and the native-ramp solution.
 13. [[file:13-guarded-2000rpm-ramp.org][Guarded ramp automation]] -- one command that continues toward the paper speeds, holds for convergence, and stops at the first unvalidated phase onset.
 14. [[file:14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate]] -- converged high-speed candidate, severe-cavity warning, narrow paper comparison, and validation blockers.
-15. [[file:15-jfo-validation-and-fluent.org][JFO validation and Fluent path]] -- published kernel benchmark, grid/feed audit, remaining numerical gates, and the separate Fluent vapour-or-air model.
+15. [[file:15-jfo-validation-and-fluent.org][JFO validation and Fluent path]] -- published kernel benchmark, final 3-D mesh audit, hierarchical literature/acceptance targets, Fluent vapour/air/gas branch matrix, and professor decision gate.
 
 * Evidence locations
 
@@ -72,6 +73,8 @@ continuous =omega= function followed by a constant-speed hold.
 - Zero-pressure-bias hydrodynamic case: [[file:../../out/openfoam_s100_pure_hydrodynamic/][openfoam_s100_pure_hydrodynamic]]
 - Native Reynolds/JFO source: [[file:../../openfoam/jfoBearingFoam/jfoBearingFoam.C][jfoBearingFoam.C]]
 - Generated native Reynolds/JFO case: =out/openfoam_jfo_native_256x80/=
+- Final 3-D Fluent mesh: [[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][paper_exact_current_circular_ogrid_3d_oq90.msh]]
+- Full 3-D OQ overview: [[file:media/oq90_3d/full_3d_fluent_oq_overview.png][full_3d_fluent_oq_overview.png]]
 - Direct conical-bearing paper: [[file:../../../../docs/papers_sorted/conical-journal-bearing/cfd/Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf][Performance Analysis of a Conical Hydrodynamic Journal Bearing]]
 - Earlier Fluent S100 log: [[file:../../out/cfd/log-inlet-100.txt][log-inlet-100.txt]]
 

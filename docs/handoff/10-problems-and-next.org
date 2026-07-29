@@ -24,7 +24,7 @@
 | Serial pressure run was slow | early serial history | four-way Scotch decomposition | solved |
 | First sandbox MPI call could not create a PMIx interface socket | =pmix_ifinit ... errno=1= | permit local loopback sockets; ordinary user run needs no root flag | solved |
 | Paper quotes both 2.6 m/s and 2000 rpm | radius conversion gives 496.6 rpm versus 10.472 m/s | preserve both as separate intended stages | documented |
-| Current mesh is 60 mm, paper is 100 mm | geometry/manuscript comparison | call it paper-grounded, not exact reproduction | documented |
+| Historical OpenFOAM S100 mesh is 60 mm, paper is 100 mm | geometry/manuscript comparison | keep S100 results paper-grounded; final circular Fluent mesh now uses the paper's 100 mm length | documented |
 | 200 rpm liquid pressure crosses absolute vacuum immediately | =min(p)=-119.899= versus floor =-117.820= | reject higher-speed single-phase sweep | correctly stopped |
 | Pressure solver later reaches 100 iterations and enormous negative pressure | =log.rpm-200= | retain only as diagnostic; add rupture/cavitation physics | unresolved physically |
 | Fluent S100 also diverges | =log-inlet-100.txt=, NaN/FPE | use as corroboration, not proof of identical cause | separate Fluent audit still needed |
@@ -53,6 +53,8 @@
 | The same direct jump survives when cavitation cannot activate | =pSat=-1e9 Pa= control keeps =alpha=1= and corrected local continuity near =1e-7= | identify active phase-change feedback as the amplifier | causal control passed |
 | The actual model survives the same 10-to-15-rpm change when =omega= is continuous | native =Function1= ramp keeps =alpha=1= and corrected continuity near =1e-8= | use native ramp plus target-speed hold | solution passed |
 | A 16-rpm field exists at root time 425 | it was run before the jump audit | do not promote it or create a checkpoint | unaccepted diagnostic |
+| Continuous continuation reaches an all-liquid 20-rpm field | time 600 passes flow, drift, phase, pressure, force, and moment gates | freeze the accepted checkpoint before onset work | accepted at 20 rpm |
+| First 20-to-50-rpm update crosses configured =pSat= at 20.2 rpm | time 601 has =p_min=-0.177 Pa < 0.5 Pa= before a settled cavity exists | stop, preserve the onset bracket, and audit the physical model | guarded saturation stop |
 
 * What increasing inlet size would and would not do
 
@@ -138,10 +140,12 @@ At each stage require all of:
 - inlet plus outlet flow imbalance below a declared tolerance;
 - no negative absolute pressure outside a small iterative transient.
 
-Only after a ramped 20-rpm state passes should the study widen to
-=50, 100, 150, 200 rpm=.
-Only after 200 rpm passes should it test about 496.6 rpm for the paper's
-2.6 m/s.  Treat 2000 rpm as a later, separate operating point.
+The ramped 20-rpm state passed.  The first 20.2-rpm update crossed the
+configured exploratory =pSat= threshold and was stopped.  The next step is
+therefore an onset/model audit, not automatic widening to
+=50, 100, 150, 200 rpm=.  About 496.6 rpm for the paper's 2.6 m/s and
+2000 rpm remain separate operating points and require the selected
+rupture/phase model before continuation.
 
 Exact setup, results, replay commands, and ParaView paths:
 [[file:11-pure-hydrodynamic-ramp.org][zero-pressure-bias hydrodynamic ramp]].
@@ -150,18 +154,26 @@ nonlinear jump from a repeatable operating-point/model failure.
 
 * The physics decision needed after the staged audit
 
-Run at least two explicitly named model branches:
+These mechanisms are separate branches, not interchangeable labels:
 
-- *Pure-vapour branch*: Schnerr-Sauer with temperature-specific oil vapour
-  properties and sensitivity to =pSat=, vapour density/viscosity, =n=, and
-  =dNuc=.
-- *Gas/rupture branch*: a model for released/entrained air or an appropriate
-  Reynolds mass-conserving rupture boundary.
+- *Reduced JFO/film-rupture branch*: a mass-conserving thin-film free boundary
+  for pressure, fill, load, leakage, and torque; it has no transported air or
+  oil-vapour phase.
+- *Pure-vapour branch*: liquid oil plus oil vapour with the exact lubricant,
+  operating temperature, absolute saturation pressure, and phase properties.
+  Fluent Schnerr--Sauer inputs must be configured independently; the retained
+  OpenFOAM =n= and =dNuc= placeholders are not transferable Fluent data.
+- *Ventilation branch*: transient oil--air VOF with a real air-access boundary,
+  initial/backflow phase fractions, and defensible surface/wall properties;
+  oil vapour must not be used to imitate atmospheric air.
+- *Dissolved-gas branch*: a calibrated gas-content, solubility, and release
+  model; stock oil--vapour Schnerr--Sauer or Zwart does not represent this.
 
-The important scientific question is whether the observed cavity is limited
-by pure oil vaporization near vacuum or by gas release/edge ingestion at a
-much higher pressure.  For a low-volatility hydraulic oil, the second
-mechanism may dominate.
+The professor must first choose the intended cavity physics, exact oil and
+temperature, pressure reference, end treatment, and validation observable.
+The ranked evidence and Fluent branch matrix are in
+[[file:15-jfo-validation-and-fluent.org][Chapter 15]] and
+[[file:../references/literature.org][the literature map]].
 
 * Acceptance language for the next result
 
@@ -182,11 +194,13 @@ Until those checks pass, the honest result is:
 #+begin_quote
 The stationary 0.5 MPa case is an accepted pressure-driven commissioning
 result, not pure hydrodynamics.  A separate zero-pressure-bias cavitation
-branch has accepted liquid checkpoints through 15 rpm.  A controlled audit
-shows that its failed direct 10-to-15-rpm restart was a discontinuous-update
-instability, not proof that 15 rpm is physically unsolvable.  It has not yet
-produced or validated a cavity, so no cavitating bearing-performance claim is
-made.
+branch has accepted all-liquid checkpoints through 20 rpm.  A controlled
+audit shows that its failed direct 10-to-15-rpm restart was a
+discontinuous-update instability.  The first 20.2-rpm update crossed the
+configured exploratory saturation-pressure threshold and was stopped.  It has
+not produced a validated cavity, so no cavitating bearing-performance claim is
+made.  The later 2000-rpm Reynolds/JFO field remains an externally unvalidated
+candidate.
 #+end_quote
 
 * Later reduced-model candidate

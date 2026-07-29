@@ -22,6 +22,11 @@ show that the depletion is real inside the current model, but neither that
 metric nor the prescribed 101,325 Pa floor can be compared directly with
 Fluent vapour volume fraction.
 
+No single inspected paper supplies the target geometry, exact oil at a stated
+temperature, complete phase/gas properties, a calibrated Fluent model, and
+matching cavity measurements.  Quantitative evidence must therefore be
+stacked rather than attributed to one nominally similar paper.
+
 * Why Reynolds and why JFO
 
 | Layer | Meaning | Current role |
@@ -199,7 +204,123 @@ p-p_\mathrm{cav}\ge0,\qquad 0\le\theta\le1,\qquad
 
 plus conservative flux balance and stable integrated outputs.
 
+* 3-D Fluent mesh incident and final handoff
+
+The final production mesh has *12 physical Hex8 cells through the film*
+(gap-layer indices 0--11 and 13 nodal surfaces).  An 11-layer variant was only
+screened in memory and was never exported, imported, or promoted.  The current
+native Fluent handoff is:
+
+[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][paper_exact_current_circular_ogrid_3d_oq90.msh]]
+
+| Property | Final value |
+|---+---:|
+| Surface resolution | 576 by 180 |
+| Gap layers | 12 |
+| Nodes | 1,364,688 |
+| Hex8 cells | 1,252,800 |
+| Pressure-feed faces | 396 |
+| Minimum / mean standard Fluent-equivalent OQ | 0.922660127056 / 0.970117052983 |
+| Cells below OQ 0.9 | 0 |
+| Native mesh SHA-256 | =b75c2fdb0201de822018760d156c6c2d0aeac335a040841d6b37fcaa37923384= |
+| Status | =STATIC_PASS_FLUENT_NOT_RUN= |
+
+** What went wrong
+
+The reduced Reynolds/JFO mesh was unwrapped to a plane and extruded through one
+arbitrary 1 mm pseudo-thickness cell so OpenFOAM could carry a two-dimensional
+film equation.  Its minimum OQ =0.956754= was valid for that reduced numerical
+mesh only.  We failed to keep that diagnostic explicitly separated from the
+required physical 3-D Fluent mesh, and then treated its quality as predictive
+of the 3-D sweep.  That was a scope and acceptance mistake, not evidence that
+Fluent should be run in 2-D.
+
+The physical sweep spans a 20--80 micrometre radial gap; its surface-normal
+component is approximately 19.7--78.8 micrometres because of the 10-degree
+cone angle.  It uses 12 real cells through the thickness.  Curved wall faces
+and micrometre-scale cell-centroid offsets alter the face-normal, cell-to-face,
+and cell-to-neighbour alignment used by Fluent OQ.  Therefore OQ fell even
+though the surface topology itself was valid.
+
+The correction sequence was:
+
+| Mesh | Minimum OQ | Decision |
+|---+---:|---|
+| Reduced planar JFO pseudo-layer | 0.956754 | valid only for the reduced model; rejected as 3-D evidence |
+| 256 by 80 by 12 physical sweep | 0.461367 | rejected |
+| 512 by 160 by 12 physical sweep | 0.890532 | rejected by the requested 0.9 gate |
+| 576 by 180 by 12 physical sweep | 0.922660 | accepted statically |
+
+At 512 by 160, all 15,142 sub-0.9 cells were in the unchanged background
+block, not the circular inlet O-grid, and they spanned all 12 gap layers.  The
+worst cell was in gap layer 0 at the first axial row; its limiting term was
+cell-to-face-centroid alignment on a wrapped constant-gap internal face.
+Refining the complete surface reduced that curved-span/centroid offset;
+inlet-only reshaping could not have fixed the global minimum.  The old exporter
+also still carried a 0.8 publication threshold after the target changed to
+0.9.  The native writer now receives the requested threshold explicitly and
+refuses publication below it.
+
+** How to inspect the 3-D OQ
+
+[[file:media/oq90_3d/full_3d_fluent_oq_overview.png]]
+
+The left panel shows the physical conical surface.  The upper-right panel is
+only an unwrapped view of the same 3-D result.  Each displayed surface value is
+the minimum over all 12 physical cells in that surface column; it is not a new
+2-D OQ calculation.  The lower-right panel reports the minimum and mean in
+every actual thickness layer.
+
+For interactive inspection:
+
+#+begin_src sh
+QT_QPA_PLATFORM=xcb paraview \
+  out/paper_exact_current_circular_ogrid_3d_oq90/volume_hex.vtu
+
+QT_QPA_PLATFORM=xcb paraview \
+  out/paper_exact_current_circular_ogrid_3d_oq90/viz/master_surface.vtu
+
+gmsh out/paper_exact_current_circular_ogrid_3d_oq90/structured_hex.msh
+#+end_src
+
+Color the full volume by =fluent_orthogonal_quality=.  Color the lightweight
+surface by =fluent_orthogonal_quality_min_through_gap= and use
+=fluent_orthogonal_quality_worst_gap_index= to see which of the 12 layers owns
+each projected minimum.  Gmsh is the geometry/topology view; the VTUs carry
+the derived OQ fields.
+
+Static validation does not prove that Fluent accepts or reports the same
+quality.  The remaining gate is a live Fluent import, Mesh Check, zone/count
+audit, and Report Quality capture.
+
 * How to run the final Fluent comparison
+
+** Validation target and evidence stack
+
+The literature roles are ranked in
+[[file:../references/literature.org][the literature map]].  The practical
+validation hierarchy is:
+
+1. *Conical pressure target*: reproduce Gangrade et al.'s normalized
+   maximum-pressure curve and its five-tap circumferential pressure comparison
+   as far as the disclosed conditions permit.  The final mesh matches the
+   selected 100 mm length, 50 mm mean radius, 50 micrometre radial clearance,
+   and 10-degree semi-cone geometry.
+2. *Cavitation-method target*: obtain and reproduce one fully specified
+   Song--Gu three-dimensional journal-bearing case using that paper's own
+   geometry, lubricant, temperature, and vapour/gas treatment.
+3. *Application case*: apply the checked procedure to the conical mesh and
+   report material, model-form, mesh, timestep, scheme, initialization, and
+   boundary-condition sensitivities.
+4. *Direct combined validation*: reserve this label for comparison with a
+   matching conical-cavitation experiment or equally specific independent
+   dataset.
+
+The direct paper's =2.6 m/s= corresponds to about =496.6 rpm= at 50 mm radius,
+whereas its validation figure states =2000 rpm=.  They are separate points.
+Its =0.5 MPa= reference, exact test-oil temperature, and load-controlled
+experimental equilibrium geometry are also insufficiently specified.  These
+limitations must remain attached to any pressure-curve comparison.
 
 ** Near-term defensible route: independent 3-D physical model
 
@@ -208,51 +329,142 @@ Ansys documents Schnerr--Sauer and Zwart--Gerber--Belamri as liquid--vapour
 mass-transfer models based on Rayleigh--Plesset bubble dynamics:
 [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_th/flu_th_sec_multiphase_cavitation.html][Fluent cavitation theory]].
 
-Use the statically audited 3-D film/feed mesh only after it passes a live
-Fluent import, Mesh Check, and Report Quality audit, then:
+Use the statically audited 3-D film/feed mesh only after it passes the
+following gates in order.
 
-1. run double precision and converge the single-liquid case first;
-2. set pressure values unambiguously:
+*** Acceptance ladder
 
-   | Fluent operating pressure | Pressure-inlet Gauge Total Pressure | Pressure-outlet Gauge Pressure |
-   |---+---:|---:|
-   | 0 Pa | 601,325 Pa | 101,325 Pa |
-   | 101,325 Pa | 500,000 Pa gauge | 0 Pa gauge |
+1. *Live mesh*: 3-D double precision import, Mesh Check, Report Quality, units,
+   bounds, connected-region count, and exact zone/count audit.
+2. *Zero-flow identity*: single liquid, journal at 0 rpm, all openings
+   atmospheric; require the initialized ambient, zero-velocity state to remain
+   unchanged.
+3. *Separate commissioning cases*: restart from the zero-flow identity for
+   the pressure-fed 0-rpm case and separately for the zero-pressure-bias
+   rotating case.  Do not initialize pure hydrodynamics from the 0.5 MPa
+   pressure-driven velocity field.
+4. *Single-liquid onset screen*: continuously ramp rotation and monitor minimum
+   absolute pressure, mass balance, load, and torque.  Stop when a phase/rupture
+   threshold is crossed; do not force a 2000-rpm single-liquid solution through
+   impossible tensile pressure.
+5. *Multiphase all-liquid parity*: below onset, the selected multiphase branch
+   must reproduce the single-liquid pressure, flow, load, and torque with
+   negligible secondary phase.
+6. *Onset continuation*: approach the first sustained cavity using smaller
+   speed increments and retain initialization/ramp history.
+7. *Physical-model sensitivity*: compare the appropriate vapour, air, or
+   dissolved-gas interpretation and, for vapour, Schnerr--Sauer versus Zwart.
+8. *Numerical sensitivity*: mesh, through-gap resolution, timestep/shaft-angle,
+   scheme, and transient-cycle independence.
+9. *Quantitative comparison*: pressure profiles, cavity/front location, phase
+   volume, boundary flows, load components, and torque against independent
+   data.
 
-   Both rows implement this project's adopted convention: supply is 0.5 MPa
-   *above atmosphere*.  The source paper states only =Ps=0.5 MPa= and does not
-   identify its pressure reference, so gauge must not be presented as
-   paper-confirmed.  Fluent's definition is
-   [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][absolute pressure = operating pressure + gauge pressure]].
-   A Fluent pressure inlet specifies total pressure, whereas the JFO feed cells
-   are fixed at static pressure.  That boundary-model mismatch must be reported,
-   especially for a surface feed without a resolved passage.
-3. decide the mechanism before selecting phases:
-   - for vapour cavitation, use liquid oil plus its vapour, with measured
-     vapour pressure, density, viscosity, and operating temperature;
-   - for atmospheric air ingestion, use an oil--air interface model; do not use
-     oil vapour properties to imitate ventilation;
-4. for vapour cavitation, start with Mixture plus Schnerr--Sauer, then use
-   Zwart as a model-form sensitivity; use pressure-based coupled pressure--
-   velocity treatment and PRESTO as recommended by the Fluent theory guide;
-5. start with robust first-order numerics, then require the reported quantities
-   to remain stable after switching to the selected higher-order scheme;
-6. use a transient calculation if the multiphase field does not settle to a
-   true steady state.
+Passing an earlier gate permits the labels =MESH_ACCEPTED=,
+=SETUP_ACCEPTED=, =SCREENING_ONLY=, or =MODEL_SENSITIVITY=.  Use
+=QUANTITATIVELY_VALIDATED= only after Gate 9.
+
+*** Pressure convention
+
+Fluent uses:
+
+\[
+p_\mathrm{absolute}=p_\mathrm{operating}+p_\mathrm{gauge}.
+\]
+
+| Case | Absolute feed pressure | Absolute axial-end pressure |
+|---+---:|---:|
+| Quiescent or pure hydrodynamic | 101,325 Pa | 101,325 Pa |
+| Pressure-fed/hybrid, if =0.5 MPa= is gauge | 601,325 Pa | 101,325 Pa |
+
+For a constant-density vapour-only case, =Operating Pressure = 0 Pa= is the
+least ambiguous choice because entered and reported static pressures are then
+numerically absolute.  The equivalent =Operating Pressure = 101,325 Pa=
+hybrid inputs are =500,000 Pa= inlet gauge total pressure and =0 Pa= outlet
+gauge pressure.  An ideal-gas air case should instead use a representative
+ambient/mean operating pressure and consistently converted gauge boundaries.
+Always plot and monitor absolute pressure explicitly:
+[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][Fluent operating-pressure convention]].
+
+Both hybrid forms implement the project's adopted assumption that supply is
+0.5 MPa *above atmosphere*.  The source paper states only =Ps=0.5 MPa= and
+does not identify its reference.  A Fluent pressure inlet also specifies total
+pressure, whereas the reduced feed cells prescribe static pressure.  That
+boundary-model mismatch must be reported, especially for a bore patch without
+a resolved feed line.
+
+*** Mechanism-specific branches
+
+| Branch | Fluent model | Required physical definition | Claim boundary |
+|---+---+---+---|
+| =B0= | Single liquid | Exact oil liquid density/viscosity at the adopted temperature and absolute boundaries | Commissioning and pressure/load comparison only |
+| =BV= | Mixture, oil primary plus oil vapour secondary; Schnerr--Sauer baseline and Zwart sensitivity | Exact oil and temperature, absolute =p_v(T)=, liquid/vapour density and viscosity, and justified nuclei/model constants | Oil-vapour sensitivity until phase inputs and cavity data are calibrated |
+| =BA= | Transient sharp oil--air VOF, no oil--air mass transfer | Real air-access boundary/reservoir, initial and backflow phase fractions, oil--air surface tension, wall contact angle if relevant, and defensible air density law | Ventilation only; it is not oil vapour or dissolved-gas release |
+| =BVA= | Implicit three-phase oil--air--oil-vapour formulation, cavitation transfer only oil to/from vapour | Independently accepted =BV= and =BA= branches plus all combined boundaries/properties | Deferred high-cost model, not the first multiphase run |
+| Dissolved gas | Calibrated gas-content/solubility/release model | Measured gas content, solubility and release kinetics | Stock Schnerr--Sauer/Zwart oil--vapour transfer is not this mechanism |
+
+For =BV=, initialize from the converged =B0= solution, set oil-feed vapour
+fraction to zero, and use zero vapour backflow for a flooded pure-vapour
+boundary interpretation.  Fluent's documented =1e11 1/m3= Schnerr--Sauer
+bubble-number-density default may be used only as a declared exploratory
+baseline, followed by parameter and model-form sensitivity; it is not a
+measured =V-32= property.  Use pressure-based coupled treatment and PRESTO,
+then check a higher-order volume-fraction/momentum scheme:
+[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_setup.html][Fluent multiphase setup]].
+
+Robust first-order startup is a project staging choice, not a universal Fluent
+recommendation.  A steady =BV= solution is at most a mean cavity map.  Use
+transient calculations for growth, collapse, shedding, cycle dependence, and
+normally for =BA=.  The current 12 through-gap layers and minimum OQ above
+0.9 establish a qualified starting mesh, not adequate VOF-interface
+resolution; prove that separately.  Combined VOF plus cavitation should use an
+implicit formulation rather than explicit VOF.
 
 Monitor and save:
 
 - global minimum and maximum *absolute* static pressure and their locations;
-- inlet and both outlet mass flow rates and imbalance;
-- vapour volume and thresholded vapour footprint, or air volume for the
-  ventilation model;
-- journal force components, moment/torque, and pressure profiles;
-- residual histories and time histories of all integrated quantities;
-- mesh and timestep/iteration sensitivity.
+- saturation vapour pressure and cavitation mass-transfer rate for =BV=;
+- total and phase-specific inlet/outlet mass flow rates and imbalance;
+- vapour or air volume fractions, thresholded footprint, and integrated cavity
+  volume =int(alpha_phase dV)=;
+- the specified inlet/backflow phase fractions;
+- journal pressure and viscous force components, moment/torque, wall shear,
+  and circumferential/axial pressure profiles;
+- residual histories plus stable histories of load, torque, flow, and phase
+  volume;
+- timestep/shaft-angle and cycle-to-cycle periodicity for transient runs;
+- mesh, through-gap, timestep, scheme, and model-input sensitivity.
 
 The global minimum need not equal vapour pressure exactly; local numerical
 undershoot is possible.  Acceptance comes from bounded, mesh-stable fields and
 mass/quantity histories, not from forcing the monitor to land on one number.
+Residual convergence alone is insufficient.  Standard cavitation models
+predict phase distribution and mass transfer; they do not by themselves
+validate erosion risk.  Fluent's phase postprocessing variables and volume
+integrals are documented in
+[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_post.html][multiphase postprocessing]].
+
+** Professor decisions before a predictive multiphase claim
+
+| Decision | Why it changes the model |
+|---+---|
+| Exact =V-32= product and operating/inlet temperature | Fixes liquid properties, vapour pressure, and any thermal inputs |
+| Pure hydrodynamic or pressure-fed/hybrid case | Separates rotation-only pressure generation from the 0.5 MPa supply |
+| Whether =0.5 MPa= is gauge or absolute | Changes every absolute pressure and cavitation margin |
+| =2.6 m/s= (=496.6 rpm=) or =2000 rpm= | They are inconsistent paper operating points and must not be merged |
+| Oil vapour, atmospheric ventilation, dissolved/entrained gas, or JFO rupture | Selects different equations, phases, properties, and validation data |
+| Flooded or vented axial ends and backflow phase | Controls replenishment and air/vapour entry |
+| Surface bore patch or resolved feed passage/reservoir | Determines whether total-pressure and feed-loss simplifications are acceptable |
+| Qualitative visualization/sensitivity or quantitative validation | Determines the required material, experiment, and uncertainty evidence |
+
+Recommended discussion prompt:
+
+#+begin_quote
+Are we targeting JFO film rupture and load, true oil-vapour cavitation,
+atmospheric air ventilation, or dissolved-gas release?  What exact oil,
+temperature, absolute feed/outlet pressures, end treatment, operating speed,
+and experimental observable should define the validation case?
+#+end_quote
 
 ** Exact JFO parity inside Fluent: separate solver development
 

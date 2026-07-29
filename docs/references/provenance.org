@@ -117,6 +117,14 @@ second application of =0.001= is detectable.
   [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_th/flu_th_sec_multiphase_cavitation.html][liquid--vapour cavitation]]
   and
   [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][operating versus absolute pressure]].
+- Ansys Fluent procedures for
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_setup.html][multiphase/cavitation setup]],
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_tg/flu_tg_cavitation.html][the cavitation tutorial]], and
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_post.html][multiphase postprocessing]].
+- Ansys Fluent VOF setup and time-treatment guidance:
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_ug/flu_ug_sec_mphase_using_steps_vof.html][VOF setup]]
+  and
+  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_th/flu_th_vof_ss_td.html][steady versus transient VOF]].
 
 These references explain software APIs or literature context; local validation
 records establish this project's numerical acceptance.

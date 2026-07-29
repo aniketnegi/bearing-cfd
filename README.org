@@ -13,6 +13,8 @@ eccentric conical journal bearing with a radial central feed.  It contains:
 - native-BREP assurance inside Gmsh/OpenCASCADE;
 - a full-360 no-port structured Hex8 regression mesh;
 - a film-only structured Hex8 mesh with a surface pressure-inlet patch;
+- a body-fitted circular O-grid Hex8 mesh with a native Fluent handoff and
+  full-3D Orthogonal Quality gate;
 - a retained conformal central-feed layered Prism6 full-passage mesh;
 - clean MSH 4.1, MSH 2.2, and CGNS interchange from canonical NumPy arrays;
 - optional OpenFOAM and Fluent import audits in the mesh-generation pipeline;
@@ -41,9 +43,11 @@ two-phase cavitation result.
 | Surface-only Tri3 smoke mesh                      | PASS                          |
 | No-port structured Hex8 mesh                      | PASS                          |
 | Surface-inlet structured Hex8 mesh                | PASS                          |
+| Circular O-grid 3-D Hex8 mesh, static checks      | PASS, minimum OQ 0.922660     |
 | Central-feed layered Prism6 mesh                  | PASS                          |
 | Clean MSH/CGNS static interchange                 | PASS                          |
-| Canonical Fluent import audit                     | NOT ACCEPTED                  |
+| Native Fluent mesh export                         | STATIC PASS, FLUENT NOT RUN    |
+| Earlier S100 live Fluent solve                    | NOT ACCEPTED                  |
 | OpenFOAM 14 source build                          | ACCEPTED                      |
 | S100 =gmshToFoam= import and standard =checkMesh= | ACCEPTED                      |
 | Zero-flow solver proof                            | ACCEPTED                      |
@@ -57,7 +61,12 @@ The STEP failure is isolated to neutral-format translation; native BREP is the
 accepted CAD handoff to the open-source mesh pipeline.
 
 The earlier Fluent S100 solve log is rejected divergence evidence, not a
-canonical import-pass result.  At 20 rpm the OpenFOAM branch remains
+canonical import-pass result.  The current body-fitted circular O-grid handoff
+has 1,252,800 Hex8 cells in *12 physical thickness layers*, passes the
+full-volume standard Fluent-equivalent Orthogonal Quality gate at
+=0.9226601271 >= 0.9=, and is still
+=STATICALLY_VALIDATED_NOT_IMPORTED= until Fluent Mesh Check and Report Quality
+are run.  At 20 rpm the OpenFOAM branch remains
 single-liquid and passes its acceptance gates; the 20.2-rpm update crossed the
 configured =pSat= threshold and was stopped before being treated as cavitation.
 The later native Reynolds/JFO midsurface application reaches 2000 rpm.  Its
@@ -76,8 +85,10 @@ performance.
 | Surface smoke  | [[file:meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]]         | classified first-order boundary triangulation; no volume cells   |
 | Hex8 baseline  | [[file:meshing/structured_hex_no_port.py][structured_hex_no_port.py]]     | analytic full-360 no-feed reference                              |
 | Surface inlet  | [[file:meshing/structured_hex_surface_inlet.py][structured_hex_surface_inlet.py]] | clustered Hex8 film with near-circular bore pressure patch and no feed tube |
+| Circular O-grid | [[file:meshing/structured_hex_body_fitted_inlet.py][structured_hex_body_fitted_inlet.py]] | body-fitted circular patch, 3-D Hex8 sweep, Gmsh/CGNS/VTU, and OQ visualization |
 | Prism6 mesh    | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
 | Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]]      | clean MSH/CGNS files reconstructed from canonical arrays         |
+| Native Fluent  | [[file:interchange/fluent_legacy_msh.py][fluent_legacy_msh.py]]            | native Fluent ASCII plus standard full-3D Orthogonal Quality gate |
 | Fluent audit   | [[file:interchange/fluent_import_check.py][fluent_import_check.py]]        | live import, zone/count/quality checks, guarded native save      |
 | CFD study      | [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]                  | accepted, exploratory, and rejected solver evidence              |
 

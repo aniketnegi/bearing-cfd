@@ -22,9 +22,11 @@ handoff.
 | Boundary surface smoke mesh      | PASS              | A conformal first-order Tri3 skin can be generated and classified.                          |
 | No-port analytic Hex8 mesh       | PASS              | A full-360 structured reference mesh passes topology and round-trip checks.                 |
 | Surface-inlet analytic Hex8 mesh | PASS              | Clustered film-only Hex8 mesh; near-circular pressure patch and no feed column.             |
+| Circular O-grid 3-D Hex8 mesh    | static PASS       | 1,252,800 Hex8 cells, 12 thickness layers, and standard Fluent-equivalent minimum OQ 0.922660. |
 | Central-feed layered Prism6 mesh | PASS              | Film and tube are one conformal fluid mesh with an open internal mouth.                     |
 | Clean MSH/CGNS interchange       | static PASS       | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
-| Canonical Fluent import audit    | not accepted      | The earlier S100 solve diverged; it is evidence, not =FLUENT_IMPORT_PASS=.                   |
+| Native Fluent handoff            | static PASS only  | Exact native mesh and OQ gate pass; live Fluent Mesh Check/Report Quality remain required.  |
+| Earlier S100 Fluent solve        | not accepted      | The earlier solve diverged; it is evidence, not =FLUENT_IMPORT_PASS=.                       |
 | OpenFOAM 14 source build         | accepted          | The solver and conversion tools were built and run locally.                                  |
 | S100 OpenFOAM mesh import        | accepted          | =gmshToFoam=, patch correction, and standard =checkMesh= accepted 294,912 Hex8 cells.         |
 | Zero-flow solver proof           | accepted          | Fields, patches, numerics, and solver plumbing are consistent.                               |
@@ -94,7 +96,7 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - [[file:handoff/12-five-rpm-jump-diagnosis.org][Direct-jump diagnosis and accepted native ramp]]
 - [[file:handoff/13-guarded-2000rpm-ramp.org][Accepted 20-rpm point and guarded 20.2-rpm stop]]
 - [[file:handoff/14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate and validation blockers]]
-- [[file:handoff/15-jfo-validation-and-fluent.org][Published JFO benchmark, numerical audit, and Fluent path]]
+- [[file:handoff/15-jfo-validation-and-fluent.org][Published JFO benchmark, hierarchical validation targets, final 3-D audit, and Fluent branch matrix]]
 
 ** Rationale and provenance
 
@@ -111,6 +113,8 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - Surface smoke mesh: [[file:../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]]
 - No-port Hex8 mesh: [[file:../meshing/structured_hex_no_port.py::def run_structured][run_structured]]
 - Surface-inlet Hex8 mesh: [[file:../meshing/structured_hex_surface_inlet.py::def run_surface_inlet][run_surface_inlet]]
+- Body-fitted circular O-grid Hex8 mesh: [[file:../meshing/structured_hex_body_fitted_inlet.py::def run_body_fitted_case][run_body_fitted_case]]
+- Native Fluent mesh and OQ: [[file:../interchange/fluent_legacy_msh.py::def write_fluent_legacy_mesh][write_fluent_legacy_mesh]]
 - Ported Prism6 mesh: [[file:../meshing/layered_prism_central_feed.py::def run_ported][run_ported]]
 - Solver-neutral export: [[file:../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
 - Live Fluent audit: [[file:../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
