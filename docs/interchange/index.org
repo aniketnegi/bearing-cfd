@@ -22,6 +22,7 @@ BREP, and the older Gmsh files are evidence, not reconstruction inputs.
 |------+--------------------+---------------+----------------------|
 | =ported_prism_default/nGap_04= | MSH 4.1, MSH 2.2, and CGNS PASS | not run | =STATICALLY_VALIDATED_NOT_IMPORTED= |
 | =ported_prism_default/nGap_08= | MSH 4.1, MSH 2.2, and CGNS PASS | not run | =STATICALLY_VALIDATED_NOT_IMPORTED= |
+| =paper_exact_current_circular_ogrid_3d_oq90= | Gmsh, CGNS, VTU, and native-Fluent writer/round-trip PASS; minimum OQ 0.922660 | not run | =STATICALLY_VALIDATED_NOT_IMPORTED= |
 | 20-degree, eccentricity-0.3 family | no retained interchange run | not run | path-driven CLI support; run before making a transfer claim |
 
 A successful CGNS write or round trip is not evidence that Fluent accepted the
@@ -48,6 +49,8 @@ mesh.  Only a live Fluent audit may produce =FLUENT_IMPORT_PASS=.
 - [[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
 - [[file:../../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
 - [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
+- [[file:../../interchange/fluent_legacy_msh.py::def write_fluent_legacy_mesh][write_fluent_legacy_mesh]]
+- [[file:../../interchange/fluent_legacy_msh.py::def orthogonal_quality][standard Fluent-equivalent Orthogonal Quality]]
 - [[file:../../tests/test_solver_neutral_interchange.py][interchange regression tests]]
 
 * Scope boundary

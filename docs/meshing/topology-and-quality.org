@@ -135,6 +135,48 @@ uses oriented face area vectors and a 2x2x2 Gauss rule.  Hard gates are:
 
 Aspect ratio is reported, not capped, because the film is intentionally thin.
 
+** Standard Fluent Orthogonal Quality and the 2-D/3-D incident
+
+[[file:../../interchange/fluent_legacy_msh.py::def orthogonal_quality][orthogonal_quality]]
+computes the standard hexahedral Fluent-equivalent metric: for every face it
+checks normalized face-area-vector alignment with the cell-to-face vector and,
+for an internal face, the cell-to-neighbour-centroid vector.  A cell receives
+the minimum over its six faces.  This is distinct from Gmsh =minSICN= and from
+the custom maximum-non-orthogonality angle; one metric cannot be substituted
+for another.
+
+The earlier value =0.956754= belonged to the reduced Reynolds/JFO mesh: an
+unwrapped planar surface extruded through one arbitrary 1 mm pseudo-thickness
+cell.  It was a valid quality value for that reduced mesh but an invalid proxy
+for the physical 3-D bearing.  The production film is eccentric and conical,
+has a 20--80 micrometre radial gap (approximately 19.7--78.8 micrometres normal
+to the 10-degree conical surface), and uses 12 actual Hex8 cells through that
+gap.  Sweeping the same surface topology onto those two curved walls changes
+face normals and cell/face/neighbor centroid alignment, so its OQ must be
+recomputed on the complete 3-D volume.
+
+The first direct physical sweep at 256 by 80 by 12 exposed this mistake with
+minimum OQ =0.461367=.  Refining to 512 by 160 by 12 raised the minimum to
+=0.890532=, but 15,142 cells remained below the requested 0.9 gate.  Every one
+was in the unchanged background block, not the inlet O-grid, so further
+inlet-only tuning could not fix the global floor.  The accepted
+576 by 180 by 12 mesh gives:
+
+| Statistic | Full 3-D value |
+|---+---:|
+| Minimum / mean OQ | 0.922660127056 / 0.970117052983 |
+| Cells below 0.9 | 0 |
+| Circular O-grid-region minimum | 0.949182445724 |
+| Feed-column minimum | 0.956359184309 |
+| Maximum custom non-orthogonality | 13.452850 degrees |
+
+The hard =0.9= gate is applied before the native Fluent file is atomically
+published.  The generated =volume_hex.vtu= carries per-cell
+=fluent_orthogonal_quality=.  The lighter =viz/master_surface.vtu= carries the
+minimum across all 12 physical thickness cells for each surface column, with
+the worst gap-layer index beside it.  That projection is only a visualization
+of the full 3-D calculation.
+
 ** Prism6
 
 [[file:../../meshing/layered_prism_central_feed.py::def _prism_gauss_metrics][_prism_gauss_metrics]]

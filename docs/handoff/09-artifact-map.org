@@ -255,6 +255,38 @@ There is deliberately no =checkpoints/16rpm/= directory.
 - =VTK/= -- explicit time-0, time-3, time-75, and time-150
   volume/combined-patch files.
 
+* Final body-fitted 3-D Fluent mesh
+
+Directory:
+[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/][paper_exact_current_circular_ogrid_3d_oq90]]
+
+This bundle is produced by the existing
+[[file:../../meshing/structured_hex_body_fitted_inlet.py][body-fitted geometry/mesh pipeline]]
+and [[file:../../interchange/fluent_legacy_msh.py][native Fluent writer]].
+
+| File | Role |
+|---+---|
+| =fluent/paper_exact_current_circular_ogrid_3d_oq90.msh= | preferred native Fluent import; 1,252,800 Hex8 cells and 12 physical gap layers |
+| =fluent/fluent_native_validation.json= | strict ASCII round trip and standard Fluent-equivalent OQ 0.9 gate |
+| =fluent/independent_centroid_oq_audit.json= | independent cell-centroid reconstruction check |
+| =structured_hex.msh= | Gmsh 4.1 binary geometry/topology inspection |
+| =structured_hex_openfoam.msh= | Gmsh 2.2 ASCII interchange |
+| =bearing_body_fitted_hex.cgns= | alternate ANSYS/Fluent interchange |
+| =mesh_arrays.npz= | canonical nodes, Hex8 cells, boundaries, fields, and Gmsh metrics |
+| =volume_hex.vtu= | full 3-D ParaView mesh with per-cell =fluent_orthogonal_quality= |
+| =boundary_quads.vtu= | all exterior Quad4 faces with physical patch IDs |
+| =viz/master_surface.vtu= | lightweight physical surface with minimum OQ across all 12 thickness cells |
+| =viz/cutaway_exact.vtu= | exact-coordinate Hex8 cutaway colored by the same full-3D OQ |
+| =viz/pressure_feed_only.vtu= | isolated pressure-feed boundary |
+| =viz/full_3d_fluent_oq_overview.png= and =.pdf= | static 3-D/unwrapped/layer overview |
+| =manifest.json= and =validation_report.json= | run inputs, counts, hashes, round trips, and status |
+| =ANSYS_IMPORT.txt= and =zones.csv= | import procedure and expected zone/count audit |
+
+The compact tracked copies used by this handoff are under
+=docs/handoff/media/oq90_3d/=.  The generated mesh bundle remains ignored
+under =out/=.  Its status is =STATIC_PASS_FLUENT_NOT_RUN=, not a live import
+pass.
+
 * Earlier Fluent evidence
 
 - [[file:../../out/cfd/log-inlet-100.txt][out/cfd/log-inlet-100.txt]] -- S100
@@ -288,7 +320,7 @@ case is converged and globally conservative.
 
 * This handoff
 
-Files =00-index.org= through =14-native-jfo-candidate.org= are the versioned
+Files =00-index.org= through =15-jfo-validation-and-fluent.org= are the versioned
 explanatory handoff.  Large generated cases remain ignored under =out/=.
 
 [[file:08-replay-commands.org][Previous: replay commands]] | [[file:00-index.org][Index]] | [[file:10-problems-and-next.org][Next: problems and next steps]]

@@ -1,0 +1,40 @@
+{
+  "cells_below_threshold": 0,
+  "circular_ogrid_minimum": 0.9491824457244483,
+  "feed_column_minimum": 0.9563591843088569,
+  "gap_layers": 12,
+  "mean": 0.9701170529834631,
+  "metric": "standard Fluent-equivalent Orthogonal Quality",
+  "minimum": 0.9226601270563052,
+  "minimum_by_gap_layer": [
+    0.9226601270563052,
+    0.9226675829326131,
+    0.9226750380815414,
+    0.9226824920253516,
+    0.9226899451893609,
+    0.922697397287546,
+    0.9227048483319614,
+    0.9227122985484335,
+    0.9227197477417128,
+    0.9227271959164357,
+    0.9227346430622991,
+    0.9227409112428597
+  ],
+  "outputs": {
+    "pdf": "viz/full_3d_fluent_oq_overview.pdf",
+    "png": "viz/full_3d_fluent_oq_overview.png",
+    "surface_vtu": "viz/master_surface.vtu",
+    "volume_vtu": "volume_hex.vtu"
+  },
+  "paths_relative_to": "case root",
+  "projection": "minimum across all physical 3D gap cells",
+  "threshold": 0.9,
+  "worst_cell_centre_m": [
+    0.03450541071970794,
+    -0.04760105242835696,
+    0.00027770064756802397
+  ],
+  "worst_cell_tag": 123121,
+  "worst_gap_layer": 0,
+  "worst_master_quad_index": 10260
+}

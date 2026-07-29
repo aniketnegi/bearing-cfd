@@ -155,6 +155,33 @@ produced by a repository export entry point.  Its status is
 =STATICALLY_VALIDATED_NOT_IMPORTED=.  The Gmsh/CGNS round trip is evidence for
 static transfer, not a substitute for Fluent's *Mesh Check*.
 
+* Body-fitted circular O-grid Hex8 family
+
+The current final directory is
+=out/paper_exact_current_circular_ogrid_3d_oq90/=.  Unlike the older assembled
+handoff above, the existing
+[[file:../../meshing/structured_hex_body_fitted_inlet.py::def run_body_fitted_case][run_body_fitted_case]]
+entry point produces the whole bundle atomically.
+
+| File | Contract |
+|---+---|
+| =fluent/paper_exact_current_circular_ogrid_3d_oq90.msh= | native Fluent ASCII; validated full 3-D geometry with a 72-segment chorded inlet rim and five boundary zones |
+| =fluent/fluent_native_validation.json= | strict writer round trip and hard standard OQ 0.9 gate |
+| =structured_hex.msh= / =structured_hex_openfoam.msh= | Gmsh 4.1 binary and 2.2 ASCII |
+| =bearing_body_fitted_hex.cgns= | alternate ANSYS interchange |
+| =mesh_arrays.npz= | canonical 12-layer nodes/connectivity and fields |
+| =volume_hex.vtu= | all 1,252,800 Hex8 cells with per-cell Fluent OQ |
+| =boundary_quads.vtu= | complete external boundary and patch IDs |
+| =viz/master_surface.vtu= | minimum full-3D OQ across each 12-cell surface column |
+| =viz/cutaway_exact.vtu= | exact-coordinate volume subset with Fluent OQ |
+| =viz/full_3d_fluent_oq_overview.png= / =.pdf= | static geometry, unwrapped projection, and layer statistics |
+| =manifest.json= / =validation_report.json= | exact generator inputs, counts, hashes, quality, and round trips |
+
+The final mesh has 12 physical thickness cells, not 11.  Its minimum standard
+Fluent-equivalent OQ is =0.922660127056= with zero cells below 0.9.  The status
+remains =STATICALLY_VALIDATED_NOT_IMPORTED= until a live Fluent Mesh Check,
+zone/count audit, and Report Quality capture pass.
+
 * Ported Prism6 family
 
 Root directory =out/ported_prism_default/=: 

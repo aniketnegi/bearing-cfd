@@ -165,6 +165,51 @@ local-block transition.  Pushing =s= toward one would further coarsen the
 remote bearing, so inlet-shape convergence should use
 =n_theta=/=n_axial= studies rather than unbounded clustering strength.
 
+* Body-fitted circular O-grid production mesh
+
+[[file:../../meshing/structured_hex_body_fitted_inlet.py][structured_hex_body_fitted_inlet.py]]
+is the body-fitted alternative to the tensor-grid staircase above.  It replaces
+the local background patch with a conformal central square, one inner ring, a
+72-node analytic circular rim, and nine outer transition rings.  The straight
+Quad4 edges form a 72-sided inscribed polygon whose nodes lie on the exact
+drilling-cylinder/conical-bore intersection; it must not be described as a
+curved high-order circle.
+
+The accepted 3-D Fluent handoff uses:
+
+| Quantity | Accepted value |
+|---+---:|
+| Circumferential by axial surface resolution | 576 by 180 |
+| Physical through-film Hex8 layers | *12* cells, indices 0--11 |
+| Nodal surfaces through the film | 13 |
+| Inlet rim segments | 72 |
+| O-grid inner / outer transition layers | 1 / 9 |
+| Nodes / Hex8 cells | 1,364,688 / 1,252,800 |
+| Pressure-feed Quad4 faces | 396 |
+| Standard Fluent-equivalent minimum OQ | 0.922660127056 |
+| Cells below the hard OQ 0.9 gate | 0 |
+
+An 11-layer alternative was screened but never exported or promoted.  Its
+higher predicted OQ came partly from making each through-film cell thicker;
+that is not a free quality improvement, so the production handoff retains 12
+physical layers.
+
+The same entry point generates the geometry, canonical arrays, Gmsh 4.1 and
+2.2 meshes, CGNS, native Fluent mesh, full-volume VTU, surface/cutaway VTUs,
+and the PNG/PDF OQ overview.  In ParaView, open =volume_hex.vtu= and color by
+=fluent_orthogonal_quality=.  For a lightweight view, open
+=viz/master_surface.vtu= and color by
+=fluent_orthogonal_quality_min_through_gap=; that surface field is the minimum
+over the 12 underlying 3-D cells and is not a separate 2-D quality metric.
+Gmsh geometry/topology inspection uses =structured_hex.msh=.
+
+Current generated bundle:
+[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/][paper_exact_current_circular_ogrid_3d_oq90]].
+The native Fluent file is
+[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][paper_exact_current_circular_ogrid_3d_oq90.msh]].
+Its status is =STATICALLY_VALIDATED_NOT_IMPORTED=: a live Fluent Mesh Check
+and Report Quality check remain mandatory.
+
 * Why the journal remains continuous
 
 The pressure patch is produced by partitioning the original stationary-bore
