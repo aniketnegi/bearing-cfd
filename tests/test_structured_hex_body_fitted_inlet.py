@@ -47,6 +47,7 @@ def exported_tw16(
             geometry_mode="inscribed",
             q=4,
             n_gap=1,
+            minimum_fluent_orthogonal_quality=0.1,
             openfoam="auto",
             ansys="required",
             context_step=context,
@@ -428,6 +429,13 @@ def test_export_round_trips_and_visual_context(
         "cgns_status": "WRITTEN",
         "path": "bearing_body_fitted_hex.cgns",
     }
+    assert report["fluent"]["overall"] == "STATIC_PASS_FLUENT_NOT_RUN"
+    assert report["fluent"]["path"] == "fluent/TW16-I.msh"
+    assert report["fluent"]["output"] == "fluent/TW16-I.msh"
+    assert report["fluent"]["source_npz"] == "mesh_arrays.npz"
+    assert report["fluent"]["fluent_equivalent_orthogonal_quality"][
+        "threshold_passed"
+    ]
     assert all(
         record["status"] in {"PASS", "SKIPPED"}
         for record in report["validation_records"]
@@ -466,6 +474,10 @@ def test_export_round_trips_and_visual_context(
     boundary = meshio.read(outdir / "boundary_quads.vtu")
     assert set(volume.cells_dict) == {"hexahedron"}
     assert len(volume.cells_dict["hexahedron"]) == expected_hexes
+    assert (
+        volume.cell_data_dict["fluent_orthogonal_quality"]["hexahedron"].shape
+        == (expected_hexes,)
+    )
     assert set(boundary.cells_dict) == {"quad"}
     assert len(boundary.cells_dict["quad"]) == expected_quads
     assert set(boundary.cell_data_dict["patch_id"]["quad"]) == {
@@ -492,12 +504,36 @@ def test_export_round_trips_and_visual_context(
         for name in body_fitted.SURFACE_ENTITIES
     }
     assert (outdir / "bearing_body_fitted_hex.cgns").is_file()
+    assert (outdir / "fluent" / "TW16-I.msh").is_file()
+    independent_audit = json.loads(
+        (
+            outdir
+            / "fluent"
+            / "independent_centroid_oq_audit.json"
+        ).read_text()
+    )
+    assert independent_audit["passed"] is True
+    assert independent_audit["cells_below_threshold"] == 0
+    master_surface = meshio.read(outdir / "viz" / "master_surface.vtu")
+    assert (
+        master_surface.cell_data_dict[
+            "fluent_orthogonal_quality_min_through_gap"
+        ]["quad"].shape
+        == (256 * 96,)
+    )
+    for name in (
+        "viz/full_3d_fluent_oq_overview.png",
+        "viz/full_3d_fluent_oq_overview.pdf",
+        "viz/full_3d_fluent_oq_summary.json",
+    ):
+        assert (outdir / name).is_file()
     copied_context = outdir / "VISUAL_CONTEXT_ONLY_context_assembly.step"
     assert copied_context.read_bytes() == context_bytes
     manifest = json.loads((outdir / "manifest.json").read_text())
     assert manifest["context_step"]["status"] == "COPIED"
     assert "VISUAL CONTEXT ONLY" in manifest["context_step"]["warning"]
     instructions = (outdir / "ANSYS_IMPORT.txt").read_text()
+    assert "Preferred import: read fluent/TW16-I.msh" in instructions
     assert "must not be used as solver geometry" in instructions
     assert "not a live Fluent import pass" in instructions
 

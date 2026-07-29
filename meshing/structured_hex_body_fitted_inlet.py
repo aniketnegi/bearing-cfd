@@ -41,6 +41,7 @@ from meshing.gmsh_brep_preflight import (
 from meshing.layered_prism_central_feed import symmetric_gap_coordinates
 from meshing.structured_hex_surface_inlet import InletSpec, load_inlet_spec
 from interchange.cgns_compat import sanitize_gmsh_cgns
+from interchange import fluent_legacy_msh
 
 
 SI_PER_MM = base.SI_PER_MM
@@ -196,7 +197,15 @@ class BodyFittedCaseInputs:
     n_gap: int = 12
     gap_inflation_ratio: float = 1.0
     quality_optimized_ogrid: bool = False
+    control_radius_factor: float = 1.4
+    control_square_blend: float = 0.0
+    central_corner_radius_factor: float = 0.9
     smoothing_iterations: int = 12
+    smoothing_damping: float = 0.25
+    smoothing_fixed_nodes: Literal[
+        "all-interfaces", "background-and-rim"
+    ] = "all-interfaces"
+    minimum_fluent_orthogonal_quality: float | None = None
     openfoam: Literal["auto", "required", "skip"] = "skip"
     ansys: Literal["auto", "required", "skip"] = "required"
     context_step: Path | None = None
@@ -547,13 +556,28 @@ def build_ogrid_master(
     n_theta: int = 256,
     n_axial: int = 96,
     quality_optimized: bool = False,
+    control_radius_factor: float = 1.4,
+    control_square_blend: float = 0.0,
+    central_corner_radius_factor: float = 0.9,
 ) -> MasterMesh:
     """Build a conformal central-square plus eight-sector O-grid insert."""
     if inner_layers < 1 or outer_layers < 1:
         raise BodyFittedError("inner_layers and outer_layers must be positive")
-    if quality_optimized and (inner_layers != 1 or outer_layers != 1):
+    if quality_optimized and inner_layers != 1:
         raise BodyFittedError(
-            "the quality-optimized O-grid requires one inner and one outer ring"
+            "the quality-optimized O-grid requires one inner ring"
+        )
+    if quality_optimized and (
+        not math.isfinite(control_radius_factor)
+        or control_radius_factor <= 1.0
+        or not math.isfinite(control_square_blend)
+        or not 0.0 <= control_square_blend <= 1.0
+        or not math.isfinite(central_corner_radius_factor)
+        or not 0.0 < central_corner_radius_factor < 1.0
+    ):
+        raise BodyFittedError(
+            "quality-optimized O-grid factors require control_radius_factor>1, "
+            "0<=control_square_blend<=1, and 0<central_corner_radius_factor<1"
         )
     if rim_segments % 4:
         raise BodyFittedError("rim_segments must be divisible by four")
@@ -580,7 +604,6 @@ def build_ogrid_master(
         grid_tags, patch_j0, patch_k0, q
     )
     radius = _effective_radius(inlet.radius_mm, rim_segments, geometry_mode)
-    control_radius_factor = 1.4 if quality_optimized else None
     if quality_optimized:
         mapped = np.empty((q + 1, q + 1, 2), dtype=np.float64)
         for local_k in range(q + 1):
@@ -588,10 +611,19 @@ def build_ogrid_master(
                 u = -(local_j - q / 2.0) / (q / 2.0)
                 v = (local_k - q / 2.0) / (q / 2.0)
                 disk_x, disk_z = _concentric_square_to_disk(u, v)
+                circular = np.asarray(
+                    (
+                        control_radius_factor * radius * disk_x,
+                        inlet.axial_position_mm
+                        + control_radius_factor * radius * disk_z,
+                    )
+                )
+                background = grid[
+                    patch_k0 + local_k, patch_j0 + local_j
+                ][(0, 2),]
                 mapped[local_k, local_j] = (
-                    control_radius_factor * radius * disk_x,
-                    inlet.axial_position_mm
-                    + control_radius_factor * radius * disk_z,
+                    (1.0 - control_square_blend) * circular
+                    + control_square_blend * background
                 )
         support = _harmonic_tensor_support(
             grid, mapped, theta_centre, axial_centre, q
@@ -632,7 +664,9 @@ def build_ogrid_master(
         node_points[tag] = np.asarray(point, dtype=np.float64)
         return tag
 
-    corner_radius_factor = 0.9 if quality_optimized else 0.5
+    corner_radius_factor = (
+        central_corner_radius_factor if quality_optimized else 0.5
+    )
     half_side = corner_radius_factor * radius / math.sqrt(2.0)
     central_tags = np.empty((q + 1, q + 1), dtype=np.uint64)
     for k_local in range(q + 1):
@@ -801,7 +835,15 @@ def build_ogrid_master(
         "support_size_cells": (
             [2 * q, 2 * q] if quality_optimized else [q, q]
         ),
-        "control_loop_radius_factor": control_radius_factor,
+        "control_loop_radius_factor": (
+            control_radius_factor if quality_optimized else None
+        ),
+        "control_loop_square_blend": (
+            control_square_blend if quality_optimized else None
+        ),
+        "central_square_initial_corner_radius_factor": (
+            central_corner_radius_factor if quality_optimized else 0.5
+        ),
         "same_total_count_claim": "retired",
         "exact_budget_transition_templates": "out_of_scope",
         "block_names": {
@@ -1245,6 +1287,31 @@ def smooth_master_mesh(
                 "minimum_scaled_jacobian_after": previous_minimum,
             }
         },
+    )
+
+
+def _refresh_ogrid_corner_radius(
+    master: MasterMesh, inlet: InletSpec
+) -> MasterMesh:
+    if master.metadata["topology"] != "ogrid":
+        return master
+    corner_tags = np.asarray(
+        master.metadata["central_square_corner_node_tags"],
+        dtype=np.uint64,
+    )
+    corner_points = master.points_mm[
+        _indices_for_tags(master.node_tags, corner_tags)
+    ]
+    corner_radii = np.hypot(
+        corner_points[:, 0],
+        corner_points[:, 2] - inlet.axial_position_mm,
+    )
+    if np.ptp(corner_radii) > 1.0e-10:
+        raise BodyFittedError("smoothed central corners lost fourfold symmetry")
+    return replace(
+        master,
+        metadata=dict(master.metadata)
+        | {"central_square_corner_radius_mm": float(corner_radii.mean())},
     )
 
 
@@ -2411,6 +2478,32 @@ def _write_surface_quality(
     }
 
 
+def _fluent_oq_projection(
+    mesh: BodyFittedMesh, master: MasterMesh
+) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+    values = mesh.cell_metrics.get("fluent_orthogonal_quality")
+    if values is None:
+        return None
+    n_gap = int(mesh.metadata["n_gap"])
+    expected_master = np.repeat(
+        np.arange(len(master.quads), dtype=np.uint32), n_gap
+    )
+    expected_gap = np.tile(np.arange(n_gap, dtype=np.uint16), len(master.quads))
+    if not (
+        np.array_equal(mesh.cell_fields["master_quad_index"], expected_master)
+        and np.array_equal(mesh.cell_fields["gap_index"], expected_gap)
+    ):
+        raise BodyFittedError(
+            "Fluent OQ projection requires master-major gap-layer ordering"
+        )
+    by_master_and_gap = np.asarray(values).reshape(len(master.quads), n_gap)
+    return (
+        by_master_and_gap,
+        by_master_and_gap.min(axis=1),
+        by_master_and_gap.argmin(axis=1).astype(np.uint16),
+    )
+
+
 def _write_visualizations(
     mesh: BodyFittedMesh, master: MasterMesh, case_dir: Path
 ) -> dict[str, Any]:
@@ -2418,21 +2511,31 @@ def _write_visualizations(
     viz.mkdir(parents=True, exist_ok=True)
     master_path = viz / "master_surface.vtu"
     master_connectivity = _indices_for_tags(master.node_tags, master.quads)
+    projection = _fluent_oq_projection(mesh, master)
+    master_cell_data: dict[str, list[np.ndarray]] = {
+        "block_id": [master.block_id],
+        "pressure_feed": [master.pressure_mask.astype(np.uint8)],
+        "diagnostic_only": [
+            np.ones(len(master.quads), dtype=np.uint8)
+        ],
+        "solver_eligible": [
+            np.zeros(len(master.quads), dtype=np.uint8)
+        ],
+    }
+    if projection is not None:
+        _, surface_oq, worst_gap = projection
+        master_cell_data.update(
+            {
+                "fluent_orthogonal_quality_min_through_gap": [surface_oq],
+                "fluent_orthogonal_quality_worst_gap_index": [worst_gap],
+            }
+        )
     meshio.write(
         master_path,
         meshio.Mesh(
             points=master.points_mm * SI_PER_MM,
             cells=[("quad", master_connectivity)],
-            cell_data={
-                "block_id": [master.block_id],
-                "pressure_feed": [master.pressure_mask.astype(np.uint8)],
-                "diagnostic_only": [
-                    np.ones(len(master.quads), dtype=np.uint8)
-                ],
-                "solver_eligible": [
-                    np.zeros(len(master.quads), dtype=np.uint8)
-                ],
-            },
+            cell_data=master_cell_data,
         ),
         file_format="vtu",
         binary=True,
@@ -2469,9 +2572,13 @@ def _write_visualizations(
     )
     keep = wrapped >= 30.0
     quality_name = (
-        "minSICN"
-        if "minSICN" in mesh.cell_metrics
-        else "gauss_min_det"
+        "fluent_orthogonal_quality"
+        if "fluent_orthogonal_quality" in mesh.cell_metrics
+        else (
+            "minSICN"
+            if "minSICN" in mesh.cell_metrics
+            else "gauss_min_det"
+        )
     )
     cutaway_path = viz / "cutaway_exact.vtu"
     meshio.write(
@@ -2505,6 +2612,17 @@ def _write_visualizations(
         "cutaway": str(cutaway_path.relative_to(case_dir)),
         "cutaway_retained_Hex8": int(np.count_nonzero(keep)),
         "quality_field": quality_name,
+        "surface_oq_projection": (
+            None
+            if projection is None
+            else {
+                "field": "fluent_orthogonal_quality_min_through_gap",
+                "meaning": (
+                    "minimum full-3D cell OQ across all physical gap layers"
+                ),
+                "minimum": float(projection[1].min()),
+            }
+        ),
         "solve_eligible": False,
         "coordinates_distorted": False,
     }
@@ -2556,7 +2674,173 @@ def _write_diagnostic_gmsh_master(
     }
 
 
+def _write_fluent_oq_overview(
+    mesh: BodyFittedMesh,
+    master: MasterMesh,
+    case_dir: Path,
+) -> dict[str, Any] | None:
+    projection = _fluent_oq_projection(mesh, master)
+    if projection is None:
+        return None
+    by_master_and_gap, surface_oq, _ = projection
+    threshold = float(mesh.metadata["minimum_fluent_orthogonal_quality"])
+    values = mesh.cell_metrics["fluent_orthogonal_quality"]
+    centres = master.points_mm[
+        _indices_for_tags(master.node_tags, master.quads)
+    ].mean(axis=1)
+    theta_deg = np.degrees(
+        np.mod(np.arctan2(centres[:, 0], -centres[:, 1]), 2.0 * math.pi)
+    )
+    colour_norm = matplotlib.colors.Normalize(
+        vmin=min(threshold, float(values.min())),
+        vmax=1.0,
+    )
+    colour_map = "viridis"
+    figure = plt.figure(figsize=(16, 10))
+    grid = figure.add_gridspec(2, 2, width_ratios=(1.25, 1.0))
+
+    surface_axis = figure.add_subplot(grid[:, 0], projection="3d")
+    artist = surface_axis.scatter(
+        centres[:, 0],
+        centres[:, 1],
+        centres[:, 2],
+        c=surface_oq,
+        s=2.0,
+        cmap=colour_map,
+        norm=colour_norm,
+        linewidths=0,
+        rasterized=True,
+    )
+    surface_axis.set_xlabel("x [mm]")
+    surface_axis.set_ylabel("y [mm]")
+    surface_axis.set_zlabel("z [mm]")
+    surface_axis.set_title("Physical conical film surface")
+    surface_axis.view_init(elev=24, azim=-58)
+    surface_axis.set_box_aspect((1.0, 1.0, 1.35))
+
+    unwrapped_axis = figure.add_subplot(grid[0, 1])
+    unwrapped_axis.scatter(
+        theta_deg,
+        centres[:, 2],
+        c=surface_oq,
+        s=3.0,
+        cmap=colour_map,
+        norm=colour_norm,
+        linewidths=0,
+        rasterized=True,
+    )
+    unwrapped_axis.set_xlim(0.0, 360.0)
+    unwrapped_axis.set_xlabel("circumferential angle [deg]")
+    unwrapped_axis.set_ylabel("axial coordinate [mm]")
+    unwrapped_axis.set_title("Unwrapped surface projection")
+    unwrapped_axis.grid(alpha=0.2)
+
+    layer_axis = figure.add_subplot(grid[1, 1])
+    layers = np.arange(by_master_and_gap.shape[1])
+    layer_axis.plot(
+        layers,
+        by_master_and_gap.min(axis=0),
+        marker="o",
+        label="minimum",
+    )
+    layer_axis.plot(
+        layers,
+        by_master_and_gap.mean(axis=0),
+        marker=".",
+        label="mean",
+    )
+    layer_axis.axhline(
+        threshold,
+        color="tab:red",
+        linestyle="--",
+        linewidth=1.2,
+        label=f"acceptance {threshold:g}",
+    )
+    layer_axis.set_xticks(layers)
+    layer_axis.set_xlabel("physical Hex8 gap-layer index")
+    layer_axis.set_ylabel("Fluent-equivalent OQ")
+    layer_axis.set_title(
+        f"All {len(layers)} thickness layers (indices 0–{len(layers) - 1})"
+    )
+    layer_axis.grid(alpha=0.25)
+    layer_axis.legend()
+
+    colour_axis = figure.add_axes((0.915, 0.18, 0.018, 0.64))
+    figure.colorbar(
+        artist,
+        cax=colour_axis,
+        label="standard Fluent-equivalent Orthogonal Quality",
+    )
+    minimum_index = int(np.argmin(values))
+    figure.suptitle(
+        "Full 3D Orthogonal Quality — conservative surface projection",
+        fontsize=15,
+    )
+    figure.text(
+        0.5,
+        0.015,
+        (
+            f"Each surface point is the minimum over all "
+            f"{by_master_and_gap.shape[1]} real 3D gap cells; this is not a "
+            f"2D mesh metric. Global min={values[minimum_index]:.6f}, "
+            f"mean={values.mean():.6f}, cells below {threshold:g}="
+            f"{np.count_nonzero(values < threshold):,}."
+        ),
+        ha="center",
+        fontsize=10,
+    )
+    figure.subplots_adjust(
+        left=0.05, right=0.88, top=0.92, bottom=0.08, wspace=0.22, hspace=0.25
+    )
+
+    viz = case_dir / "viz"
+    viz.mkdir(parents=True, exist_ok=True)
+    png = viz / "full_3d_fluent_oq_overview.png"
+    pdf = viz / "full_3d_fluent_oq_overview.pdf"
+    figure.savefig(png, dpi=180)
+    figure.savefig(pdf)
+    plt.close(figure)
+
+    worst_master = int(mesh.cell_fields["master_quad_index"][minimum_index])
+    summary = {
+        "paths_relative_to": "case root",
+        "metric": "standard Fluent-equivalent Orthogonal Quality",
+        "projection": "minimum across all physical 3D gap cells",
+        "gap_layers": by_master_and_gap.shape[1],
+        "minimum": float(values[minimum_index]),
+        "mean": float(values.mean()),
+        "threshold": threshold,
+        "cells_below_threshold": int(np.count_nonzero(values < threshold)),
+        "minimum_by_gap_layer": by_master_and_gap.min(axis=0).tolist(),
+        "circular_ogrid_minimum": (
+            float(values[mesh.cell_fields["block_id"] != 9].min())
+            if master.metadata["topology"] == "ogrid"
+            else None
+        ),
+        "feed_column_minimum": float(
+            by_master_and_gap[master.pressure_mask].min()
+        ),
+        "worst_cell_tag": int(mesh.cell_tags[minimum_index]),
+        "worst_master_quad_index": worst_master,
+        "worst_gap_layer": int(mesh.cell_fields["gap_index"][minimum_index]),
+        "worst_cell_centre_m": mesh.cell_centres_m[minimum_index].tolist(),
+        "outputs": {
+            "png": str(png.relative_to(case_dir)),
+            "pdf": str(pdf.relative_to(case_dir)),
+            "surface_vtu": "viz/master_surface.vtu",
+            "volume_vtu": "volume_hex.vtu",
+        },
+    }
+    summary_path = viz / "full_3d_fluent_oq_summary.json"
+    summary_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return summary | {"summary": str(summary_path.relative_to(case_dir))}
+
+
 def _write_plots(
+    mesh: BodyFittedMesh,
     master: MasterMesh,
     params: base.BearingParams,
     inlet: InletSpec,
@@ -2645,11 +2929,15 @@ def _write_plots(
     figure.tight_layout()
     figure.savefig(local_mesh, dpi=180)
     plt.close(figure)
-    return {
+    result = {
         "footprint": str(footprint.relative_to(case_dir)),
         "quality": str(quality_path.relative_to(case_dir)),
         "local_master_mesh": str(local_mesh.relative_to(case_dir)),
     }
+    fluent_oq = _write_fluent_oq_overview(mesh, master, case_dir)
+    if fluent_oq is not None:
+        result["fluent_orthogonal_quality"] = fluent_oq
+    return result
 
 
 def _copy_context_step(
@@ -2718,6 +3006,7 @@ def export_body_fitted_case(
     params_path: Path | None = None,
     openfoam: Literal["auto", "required", "skip"] = "skip",
     ansys: Literal["auto", "required", "skip"] = "required",
+    minimum_fluent_orthogonal_quality: float | None = None,
     context_step: Path | None = None,
     records: list[dict[str, Any]] | None = None,
 ) -> tuple[BodyFittedMesh, dict[str, Any]]:
@@ -2799,16 +3088,81 @@ def export_body_fitted_case(
     (case_dir / "gmsh_body_fitted.log").write_text(
         "\n".join(gmsh_log) + "\n", encoding="utf-8"
     )
-    volume_vtu, boundary_vtu = _write_vtu(mesh, case_dir)
-    vtu = _validate_vtu(mesh, volume_vtu, boundary_vtu, records)
     npz_path = case_dir / "mesh_arrays.npz"
     _write_npz(mesh, npz_path)
     npz = _validate_npz(mesh, npz_path, records)
+    fluent_result: dict[str, Any] = {
+        "status": "NOT_REQUESTED",
+        "minimum_orthogonal_quality": None,
+    }
+    if minimum_fluent_orthogonal_quality is not None:
+        fluent_model = fluent_legacy_msh.build_fluent_legacy_mesh(npz_path)
+        fluent_oq = fluent_legacy_msh.orthogonal_quality(fluent_model)
+        mesh = replace(
+            mesh,
+            cell_metrics=dict(mesh.cell_metrics)
+            | {"fluent_orthogonal_quality": fluent_oq},
+            metadata=dict(mesh.metadata)
+            | {
+                "minimum_fluent_orthogonal_quality": (
+                    minimum_fluent_orthogonal_quality
+                )
+            },
+        )
+        fluent_dir = case_dir / "fluent"
+        fluent_dir.mkdir(parents=True, exist_ok=True)
+        case_name = str(master.metadata["case_name"])
+        fluent_path = fluent_dir / f"{case_name}.msh"
+        independent_audit_path = (
+            fluent_dir / "independent_centroid_oq_audit.json"
+        )
+        independent_audit = (
+            fluent_legacy_msh.independent_centroid_orthogonal_quality_audit(
+                fluent_model,
+                minimum_fluent_orthogonal_quality,
+            )
+        )
+        if not independent_audit["passed"]:
+            raise BodyFittedError(
+                "independent reconstructed-centroid Orthogonal Quality "
+                f"{independent_audit['minimum_orthogonal_quality']:.12g} is "
+                f"below required {minimum_fluent_orthogonal_quality:.12g}"
+            )
+        del fluent_model
+        fluent_result = fluent_legacy_msh.write_fluent_legacy_mesh(
+            npz_path,
+            fluent_path,
+            minimum_fluent_orthogonal_quality,
+        )
+        fluent_report_path = fluent_dir / "fluent_native_validation.json"
+        independent_audit_path.write_text(
+            json.dumps(independent_audit, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        fluent_result.update(
+            {
+                "source_npz": str(npz_path.relative_to(case_dir)),
+                "output": str(fluent_path.relative_to(case_dir)),
+                "path": str(fluent_path.relative_to(case_dir)),
+                "validation_report": str(
+                    fluent_report_path.relative_to(case_dir)
+                ),
+                "independent_centroid_audit": str(
+                    independent_audit_path.relative_to(case_dir)
+                ),
+            }
+        )
+        fluent_report_path.write_text(
+            json.dumps(fluent_result, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    volume_vtu, boundary_vtu = _write_vtu(mesh, case_dir)
+    vtu = _validate_vtu(mesh, volume_vtu, boundary_vtu, records)
     surface_quality = _write_surface_quality(
         master, params, case_dir / "surface_quality.csv"
     )
     visualizations = _write_visualizations(mesh, master, case_dir)
-    plots = _write_plots(master, params, inlet, case_dir)
+    plots = _write_plots(mesh, master, params, inlet, case_dir)
     source_params = params.source if params_path is None else params_path
     context = _copy_context_step(source_params, context_step, case_dir)
     openfoam_result = staircase.audit_openfoam(
@@ -2858,6 +3212,12 @@ def export_body_fitted_case(
             )
     cgns_name = "bearing_body_fitted_hex.cgns"
     cgns_ready = (case_dir / cgns_name).is_file()
+    native_fluent_path = fluent_result.get("path")
+    native_instruction = (
+        f"Preferred import: read {native_fluent_path} directly in Fluent.\n"
+        if native_fluent_path
+        else ""
+    )
     cgns_instruction = (
         f"Import {cgns_name} through File > Import > CGNS > Mesh.\n"
         if cgns_ready
@@ -2869,6 +3229,7 @@ def export_body_fitted_case(
     ansys_instructions = (
         "ANSYS FLUENT BODY-FITTED MESH HANDOFF\n\n"
         f"Static status: STATICALLY_VALIDATED_NOT_IMPORTED\n"
+        + native_instruction
         + cgns_instruction
         + "Run Mesh Check; confirm one fluid Hex8 zone and exactly the five named "
         "Quad4 boundary zones in zones.csv.\n"
@@ -2903,6 +3264,7 @@ def export_body_fitted_case(
         "plots": plots,
         "context_step": context,
         "openfoam": openfoam_result,
+        "fluent": fluent_result,
         "ansys": {
             "mode": ansys,
             "cgns_status": "WRITTEN" if cgns_ready else "NOT_WRITTEN",
@@ -2935,6 +3297,7 @@ def export_body_fitted_case(
         "counts": body_validation["counts"],
         "physical_groups": physical,
         "context_step": context,
+        "fluent": fluent_result,
         "ansys": report["ansys"],
     }
     report["files"] = _file_inventory(case_dir)
@@ -2962,9 +3325,33 @@ def _validate_case_inputs(inputs: BodyFittedCaseInputs) -> None:
         raise BodyFittedError("n_gap must be positive")
     if inputs.smoothing_iterations < 0:
         raise BodyFittedError("smoothing_iterations must be nonnegative")
+    if not 0.0 < inputs.smoothing_damping <= 1.0:
+        raise BodyFittedError("smoothing_damping must be in (0, 1]")
+    if inputs.smoothing_fixed_nodes not in (
+        "all-interfaces",
+        "background-and-rim",
+    ):
+        raise BodyFittedError(
+            "smoothing_fixed_nodes must be all-interfaces or background-and-rim"
+        )
     if inputs.quality_optimized_ogrid and inputs.topology != "ogrid":
         raise BodyFittedError(
             "quality_optimized_ogrid is only valid for the ogrid topology"
+        )
+    if (
+        inputs.smoothing_fixed_nodes == "background-and-rim"
+        and not inputs.quality_optimized_ogrid
+    ):
+        raise BodyFittedError(
+            "background-and-rim smoothing is only valid for a "
+            "quality-optimized O-grid"
+        )
+    if (
+        inputs.minimum_fluent_orthogonal_quality is not None
+        and not 0.0 < inputs.minimum_fluent_orthogonal_quality <= 1.0
+    ):
+        raise BodyFittedError(
+            "minimum_fluent_orthogonal_quality must be in (0, 1]"
         )
     if inputs.openfoam not in ("auto", "required", "skip"):
         raise BodyFittedError("openfoam must be auto, required, or skip")
@@ -3010,7 +3397,7 @@ def _publish_failure(
                         mesh, master, stage
                     ),
                     "plots": _write_plots(
-                        master, params, inlet, stage
+                        mesh, master, params, inlet, stage
                     ),
                     "surface_quality": _write_surface_quality(
                         master, params, stage / "surface_quality.csv"
@@ -3094,12 +3481,31 @@ def run_body_fitted_case(inputs: BodyFittedCaseInputs) -> dict[str, Any]:
                 n_theta=inputs.n_theta,
                 n_axial=inputs.n_axial,
                 quality_optimized=inputs.quality_optimized_ogrid,
+                control_radius_factor=inputs.control_radius_factor,
+                control_square_blend=inputs.control_square_blend,
+                central_corner_radius_factor=(
+                    inputs.central_corner_radius_factor
+                ),
+            )
+        if inputs.smoothing_fixed_nodes == "background-and-rim":
+            master = replace(
+                master,
+                fixed_node_tags=np.unique(
+                    np.concatenate(
+                        (
+                            master.unchanged_node_tags,
+                            master.rim_node_tags,
+                        )
+                    )
+                ),
             )
         master = smooth_master_mesh(
             master,
             params,
             iterations=inputs.smoothing_iterations,
+            damping=inputs.smoothing_damping,
         )
+        master = _refresh_ogrid_corner_radius(master, inlet)
         master = replace(
             master,
             metadata=dict(master.metadata) | {"case_name": inputs.case_name},
@@ -3126,6 +3532,9 @@ def run_body_fitted_case(inputs: BodyFittedCaseInputs) -> dict[str, Any]:
             params_path=inputs.params,
             openfoam=inputs.openfoam,
             ansys=inputs.ansys,
+            minimum_fluent_orthogonal_quality=(
+                inputs.minimum_fluent_orthogonal_quality
+            ),
             context_step=inputs.context_step,
             records=[*master_records, *body_records],
         )
