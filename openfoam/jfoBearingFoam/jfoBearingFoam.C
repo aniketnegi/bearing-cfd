@@ -100,8 +100,12 @@ int main(int argc, char *argv[])
         degToRad(properties.lookup<scalar>("eccentricityAngleDegrees"));
     const scalar rpm = properties.lookup<scalar>("rpm");
     const label nTheta = properties.lookup<label>("nTheta");
+    const word feedCellZoneName =
+        properties.lookupOrDefault<word>("feedCellZone", word::null);
     const label maxRevolutions =
         properties.lookupOrDefault<label>("maxRevolutions", 8);
+    const label maxZeroSpeedSteps =
+        properties.lookupOrDefault<label>("maxZeroSpeedSteps", 50);
     const label maxActiveIterations =
         properties.lookupOrDefault<label>("maxActiveIterations", 200);
     const scalar convergenceTolerance =
@@ -209,27 +213,59 @@ int main(int argc, char *argv[])
             0.5*(boreRadius + journalRayRadius);
         surfaceMetric[celli] =
             surfaceRadius[celli]/(meanRadius.value()*cosGamma);
+    }
 
-        scalar wrapped = theta - constant::mathematical::pi;
-        while (wrapped > constant::mathematical::pi)
+    if (feedCellZoneName.empty())
+    {
+        Info<< "Using legacy geometric cell-centre feed selection" << nl;
+        forAll(centres, celli)
         {
-            wrapped -= constant::mathematical::twoPi;
+            const scalar theta =
+                centres[celli].x()/meanRadius.value();
+            const scalar z = centres[celli].z();
+            scalar wrapped = theta - constant::mathematical::pi;
+            while (wrapped > constant::mathematical::pi)
+            {
+                wrapped -= constant::mathematical::twoPi;
+            }
+            while (wrapped < -constant::mathematical::pi)
+            {
+                wrapped += constant::mathematical::twoPi;
+            }
+            const scalar feedDistance =
+                Foam::hypot
+                (
+                    surfaceRadius[celli]*wrapped,
+                    (z - feedAxialPosition.value())/cosGamma
+                );
+            if (feedDistance <= 0.5*feedDiameter.value())
+            {
+                feedMask[celli] = true;
+                feedCells.append(celli);
+            }
         }
-        while (wrapped < -constant::mathematical::pi)
+    }
+    else
+    {
+        if (!mesh.cellZones().found(feedCellZoneName))
         {
-            wrapped += constant::mathematical::twoPi;
+            FatalErrorInFunction
+                << "Cannot find required feed cellZone "
+                << feedCellZoneName << nl
+                << "Available cellZones are " << mesh.cellZones().toc()
+                << exit(FatalError);
         }
-        const scalar feedDistance =
-            Foam::hypot
-            (
-                surfaceRadius[celli]*wrapped,
-                (z - feedAxialPosition.value())/cosGamma
-            );
-        if (feedDistance <= 0.5*feedDiameter.value())
+
+        const cellZone& feedCellZone =
+            mesh.cellZones()[feedCellZoneName];
+        forAll(feedCellZone, i)
         {
+            const label celli = feedCellZone[i];
             feedMask[celli] = true;
             feedCells.append(celli);
         }
+        Info<< "Using topological feed cellZone "
+            << feedCellZoneName << nl;
     }
 
     if (feedCells.empty())
@@ -376,7 +412,9 @@ int main(int argc, char *argv[])
 
     const label minimumSteps = mag(omega) < small ? 2 : nTheta;
     const label maximumSteps =
-        mag(omega) < small ? 7 : maxRevolutions*nTheta;
+        mag(omega) < small
+      ? maxZeroSpeedSteps
+      : maxRevolutions*nTheta;
     label consecutive = 0;
     scalar pressureError = great;
     scalar fillError = great;
