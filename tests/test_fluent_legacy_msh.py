@@ -23,7 +23,13 @@ OUTWARD = np.asarray(
 )
 
 
-def _two_hex_npz(path: Path, *, omit_boundary: bool = False) -> None:
+def _two_hex_npz(
+    path: Path,
+    *,
+    omit_boundary: bool = False,
+    skew: bool = False,
+    forged_centres: bool = False,
+) -> None:
     points = np.asarray(
         [
             (0, 0, 0),
@@ -41,6 +47,8 @@ def _two_hex_npz(path: Path, *, omit_boundary: bool = False) -> None:
         ],
         dtype=np.float64,
     )
+    if skew:
+        points[11, 0] = 2.25
     hexes = np.asarray(
         ((1, 2, 5, 4, 7, 8, 11, 10), (2, 3, 6, 5, 8, 9, 12, 11)),
         dtype=np.uint64,
@@ -57,13 +65,21 @@ def _two_hex_npz(path: Path, *, omit_boundary: bool = False) -> None:
         "axial_end_zL": exterior[7:8],
         "pressure_feed": exterior[8:],
     }
+    arrays = {
+        "points_m": points,
+        "hexes": hexes,
+        "node_tags": np.arange(1, len(points) + 1, dtype=np.uint64),
+        "cell_tags": np.arange(1, len(hexes) + 1, dtype=np.uint64),
+        **{f"boundary_{name}": values for name, values in boundaries.items()},
+    }
+    if forged_centres:
+        arrays["cell_centres_m"] = np.asarray(
+            ((0.5, 0.5, 0.5), (1.5, 0.5, 0.5)),
+            dtype=np.float64,
+        )
     np.savez(
         path,
-        points_m=points,
-        hexes=hexes,
-        node_tags=np.arange(1, len(points) + 1, dtype=np.uint64),
-        cell_tags=np.arange(1, len(hexes) + 1, dtype=np.uint64),
-        **{f"boundary_{name}": values for name, values in boundaries.items()},
+        **arrays,
     )
 
 
@@ -100,4 +116,42 @@ def test_missing_boundary_face_fails(tmp_path: Path) -> None:
     _two_hex_npz(source, omit_boundary=True)
     with pytest.raises(FluentLegacyMeshError, match="undeclared exterior face"):
         write_fluent_legacy_mesh(source, output)
+    assert not output.exists()
+
+
+def test_minimum_orthogonal_quality_gate_prevents_publish(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "skewed.npz"
+    output = tmp_path / "rejected.msh"
+    _two_hex_npz(source, skew=True)
+
+    with pytest.raises(
+        FluentLegacyMeshError,
+        match="minimum Orthogonal Quality .* is below required",
+    ):
+        write_fluent_legacy_mesh(
+            source,
+            output,
+            minimum_orthogonal_quality=0.99,
+        )
+    assert not output.exists()
+
+
+def test_stored_centres_cannot_override_orthogonal_quality(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "skewed.npz"
+    output = tmp_path / "rejected.msh"
+    _two_hex_npz(source, skew=True, forged_centres=True)
+
+    with pytest.raises(
+        FluentLegacyMeshError,
+        match="minimum Orthogonal Quality .* is below required",
+    ):
+        write_fluent_legacy_mesh(
+            source,
+            output,
+            minimum_orthogonal_quality=0.99,
+        )
     assert not output.exists()

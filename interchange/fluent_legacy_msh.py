@@ -9,7 +9,7 @@ import json
 import os
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -265,6 +265,45 @@ def orthogonal_quality_summary(
     }
 
 
+def independent_centroid_orthogonal_quality_audit(
+    mesh: FluentLegacyMesh,
+    threshold: float = 0.8,
+) -> dict[str, Any]:
+    """Recompute cell centres from Hex8 geometry and repeat the OQ audit."""
+    _require(
+        0.0 < threshold <= 1.0,
+        "minimum Orthogonal Quality must be in (0, 1]",
+    )
+    reconstructed_centres = _volume_centres(mesh.points_m, mesh.hexes)
+    reconstructed_mesh = replace(
+        mesh,
+        cell_centres_m=reconstructed_centres,
+    )
+    quality = orthogonal_quality(reconstructed_mesh)
+    worst = int(np.argmin(quality))
+    return {
+        "overall": "PASS" if np.all(quality >= threshold) else "FAIL",
+        "passed": bool(np.all(quality >= threshold)),
+        "required_minimum": threshold,
+        "minimum_orthogonal_quality": float(quality[worst]),
+        "mean_orthogonal_quality": float(quality.mean()),
+        "cells_below_threshold": int(np.count_nonzero(quality < threshold)),
+        "maximum_stored_vs_reconstructed_centre_delta_m": float(
+            np.linalg.norm(
+                mesh.cell_centres_m - reconstructed_centres,
+                axis=1,
+            ).max()
+        ),
+        "worst_cell_tag": worst + 1,
+        "worst_cell_centre_m": reconstructed_centres[worst].tolist(),
+        "method": (
+            "cell centres independently reconstructed from Hex8 geometry; "
+            "emitted Fluent ASCII already strict-round-trip matched to these "
+            "canonical nodes and faces"
+        ),
+    }
+
+
 def _face_orientation_minimum(
     points: np.ndarray,
     hexes: np.ndarray,
@@ -420,8 +459,16 @@ def _expect_line(stream: Any, expected: str) -> None:
     _require(actual == expected, f"written Fluent mesh differs at {actual.rstrip()!r}")
 
 
-def audit_written_mesh(path: Path, mesh: FluentLegacyMesh) -> dict[str, Any]:
+def audit_written_mesh(
+    path: Path,
+    mesh: FluentLegacyMesh,
+    minimum_orthogonal_quality: float = 0.8,
+) -> dict[str, Any]:
     """Strictly reparse the emitted subset and compare it with the in-memory model."""
+    _require(
+        0.0 < minimum_orthogonal_quality <= 1.0,
+        "minimum Orthogonal Quality must be in (0, 1]",
+    )
     with Path(path).open("r", encoding="ascii", newline="\n") as stream:
         _expect_line(
             stream,
@@ -482,13 +529,24 @@ def audit_written_mesh(path: Path, mesh: FluentLegacyMesh) -> dict[str, Any]:
             *mesh.points_m.max(axis=0).tolist(),
         ],
         "fluent_equivalent_orthogonal_quality": (
-            orthogonal_quality_summary(mesh)
+            orthogonal_quality_summary(
+                mesh,
+                threshold=minimum_orthogonal_quality,
+            )
         ),
     }
 
 
-def write_fluent_legacy_mesh(npz_path: Path, output_path: Path) -> dict[str, Any]:
+def write_fluent_legacy_mesh(
+    npz_path: Path,
+    output_path: Path,
+    minimum_orthogonal_quality: float = 0.8,
+) -> dict[str, Any]:
     mesh = build_fluent_legacy_mesh(npz_path)
+    mesh = replace(
+        mesh,
+        cell_centres_m=_volume_centres(mesh.points_m, mesh.hexes),
+    )
     output_path = Path(output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
@@ -497,7 +555,17 @@ def write_fluent_legacy_mesh(npz_path: Path, output_path: Path) -> dict[str, Any
     try:
         with os.fdopen(descriptor, "w", encoding="ascii", newline="\n") as stream:
             _write_ascii(stream, mesh)
-        report = audit_written_mesh(Path(temporary_name), mesh)
+        report = audit_written_mesh(
+            Path(temporary_name),
+            mesh,
+            minimum_orthogonal_quality,
+        )
+        quality = report["fluent_equivalent_orthogonal_quality"]
+        _require(
+            quality["threshold_passed"],
+            f"minimum Orthogonal Quality {quality['minimum']:.12g} is below "
+            f"required {minimum_orthogonal_quality:.12g}",
+        )
         os.replace(temporary_name, output_path)
     finally:
         Path(temporary_name).unlink(missing_ok=True)
@@ -516,9 +584,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--npz", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--min-oq", type=float, default=0.8)
     args = parser.parse_args(argv)
     try:
-        report = write_fluent_legacy_mesh(args.npz, args.out)
+        report = write_fluent_legacy_mesh(
+            args.npz,
+            args.out,
+            args.min_oq,
+        )
         text = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if args.report:
             args.report.parent.mkdir(parents=True, exist_ok=True)
