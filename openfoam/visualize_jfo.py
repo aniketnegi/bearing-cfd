@@ -98,21 +98,33 @@ def _field(path: Path, shape: tuple[int, int]) -> np.ndarray:
     return values.reshape(shape)
 
 
+def _checkpoint_specs(case: Path) -> tuple[tuple[float, str], ...]:
+    manifest = case / "checkpoint_manifest.csv"
+    if not manifest.exists():
+        return CHECKPOINTS
+    with manifest.open(newline="", encoding="utf-8") as handle:
+        return tuple(
+            (float(row["rpm"]), row["openfoam_time"])
+            for row in csv.DictReader(handle)
+        )
+
+
 def load_checkpoints(case: Path) -> tuple[list[Checkpoint], float]:
     shape = _mesh_shape(case / "system/blockMeshDict")
     properties = case / "constant/jfoProperties"
     ambient = _scalar(properties, "ambientPressure")
     rupture = _scalar(properties, "cavitationPressure")
     checkpoints: list[Checkpoint] = []
-    for rpm, time_name in CHECKPOINTS:
+    for rpm, time_name in _checkpoint_specs(case):
         time = case / time_name
+        pressure_above_rupture = _field(time / "p", shape)
         pressure_gauge_mpa = (
-            _field(time / "p", shape) + rupture - ambient
+            pressure_above_rupture + rupture - ambient
         ) / 1e6
         fill = _field(time / "thetaFill", shape)
         area_weight = _field(time / "surfaceMetric", shape)
-        if pressure_gauge_mpa.min() < -1e-9:
-            raise ValueError(f"{time}: gauge pressure fell below the declared floor")
+        if pressure_above_rupture.min() < -1e-3:
+            raise ValueError(f"{time}: pressure fell below the declared floor")
         if fill.min() < -1e-9 or fill.max() > 1.0 + 1e-9:
             raise ValueError(f"{time}: thetaFill is outside [0, 1]")
         checkpoints.append(
@@ -166,6 +178,7 @@ def write_metrics(checkpoints: list[Checkpoint], output: Path) -> None:
 
 def plot_speed_sweep(checkpoints: list[Checkpoint], output: Path) -> None:
     rpm = np.array([state.rpm for state in checkpoints])
+    positions = np.arange(len(checkpoints))
     series = (
         (
             np.array([state.pressure_max_mpa for state in checkpoints]),
@@ -185,10 +198,12 @@ def plot_speed_sweep(checkpoints: list[Checkpoint], output: Path) -> None:
     )
     figure, axes = plt.subplots(3, 1, figsize=(7.2, 8.2), sharex=True)
     for axis, (values, label, color) in zip(axes, series, strict=True):
-        axis.plot(rpm, values, "o-", color=color, linewidth=1.8, markersize=5)
+        axis.plot(
+            positions, values, "o-", color=color, linewidth=1.8, markersize=5
+        )
         axis.set_ylabel(label)
         axis.grid(True, alpha=0.25)
-        for index, (x, y) in enumerate(zip(rpm, values, strict=True)):
+        for index, (x, y) in enumerate(zip(positions, values, strict=True)):
             x_offset = -6 if index == 0 else 6 if index == 1 else 0
             alignment = "right" if index == 0 else "left" if index == 1 else "center"
             axis.annotate(
@@ -199,15 +214,15 @@ def plot_speed_sweep(checkpoints: list[Checkpoint], output: Path) -> None:
                 ha=alignment,
                 fontsize=8,
             )
-    axes[-1].set_xlabel("Journal speed (rpm)")
-    axes[-1].set_xscale("symlog", linthresh=20)
-    axes[-1].set_xticks(rpm)
-    axes[-1].set_xticklabels(("0", "20", "496.563", "1000", "2000"))
+    axes[-1].set_xlabel("Journal speed checkpoint (rpm)")
+    axes[-1].set_xticks(positions)
+    axes[-1].set_xticklabels([f"{value:g}" for value in rpm])
     figure.suptitle("Native OpenFOAM JFO: converged speed checkpoints")
     figure.text(
         0.5,
         0.005,
-        "Current thin-film Reynolds/JFO implementation; independent validation pending.",
+        "Independent implementation cross-check completed; "
+        "physical validation pending.",
         ha="center",
         fontsize=8,
     )
@@ -218,13 +233,14 @@ def plot_speed_sweep(checkpoints: list[Checkpoint], output: Path) -> None:
 def plot_final_fields(state: Checkpoint, rupture_pressure_pa: float, output: Path) -> None:
     extent = (0.0, 360.0, 0.0, 100.0)
     figure, axes = plt.subplots(3, 1, figsize=(9.0, 9.0), sharex=True)
+    pressure_min = float(state.pressure_gauge_mpa.min())
     pressure = axes[0].imshow(
         state.pressure_gauge_mpa,
         origin="lower",
         aspect="auto",
         extent=extent,
-        cmap="magma",
-        vmin=0.0,
+        cmap="coolwarm" if pressure_min < 0 else "magma",
+        vmin=pressure_min,
         vmax=state.pressure_max_mpa,
         interpolation="nearest",
     )
@@ -267,7 +283,9 @@ def plot_final_fields(state: Checkpoint, rupture_pressure_pa: float, output: Pat
     for axis in axes:
         axis.set_ylabel("Axial position, z (mm)")
         axis.set_xticks(np.arange(0, 361, 45))
-    figure.suptitle("Native OpenFOAM JFO — converged 2000 rpm fields")
+    figure.suptitle(
+        f"Native OpenFOAM JFO — converged {state.rpm:g} rpm fields"
+    )
     figure.text(
         0.5,
         0.005,
@@ -276,7 +294,7 @@ def plot_final_fields(state: Checkpoint, rupture_pressure_pa: float, output: Pat
         fontsize=8,
     )
     figure.tight_layout(rect=(0, 0.025, 1, 0.97))
-    _save(figure, output / "final_fields_2000rpm")
+    _save(figure, output / f"final_fields_{state.rpm:g}rpm")
 
 
 def plot_fill_severity(state: Checkpoint, output: Path) -> None:
@@ -355,7 +373,9 @@ def plot_fill_severity(state: Checkpoint, output: Path) -> None:
     axes[1].grid(True, axis="y", alpha=0.25)
     axes[1].legend(loc="upper left", frameon=True)
 
-    figure.suptitle("Native OpenFOAM JFO — 2000 rpm cavitation severity")
+    figure.suptitle(
+        f"Native OpenFOAM JFO — {state.rpm:g} rpm cavitation severity"
+    )
     figure.text(
         0.5,
         0.005,
@@ -365,21 +385,26 @@ def plot_fill_severity(state: Checkpoint, output: Path) -> None:
         fontsize=8,
     )
     figure.tight_layout(rect=(0, 0.035, 1, 0.94))
-    _save(figure, output / "fill_severity_2000rpm")
+    _save(figure, output / f"fill_severity_{state.rpm:g}rpm")
 
 
 def animate_checkpoints(checkpoints: list[Checkpoint], output: Path) -> None:
     extent = (0.0, 360.0, 0.0, 100.0)
+    pressure_min = min(float(state.pressure_gauge_mpa.min()) for state in checkpoints)
     pressure_max = max(state.pressure_max_mpa for state in checkpoints)
     fill_min = min(state.fill_min for state in checkpoints)
-    pressure_norm = colors.PowerNorm(gamma=0.55, vmin=0.0, vmax=pressure_max)
+    pressure_norm = (
+        colors.TwoSlopeNorm(vmin=pressure_min, vcenter=0.0, vmax=pressure_max)
+        if pressure_min < 0
+        else colors.PowerNorm(gamma=0.55, vmin=0.0, vmax=pressure_max)
+    )
     figure, axes = plt.subplots(2, 1, figsize=(12.0, 6.6), sharex=True)
     pressure = axes[0].imshow(
         checkpoints[0].pressure_gauge_mpa,
         origin="lower",
         aspect="auto",
         extent=extent,
-        cmap="magma",
+        cmap="coolwarm" if pressure_min < 0 else "magma",
         norm=pressure_norm,
         interpolation="nearest",
         animated=True,
@@ -409,7 +434,8 @@ def animate_checkpoints(checkpoints: list[Checkpoint], output: Path) -> None:
     note = figure.text(
         0.5,
         0.005,
-        "Five converged checkpoints; frames are not temporal interpolation.",
+        f"{len(checkpoints)} converged checkpoints; "
+        "frames are not temporal interpolation.",
         ha="center",
         fontsize=8,
     )

@@ -1,0 +1,5 @@
+track,mechanism,status,highest_rpm,alpha_oil_min,alpha_oil_mean,mass_imbalance_percent,note
+A,Reynolds-JFO,accepted numerical,4000,0.263151721,,,
+B,oil vapour,unsettled,28,0.1111668523607,0.9989989990301,0.13213238221383006,pressure pinned at pSat; phase field not plateaued
+C,non-condensable gas,unsettled,0,0.9070867020056,0.9401456208475,2.035083330324446,zero-speed mass gate failed
+D,atmospheric ventilation,rejected startup,3500,0.9953277503283,,,worst p_abs=-3.17571e+07 Pa; max=2.19133e+07 Pa

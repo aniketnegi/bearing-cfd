@@ -1,4 +1,4 @@
-#+UPDATED_AT: [2026-07-29 Wed]
+#+UPDATED_AT: [2026-07-30 Thu]
 #+TITLE: Eccentric Conical Bearing — Engineering Notebook
 #+SUBTITLE: Programmatic CAD, mesh construction, solver transfer, and OpenFOAM evidence
 #+STARTUP: overview
@@ -35,6 +35,7 @@ handoff.
 | Zero-bias liquid continuation    | accepted to 20 rpm | The 0, 1, 5, 10, 12, 14, 15, and 20-rpm checkpoints remain bounded and single-liquid.       |
 | First 20-to-50-rpm update        | guarded stop      | At 20.2 rpm, ~p_min=-0.177 Pa < pSat=0.5 Pa~; this is a threshold bracket, not cavitation.    |
 | Native Reynolds/JFO result       | unvalidated candidate | Its active-set kernel passes a coarse published graph-consistency check, but the conical feed mask is grid-dependent and the severe 64.455% rupture region is not physically validated. |
+| Four-track cavitation screen     | mixed evidence     | Sourced JFO, oil-vapour, gas, and ventilation cases were run; only JFO passed its numerical gates, while the other branches remain unsettled or rejected. |
 
 The STEP result does not invalidate the native CAD or BREP mesh path.  See
 [[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
@@ -97,6 +98,7 @@ The STEP result does not invalidate the native CAD or BREP mesh path.  See
 - [[file:handoff/13-guarded-2000rpm-ramp.org][Accepted 20-rpm point and guarded 20.2-rpm stop]]
 - [[file:handoff/14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate and validation blockers]]
 - [[file:handoff/15-jfo-validation-and-fluent.org][Published JFO benchmark, hierarchical validation targets, final 3-D audit, and Fluent branch matrix]]
+- [[file:handoff/16-four-track-cavitation-results.org][Four-track sourced runs, exact inputs, geometry/mesh figures, results, animations, and professor discussion]]
 
 ** Rationale and provenance
 
@@ -128,10 +130,11 @@ solver-neutral transfer without assigning CFD physics.  The later OpenFOAM
 study assigns its own boundary conditions and material/model inputs in isolated
 cases documented under [[file:handoff/00-index.org][=docs/handoff/=]].  Its
 accepted result boundary is currently the single-liquid branch through 20 rpm.
-The 20.2-rpm threshold crossing, rejected 200-rpm liquid-only run, and rejected
-exploratory cavitation runs must not be reported as physical bearing
-performance.  The separate native Reynolds/JFO high-speed result is likewise
-an unvalidated numerical candidate, not a promoted physical result.
+The 20.2-rpm threshold crossing and rejected 200-rpm liquid-only run must not
+be reported as physical bearing performance.  The later four-track screen
+retains the Reynolds/JFO speed study as an unvalidated numerical candidate,
+the oil-vapour and non-condensable-gas cases as unsettled diagnostics, and the
+ventilation startup as physically rejected evidence.
 
 * Maintenance
 

@@ -1,5 +1,5 @@
 #+title: OpenFOAM Bearing CFD Handoff
-#+updated_at: [2026-07-29 Wed]
+#+updated_at: [2026-07-30 Thu]
 #+startup: overview
 #+options: toc:2 num:nil
 
@@ -31,6 +31,7 @@ The short conclusion is:
 | Native 10 to 15 rpm =omega= ramp | accepted diagnostic | The same target speed is reached with Schnerr-Sauer active, =alpha.oil= equal to one, and clean continuity |
 | Native Reynolds/JFO midsurface model through 2000 rpm | *unvalidated candidate* | Its active-set kernel passes a coarse published graph-consistency check, but the full conical model has a grid-dependent feed mask and its 64.455% severe rupture region is not physically validated |
 | Body-fitted circular 3-D Fluent mesh | *static pass; Fluent not run* | 1,252,800 Hex8 cells in 12 thickness layers; standard Fluent-equivalent minimum OQ 0.922660 with zero cells below 0.9 |
+| Four-track sourced cavitation screen | *A accepted numerically; B/C unsettled; D rejected* | JFO reaches 4000 rpm; oil vapour reaches unsettled onset; gas fails the zero-speed mass gate; ventilation reaches inadmissible negative absolute pressure |
 
 The 200 rpm failure is useful evidence.  Rotation creates a low-pressure
 diverging-film region.  A liquid-only CFD model tries to continue that
@@ -61,6 +62,7 @@ continuous =omega= function followed by a constant-speed hold.
 13. [[file:13-guarded-2000rpm-ramp.org][Guarded ramp automation]] -- one command that continues toward the paper speeds, holds for convergence, and stops at the first unvalidated phase onset.
 14. [[file:14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate]] -- converged high-speed candidate, severe-cavity warning, narrow paper comparison, and validation blockers.
 15. [[file:15-jfo-validation-and-fluent.org][JFO validation and Fluent path]] -- published kernel benchmark, final 3-D mesh audit, hierarchical literature/acceptance targets, Fluent vapour/air/gas branch matrix, and professor decision gate.
+16. [[file:16-four-track-cavitation-results.org][Four-track cavitation results]] -- exact geometry, meshes, surrogate lubricants, executed A--D outcomes, plots, animations, paper comparison, and professor talking points.
 
 * Evidence locations
 
@@ -75,6 +77,8 @@ continuous =omega= function followed by a constant-speed hold.
 - Generated native Reynolds/JFO case: =out/openfoam_jfo_native_256x80/=
 - Final 3-D Fluent mesh: [[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][paper_exact_current_circular_ogrid_3d_oq90.msh]]
 - Full 3-D OQ overview: [[file:media/oq90_3d/full_3d_fluent_oq_overview.png][full_3d_fluent_oq_overview.png]]
+- Four-track compact results: [[file:media/cavitation_four_track/CLIFF_NOTES.md][CLIFF_NOTES.md]]
+- Four-track plots and animations: [[file:media/cavitation_four_track/][cavitation_four_track]]
 - Direct conical-bearing paper: [[file:../../../../docs/papers_sorted/conical-journal-bearing/cfd/Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf][Performance Analysis of a Conical Hydrodynamic Journal Bearing]]
 - Earlier Fluent S100 log: [[file:../../out/cfd/log-inlet-100.txt][log-inlet-100.txt]]
 

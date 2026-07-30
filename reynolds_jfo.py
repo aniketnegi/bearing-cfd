@@ -695,6 +695,8 @@ def main() -> int:
     parser.add_argument("--n-axial", type=int, default=40)
     parser.add_argument("--max-revolutions", type=int, default=8)
     parser.add_argument("--cavitation-pressure-abs-pa", type=float, default=101_325.0)
+    parser.add_argument("--dynamic-viscosity-pa-s", type=float, default=0.0277)
+    parser.add_argument("--density-kg-m3", type=float, default=860.0)
     parser.add_argument(
         "--outdir", type=Path, default=Path("out/reynolds_jfo_0p5mpa")
     )
@@ -715,6 +717,8 @@ def main() -> int:
             n_axial=args.n_axial,
             max_revolutions=args.max_revolutions,
             cavitation_pressure_abs_pa=args.cavitation_pressure_abs_pa,
+            dynamic_viscosity_pa_s=args.dynamic_viscosity_pa_s,
+            density_kg_m3=args.density_kg_m3,
         )
         grid, state = solve(inputs, previous_fill, log_every=args.log_every)
         summary = write_results(
