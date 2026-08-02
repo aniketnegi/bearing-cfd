@@ -36,6 +36,7 @@
     {"path": "convergence_496rpm.png", "role": "intermediate convergence evidence"},
     {"path": "convergence_2000rpm.png", "role": "target-speed convergence evidence"},
     {"path": "unwrapped_rotating_fields.png", "role": "unwrapped pressure fields"},
+    {"path": "pressure_3d_2000rpm.png", "role": "three-dimensional target-speed pressure field"},
     {"path": "pressure_stage_sweep.mp4", "role": "stage animation"},
     {"path": "pressure_orbit_2000rpm.mp4", "role": "fixed-state orbit"},
     {"path": "run.json", "role": "generation provenance"}

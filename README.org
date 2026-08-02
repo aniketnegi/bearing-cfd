@@ -121,6 +121,10 @@ inspection.
 
 * Results and limitations
 
+The [[file:docs/openfoam-single-phase-report.pdf][OpenFOAM single-phase results
+report]] presents the full-mesh 2000 rpm solution, derived bearing quantities,
+and a compact cross-check against the teammate Fluent run.
+
 | Result | Current state |
 |---+---|
 | Full 3-D body-fitted mesh | 1,252,800 Hex8 cells; standard =checkMesh= passes; minimum Fluent-equivalent Orthogonal Quality 0.922660 |

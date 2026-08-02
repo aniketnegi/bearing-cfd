@@ -26,6 +26,12 @@
       "sha256": "54fa107184488d7e4b98d6d7af1a0d15800729a52876931ef8c3b4728414a07e",
       "source_manifest": "studies/conical_journal/body_fitted_mesh/study.json",
       "status": "STATIC_PASS_FLUENT_NOT_RUN"
+    },
+    {
+      "path": "evidence/conical_journal/openfoam_single_phase_oq90",
+      "sha256": "d2d7a003a3e00a8109b12680d02b01d0b600f4c423f3d51ad18f8546db2d4f61",
+      "source_manifest": "studies/conical_journal/single_phase_oq90/study.json",
+      "status": "CONVERGED_SINGLE_PHASE_BASELINE_PHYSICALLY_REJECTED_AT_ROTATION"
     }
   ]
 }

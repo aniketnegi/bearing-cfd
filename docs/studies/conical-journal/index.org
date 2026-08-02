@@ -7,6 +7,9 @@
 
 * Studies
 
+- [[file:../../openfoam-single-phase-report.pdf][OpenFOAM single-phase results
+  PDF]] presents the full-mesh 2000 rpm convergence, pressure field, bearing
+  quantities, and teammate Fluent cross-check.
 - [[file:reynolds-jfo-validation.org][Reynolds--JFO verification and validation]]
   describes the reduced-film model, published slider check, conical-bearing
   sensitivity results, and remaining grid and experimental comparisons.

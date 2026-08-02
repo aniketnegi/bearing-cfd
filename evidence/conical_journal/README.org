@@ -13,6 +13,7 @@ inputs to geometry, meshing, or simulation code.
 | =jfo_candidate/= | paper-input JFO continuation through 2000 rpm | numerical candidate with incomplete grid and physical validation |
 | =jfo_sae10w40/= | SAE 10W-40 JFO continuation through 4000 rpm | numerical sensitivity study |
 | =oq90_3d/= | full three-dimensional mesh-quality projection and summary | static mesh-quality evidence; not a live Fluent import |
+| =openfoam_single_phase_oq90/= | OpenFOAM stage summary, convergence, and 2000 rpm pressure fields | converged single-phase numerical baseline; negative absolute pressure is physically inadmissible |
 
 The scientific interpretation is documented in:
 
