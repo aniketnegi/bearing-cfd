@@ -18,11 +18,11 @@ set -u
 export FOAM_USER_APPBIN="$repo_dir/build/openfoam/bin"
 
 (
-    cd "$repo_dir/openfoam/jfoBearingFoam"
+    cd "$repo_dir/openfoam/solvers/jfoBearingFoam"
     wmake
 )
 
-cp -a "$repo_dir/openfoam/cases/jfoPaperExact/." "$case_dir/"
+cp -a "$repo_dir/cases/conical_journal/openfoam/jfo_paper_exact/." "$case_dir/"
 foamDictionary "$case_dir/constant/jfoProperties" -entry rpm -set 0
 blockMesh -case "$case_dir" >/dev/null
 solver_output=$("$FOAM_USER_APPBIN/jfoBearingFoam" -case "$case_dir")

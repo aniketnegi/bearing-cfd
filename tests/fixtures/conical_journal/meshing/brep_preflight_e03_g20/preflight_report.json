@@ -1,0 +1,3845 @@
+{
+  "cad_params_note": "The CAD report may be FAIL solely because strict STEP exchange failed; this preflight independently validates the native BREP.",
+  "cad_params_overall": "FAIL",
+  "cad_reference": {
+    "axial_cutter_extension": 1.0,
+    "bounding_box": [
+      -60.96910712798607,
+      -60.96910712798607,
+      -1e-07,
+      60.96910712798607,
+      63.7779405685324,
+      60.00000010000001
+    ],
+    "cone_slope": 0.36397023426620234,
+    "eccentricity": 0.015,
+    "ex": 9.184850993605148e-19,
+    "ey": -0.015,
+    "h_radial_min": 0.035,
+    "hole_axial_pos": 30.0,
+    "hole_radius": 2.0,
+    "inlet_area": 12.566370614359167,
+    "inlet_centre": [
+      0.0,
+      63.7779404685324,
+      30.0
+    ],
+    "length": 60.0,
+    "mean_radius": 50.0,
+    "radial_clearance": 0.05,
+    "source_overall": "FAIL",
+    "total_volume": 1115.589567959105,
+    "y_feed_end": 63.7779404685324,
+    "z1": 26.0,
+    "z2": 34.0,
+    "zone_volumes": {
+      "hole_band": 298.3670709809072,
+      "ring_A": 459.151571152157,
+      "ring_B": 358.07092582607584
+    }
+  },
+  "coordinate_units": {
+    "fragmented_brep": "mm",
+    "input_brep": "mm",
+    "si_brep": "m"
+  },
+  "dependency_versions": {
+    "build123d": "0.11.1",
+    "gmsh": "4.15.2",
+    "python": "3.12.12"
+  },
+  "diagnostics": {
+    "boolean_simplify_comparison": {
+      "changed": false,
+      "simplify_off": {
+        "surface_count": 12,
+        "surface_role_counts": {
+          "interface_z1": 1,
+          "interface_z2": 1,
+          "journal_rotating_wall": 3,
+          "outlet_z0": 1,
+          "outlet_zL": 1,
+          "pressure_inlet": 1,
+          "stationary_bushing_feed_wall": 4
+        },
+        "volume_count": 3,
+        "zone_volumes": {
+          "hole_band": 298.3670709809077,
+          "ring_A": 459.151571152237,
+          "ring_B": 358.07092582610494
+        }
+      },
+      "simplify_on": {
+        "surface_count": 12,
+        "surface_role_counts": {
+          "interface_z1": 1,
+          "interface_z2": 1,
+          "journal_rotating_wall": 3,
+          "outlet_z0": 1,
+          "outlet_zL": 1,
+          "pressure_inlet": 1,
+          "stationary_bushing_feed_wall": 4
+        },
+        "volume_count": 3,
+        "zone_volumes": {
+          "hole_band": 298.3670709809077,
+          "ring_A": 459.151571152237,
+          "ring_B": 358.07092582610494
+        }
+      },
+      "zone_volume_relative_errors": {
+        "hole_band": 0.0,
+        "ring_A": 0.0,
+        "ring_B": 0.0
+      }
+    },
+    "boundary_groups_disk_mm": {
+      "interface_z1": [
+        4
+      ],
+      "interface_z2": [
+        6
+      ],
+      "journal_rotating_wall": [
+        3,
+        8,
+        12
+      ],
+      "outlet_z0": [
+        1
+      ],
+      "outlet_zL": [
+        11
+      ],
+      "pressure_inlet": [
+        9
+      ],
+      "stationary_bushing_feed_wall": [
+        2,
+        5,
+        7,
+        10
+      ]
+    },
+    "boundary_groups_disk_si": {
+      "interface_z1": [
+        4
+      ],
+      "interface_z2": [
+        6
+      ],
+      "journal_rotating_wall": [
+        3,
+        8,
+        12
+      ],
+      "outlet_z0": [
+        1
+      ],
+      "outlet_zL": [
+        11
+      ],
+      "pressure_inlet": [
+        9
+      ],
+      "stationary_bushing_feed_wall": [
+        2,
+        5,
+        7,
+        10
+      ]
+    },
+    "boundary_groups_mm": {
+      "interface_z1": [
+        4
+      ],
+      "interface_z2": [
+        6
+      ],
+      "journal_rotating_wall": [
+        3,
+        8,
+        12
+      ],
+      "outlet_z0": [
+        1
+      ],
+      "outlet_zL": [
+        11
+      ],
+      "pressure_inlet": [
+        9
+      ],
+      "stationary_bushing_feed_wall": [
+        2,
+        5,
+        7,
+        10
+      ]
+    },
+    "boundary_groups_si": {
+      "interface_z1": [
+        4
+      ],
+      "interface_z2": [
+        6
+      ],
+      "journal_rotating_wall": [
+        3,
+        8,
+        12
+      ],
+      "outlet_z0": [
+        1
+      ],
+      "outlet_zL": [
+        11
+      ],
+      "pressure_inlet": [
+        9
+      ],
+      "stationary_bushing_feed_wall": [
+        2,
+        5,
+        7,
+        10
+      ]
+    },
+    "brep_manifest": {
+      "coordinate_units_explicit": true,
+      "files": {
+        "film_zones_SI.brep": {
+          "all_manifold": true,
+          "all_valid": true,
+          "coordinate_scale_per_mm": 0.001,
+          "coordinate_unit": "m",
+          "minimum_radial_gap_mm": 0.035,
+          "path": "film_zones_SI.brep",
+          "scale_to_m": 1.0,
+          "sha256": "c4b0eef35d75a3ac41a0bc2772534eca34861c2848b8798cbaf18d1f02c3f2a7",
+          "solid_count": 3,
+          "topology_tolerance_maxima_file_units": {
+            "edge": 1e-07,
+            "face": 1e-07,
+            "vertex": 1e-07
+          },
+          "topology_tolerance_maxima_mm": {
+            "edge": 9.999999999999999e-05,
+            "face": 9.999999999999999e-05,
+            "vertex": 9.999999999999999e-05
+          },
+          "topology_tolerance_maximum_gap_fraction": 0.0028571428571428567,
+          "total_volume": 1.1155895679591186e-06,
+          "zone_volumes": {
+            "hole_band": 2.983670709809178e-07,
+            "ring_A": 4.591515711521851e-07,
+            "ring_B": 3.5807092582601583e-07
+          }
+        },
+        "film_zones_fragmented.brep": {
+          "all_manifold": true,
+          "all_valid": true,
+          "coordinate_scale_per_mm": 1.0,
+          "coordinate_unit": "mm",
+          "minimum_radial_gap_mm": 0.035,
+          "path": "film_zones_fragmented.brep",
+          "scale_to_m": 0.001,
+          "sha256": "4ae5fc630adc6c88e42e1c003f2392c0652e5975742670597665e75e7357d7c5",
+          "solid_count": 3,
+          "topology_tolerance_maxima_file_units": {
+            "edge": 1e-07,
+            "face": 1e-07,
+            "vertex": 1.00000014920357e-07
+          },
+          "topology_tolerance_maxima_mm": {
+            "edge": 1e-07,
+            "face": 1e-07,
+            "vertex": 1.00000014920357e-07
+          },
+          "topology_tolerance_maximum_gap_fraction": 2.8571432834387712e-06,
+          "total_volume": 1115.5895679592497,
+          "zone_volumes": {
+            "hole_band": 298.3670709809077,
+            "ring_A": 459.151571152237,
+            "ring_B": 358.07092582610494
+          }
+        }
+      },
+      "minimum_radial_gap_mm": 0.035,
+      "overall": "PASS",
+      "schema_version": 1,
+      "topology_tolerance_maximum_gap_fraction": 0.01
+    },
+    "coordinate_units": {
+      "film_zones_SI.brep": "m",
+      "film_zones_fragmented.brep": "mm",
+      "input_brep": "mm"
+    },
+    "fragment_output_dimtags": [
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ]
+    ],
+    "fragment_source_mapping": {
+      "hole_band": [
+        [
+          3,
+          2
+        ]
+      ],
+      "ring_A": [
+        [
+          3,
+          1
+        ]
+      ],
+      "ring_B": [
+        [
+          3,
+          3
+        ]
+      ]
+    },
+    "occ_option_sets": {
+      "boolean_simplify_on_probe": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 1.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "fragment_disk_mm": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "si_disk": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "si_scaled_from_mm": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 0.001,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "unsplit_mm": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "zones_source_mm": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      }
+    },
+    "scaling": {
+      "area_ratio": 1.0000000000000004e-06,
+      "factor": 0.001,
+      "length_metrics_mm": {
+        "axial_length": 60.0,
+        "feed_centre_z": 30.0,
+        "feed_end_y": 63.7779404685324,
+        "split_z1": 26.0,
+        "split_z2": 34.0
+      },
+      "length_metrics_si": {
+        "axial_length": 0.060000000000000005,
+        "feed_centre_z": 0.030000000000001137,
+        "feed_end_y": 0.0637779404685324,
+        "split_z1": 0.026000000000000002,
+        "split_z2": 0.034
+      },
+      "length_relative_errors": {
+        "axial_length": 0.0,
+        "feed_centre_z": 3.7947076036992655e-14,
+        "feed_end_y": 0.0,
+        "split_z1": 0.0,
+        "split_z2": 0.0
+      },
+      "method": "Geometry.OCCScaling during import of the fragmented BREP",
+      "volume_ratio": 9.999999999998824e-10
+    },
+    "surfaces_mm": [
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 19.146155891872695,
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1e-07,
+          60.96910712798607,
+          60.96910712798607,
+          1e-07
+        ],
+        "boundary_curve_tags": [
+          1,
+          2
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          -3.197442310920451e-13,
+          9.134117592497399,
+          0.0
+        ],
+        "classification": "outlet_z0",
+        "entity_type": "Plane",
+        "properties": [
+          -0.0,
+          -0.0,
+          -1.0,
+          0.0
+        ],
+        "tag": 1
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 9776.724101345071,
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1e-07,
+          60.96910712798607,
+          60.96910712798607,
+          26.0000001
+        ],
+        "boundary_curve_tags": [
+          1,
+          3,
+          3,
+          4
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          0.0,
+          6.909590579188099e-17,
+          12.635409491455986
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          60.96910702798607,
+          -0.349065850398866
+        ],
+        "tag": 2
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 9768.031747357543,
+        "bbox": [
+          -60.91910712798607,
+          -60.93410712798607,
+          -1.0000000188737914e-07,
+          60.91910712798607,
+          60.904107127986066,
+          26.0000001
+        ],
+        "boundary_curve_tags": [
+          2,
+          5,
+          5,
+          6
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          -1.4210854715202004e-14,
+          -0.015000000000001169,
+          12.635085050479262
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.18485099360515e-19,
+          -0.015,
+          -1.0,
+          0.0,
+          0.0,
+          1.0,
+          61.28307726225227,
+          -0.34906585039886584
+        ],
+        "tag": 3
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band",
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1,
+          2
+        ],
+        "area": 16.17319573522036,
+        "bbox": [
+          -51.5058810370648,
+          -51.5058810370648,
+          25.9999999,
+          51.5058810370648,
+          51.5058810370648,
+          26.0000001
+        ],
+        "boundary_curve_tags": [
+          4,
+          6
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          6.94910795573378e-12,
+          7.714633961621299,
+          26.0
+        ],
+        "classification": "interface_z1",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -26.0
+        ],
+        "tag": 4
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 2663.870490451198,
+        "bbox": [
+          -51.50588103706481,
+          -51.50588103706481,
+          25.99999989999998,
+          51.50588103706481,
+          51.50588103706481,
+          34.0000001
+        ],
+        "boundary_curve_tags": [
+          4,
+          7,
+          7,
+          8,
+          9
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle",
+          "BSpline"
+        ],
+        "centre": [
+          1.285191407163211e-05,
+          -0.251243748717755,
+          29.961019899319194
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          60.96910702798607,
+          -0.349065850398866
+        ],
+        "tag": 5
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band",
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          2,
+          3
+        ],
+        "area": 15.258438763946288,
+        "bbox": [
+          -48.594119162935186,
+          -48.594119162935186,
+          33.9999999,
+          48.594119162935186,
+          48.594119162935186,
+          34.0000001
+        ],
+        "boundary_curve_tags": [
+          8,
+          10
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          -2.3234747459355276e-12,
+          7.277869789674126,
+          34.0
+        ],
+        "classification": "interface_z2",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -34.0
+        ],
+        "tag": 6
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 172.76155319246604,
+        "bbox": [
+          -2.0000001,
+          49.32201371909067,
+          27.9999999,
+          2.0000001,
+          63.7779405685324,
+          32.0000001
+        ],
+        "boundary_curve_tags": [
+          9,
+          11,
+          11,
+          12
+        ],
+        "boundary_curve_types": [
+          "BSpline",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          1.1163939839242687e-07,
+          56.89432956427033,
+          30.052959867082805
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cylinder",
+        "properties": [
+          0.0,
+          0.0,
+          30.0,
+          0.0,
+          1.0,
+          0.0,
+          2.0
+        ],
+        "tag": 7
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 2674.5704576991034,
+        "bbox": [
+          -51.45588103706482,
+          -51.47088103706482,
+          25.999999899999974,
+          51.45588103706482,
+          51.44088103706482,
+          34.0000001
+        ],
+        "boundary_curve_tags": [
+          6,
+          10,
+          13,
+          13
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle",
+          "Line",
+          "Line"
+        ],
+        "centre": [
+          -7.105427357601002e-15,
+          -0.015000000000000216,
+          29.961176508344913
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.18485099360515e-19,
+          -0.015,
+          -1.0,
+          0.0,
+          0.0,
+          1.0,
+          61.28307726225227,
+          -0.34906585039886584
+        ],
+        "tag": 8
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 12.566370614359199,
+        "bbox": [
+          -2.0000001,
+          63.7779403685324,
+          27.9999999,
+          2.0000001,
+          63.7779405685324,
+          32.0000001
+        ],
+        "boundary_curve_tags": [
+          12
+        ],
+        "boundary_curve_types": [
+          "Circle"
+        ],
+        "centre": [
+          0.0,
+          63.7779404685324,
+          30.0
+        ],
+        "classification": "pressure_inlet",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          1.0,
+          0.0,
+          -63.7779404685324
+        ],
+        "tag": 9
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 7625.368581674116,
+        "bbox": [
+          -48.59411916293519,
+          -48.59411916293519,
+          33.999999899999985,
+          48.59411916293519,
+          48.59411916293519,
+          60.000000099999994
+        ],
+        "boundary_curve_tags": [
+          8,
+          14,
+          14,
+          15
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          -7.105427357601002e-15,
+          -8.112315316653443e-16,
+          46.53254707968209
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          60.96910702798607,
+          -0.349065850398866
+        ],
+        "tag": 10
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 12.285478607296682,
+        "bbox": [
+          -39.130893072013926,
+          -39.130893072013926,
+          59.9999999,
+          39.130893072013926,
+          39.130893072013926,
+          60.0000001
+        ],
+        "boundary_curve_tags": [
+          15,
+          16
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          1.269739868803299e-11,
+          5.858386343137483,
+          60.0
+        ],
+        "classification": "outlet_zL",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -60.0
+        ],
+        "tag": 11
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 7616.6762276865975,
+        "bbox": [
+          -48.544119162935196,
+          -48.5591191629352,
+          33.99999989999998,
+          48.544119162935196,
+          48.529119162935196,
+          60.0000001
+        ],
+        "boundary_curve_tags": [
+          10,
+          16,
+          17,
+          17
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle",
+          "Line",
+          "Line"
+        ],
+        "centre": [
+          0.0,
+          -0.015000000000000265,
+          46.53201360994615
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.18485099360515e-19,
+          -0.015,
+          -1.0,
+          0.0,
+          0.0,
+          1.0,
+          61.28307726225227,
+          -0.34906585039886584
+        ],
+        "tag": 12
+      }
+    ],
+    "surfaces_si": [
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 1.914615589187693e-05,
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1e-07,
+          0.060969207027986076,
+          0.060969207027986076,
+          1e-07
+        ],
+        "boundary_curve_tags": [
+          1,
+          2
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          4.100886297209172e-15,
+          0.009134117592497068,
+          0.0
+        ],
+        "classification": "outlet_z0",
+        "entity_type": "Plane",
+        "properties": [
+          -0.0,
+          -0.0,
+          -1.0,
+          0.0
+        ],
+        "tag": 1
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 0.009776724101345073,
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1e-07,
+          0.060969207027986076,
+          0.060969207027986076,
+          0.026000099999999998
+        ],
+        "boundary_curve_tags": [
+          1,
+          3,
+          3,
+          4
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          1.3877787807814457e-17,
+          -7.267276119686134e-19,
+          0.012635409491455984
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.06096910702798607,
+          -0.349065850398866
+        ],
+        "tag": 2
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1
+        ],
+        "area": 0.009768031747357549,
+        "bbox": [
+          -0.060919207027986075,
+          -0.060934207027986076,
+          -1.0000000000195156e-07,
+          0.060919207027986075,
+          0.060904207027986074,
+          0.0260001
+        ],
+        "boundary_curve_tags": [
+          2,
+          5,
+          5,
+          6
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          0.0,
+          -1.4999999999999841e-05,
+          0.01263508505047926
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.184850993605822e-22,
+          -1.4999999999999389e-05,
+          -0.001,
+          0.0,
+          0.0,
+          1.0,
+          0.061283077262252274,
+          -0.34906585039886584
+        ],
+        "tag": 3
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band",
+          "ring_A"
+        ],
+        "adjacent_volume_tags": [
+          1,
+          2
+        ],
+        "area": 1.617319573522097e-05,
+        "bbox": [
+          -0.05150598093706481,
+          -0.05150598093706481,
+          0.025999900000000003,
+          0.05150598093706481,
+          0.05150598093706481,
+          0.0260001
+        ],
+        "boundary_curve_tags": [
+          4,
+          6
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          4.107825191113079e-15,
+          0.007714633961618873,
+          0.026000000000000002
+        ],
+        "classification": "interface_z1",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -0.026000000000000002
+        ],
+        "tag": 4
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 0.0026638704904511966,
+        "bbox": [
+          -0.05150598093706482,
+          -0.05150598093706482,
+          0.025999899999999982,
+          0.05150598093706482,
+          0.05150598093706482,
+          0.0340001
+        ],
+        "boundary_curve_tags": [
+          4,
+          7,
+          7,
+          8,
+          9
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle",
+          "BSpline"
+        ],
+        "centre": [
+          1.2851914074629711e-08,
+          -0.0002512437487177631,
+          0.029961019899319194
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.06096910702798607,
+          -0.349065850398866
+        ],
+        "tag": 5
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band",
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          2,
+          3
+        ],
+        "area": 1.5258438763943345e-05,
+        "bbox": [
+          -0.048594219062935186,
+          -0.048594219062935186,
+          0.0339999,
+          0.048594219062935186,
+          0.048594219062935186,
+          0.034000100000000005
+        ],
+        "boundary_curve_tags": [
+          8,
+          10
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          1.8735013540549517e-16,
+          0.007277869789678964,
+          0.034
+        ],
+        "classification": "interface_z2",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -0.034
+        ],
+        "tag": 6
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 0.000172761553192466,
+        "bbox": [
+          -0.0020001,
+          0.04932191381909067,
+          0.027999900000001136,
+          0.0020001,
+          0.0637780404685324,
+          0.03200010000000114
+        ],
+        "boundary_curve_tags": [
+          9,
+          11,
+          11,
+          12
+        ],
+        "boundary_curve_types": [
+          "BSpline",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          1.1163939911407184e-10,
+          0.05689432956427033,
+          0.030052959867083937
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cylinder",
+        "properties": [
+          0.0,
+          0.0,
+          0.030000000000001137,
+          0.0,
+          1.0,
+          0.0,
+          0.002
+        ],
+        "tag": 7
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 0.0026745704576991024,
+        "bbox": [
+          -0.05145598093706483,
+          -0.05147098093706483,
+          0.025999899999999975,
+          0.05145598093706483,
+          0.051440980937064826,
+          0.0340001
+        ],
+        "boundary_curve_tags": [
+          6,
+          10,
+          13,
+          13
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle",
+          "Line",
+          "Line"
+        ],
+        "centre": [
+          -1.3877787807814457e-17,
+          -1.5000000000000958e-05,
+          0.029961176508344917
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.184850993605822e-22,
+          -1.4999999999999389e-05,
+          -0.001,
+          0.0,
+          0.0,
+          1.0,
+          0.061283077262252274,
+          -0.34906585039886584
+        ],
+        "tag": 8
+      },
+      {
+        "adjacent_volume_labels": [
+          "hole_band"
+        ],
+        "adjacent_volume_tags": [
+          2
+        ],
+        "area": 1.2566370614359197e-05,
+        "bbox": [
+          -0.0020001,
+          0.0637778404685324,
+          0.027999900000001136,
+          0.0020001,
+          0.0637780404685324,
+          0.03200010000000114
+        ],
+        "boundary_curve_tags": [
+          12
+        ],
+        "boundary_curve_types": [
+          "Circle"
+        ],
+        "centre": [
+          -4.336808689942018e-19,
+          0.0637779404685324,
+          0.030000000000001137
+        ],
+        "classification": "pressure_inlet",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          1.0,
+          0.0,
+          -0.0637779404685324
+        ],
+        "tag": 9
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 0.007625368581674118,
+        "bbox": [
+          -0.04859421906293519,
+          -0.04859421906293519,
+          0.033999899999999986,
+          0.04859421906293519,
+          0.04859421906293519,
+          0.0600001
+        ],
+        "boundary_curve_tags": [
+          8,
+          14,
+          14,
+          15
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Line",
+          "Line",
+          "Circle"
+        ],
+        "centre": [
+          6.938893903907228e-18,
+          -6.722674364420206e-19,
+          0.04653254707968209
+        ],
+        "classification": "stationary_bushing_feed_wall",
+        "entity_type": "Cone",
+        "properties": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.06096910702798607,
+          -0.349065850398866
+        ],
+        "tag": 10
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 1.2285478607296924e-05,
+        "bbox": [
+          -0.03913099297201393,
+          -0.03913099297201393,
+          0.059999899999999995,
+          0.03913099297201393,
+          0.03913099297201393,
+          0.0600001
+        ],
+        "boundary_curve_tags": [
+          15,
+          16
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle"
+        ],
+        "centre": [
+          7.327471962526033e-15,
+          0.005858386343135331,
+          0.060000000000000005
+        ],
+        "classification": "outlet_zL",
+        "entity_type": "Plane",
+        "properties": [
+          0.0,
+          0.0,
+          1.0,
+          -0.06
+        ],
+        "tag": 11
+      },
+      {
+        "adjacent_volume_labels": [
+          "ring_B"
+        ],
+        "adjacent_volume_tags": [
+          3
+        ],
+        "area": 0.007616676227686599,
+        "bbox": [
+          -0.048544219062935205,
+          -0.048559219062935206,
+          0.03399989999999998,
+          0.048544219062935205,
+          0.048529219062935204,
+          0.06000010000000001
+        ],
+        "boundary_curve_tags": [
+          10,
+          16,
+          17,
+          17
+        ],
+        "boundary_curve_types": [
+          "Circle",
+          "Circle",
+          "Line",
+          "Line"
+        ],
+        "centre": [
+          6.938893903907228e-18,
+          -1.5000000000000278e-05,
+          0.046532013609946146
+        ],
+        "classification": "journal_rotating_wall",
+        "entity_type": "Cone",
+        "properties": [
+          9.184850993605822e-22,
+          -1.4999999999999389e-05,
+          -0.001,
+          0.0,
+          0.0,
+          1.0,
+          0.061283077262252274,
+          -0.34906585039886584
+        ],
+        "tag": 12
+      }
+    ],
+    "unsplit": {
+      "bbox": [
+        -60.96910712798607,
+        -60.96910712798607,
+        -1.0000000188737914e-07,
+        60.96910712798607,
+        63.7779405685324,
+        60.0000001
+      ],
+      "centre": [
+        0.00013487806194405888,
+        15.242872642852124,
+        28.15914802628498
+      ],
+      "label": null,
+      "mass": 1115.589567959178,
+      "tag": 1
+    },
+    "zones_fragmented_disk_mm": {
+      "hole_band": {
+        "bbox": [
+          -51.50588103706481,
+          -51.50588103706481,
+          25.999999899999974,
+          51.50588103706481,
+          63.7779405685324,
+          34.0000001
+        ],
+        "centre": [
+          0.0005043068581000971,
+          36.08501986266229,
+          29.99895840883586
+        ],
+        "label": "hole_band",
+        "mass": 298.3670709809077,
+        "tag": 2
+      },
+      "ring_A": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          60.96910712798607,
+          26.0000001
+        ],
+        "centre": [
+          -2.7808178272096694e-12,
+          8.44428963165333,
+          12.63524734311278
+        ],
+        "label": "ring_A",
+        "mass": 459.151571152237,
+        "tag": 1
+      },
+      "ring_B": {
+        "bbox": [
+          -48.59411916293519,
+          -48.59411916293519,
+          33.99999989999998,
+          48.59411916293519,
+          48.59411916293519,
+          60.0000001
+        ],
+        "centre": [
+          4.876770777675674e-12,
+          6.593663437765464,
+          46.532280496929644
+        ],
+        "label": "ring_B",
+        "mass": 358.07092582610494,
+        "tag": 3
+      }
+    },
+    "zones_fragmented_disk_si": {
+      "hole_band": {
+        "bbox": [
+          -0.05150598093706482,
+          -0.05150598093706482,
+          0.025999899999999975,
+          0.05150598093706482,
+          0.0637780404685324,
+          0.034000100000000005
+        ],
+        "centre": [
+          5.04306857235359e-07,
+          0.03608501986266194,
+          0.029998958408836505
+        ],
+        "label": "hole_band",
+        "mass": 2.983670709809178e-07,
+        "tag": 2
+      },
+      "ring_A": {
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1.0000000000195156e-07,
+          0.060969207027986076,
+          0.060969207027986076,
+          0.0260001
+        ],
+        "centre": [
+          -1.7038078784287373e-15,
+          0.00844428963165487,
+          0.012635247343113191
+        ],
+        "label": "ring_A",
+        "mass": 4.591515711521851e-07,
+        "tag": 1
+      },
+      "ring_B": {
+        "bbox": [
+          -0.04859421906293519,
+          -0.04859421906293519,
+          0.03399989999999998,
+          0.04859421906293519,
+          0.04859421906293519,
+          0.06000010000000001
+        ],
+        "centre": [
+          -5.618169766473684e-15,
+          0.006593663437768423,
+          0.04653228049692991
+        ],
+        "label": "ring_B",
+        "mass": 3.5807092582601583e-07,
+        "tag": 3
+      }
+    },
+    "zones_fragmented_mm": {
+      "hole_band": {
+        "bbox": [
+          -51.50588103706481,
+          -51.50588103706481,
+          25.999999899999974,
+          51.50588103706481,
+          63.7779405685324,
+          34.0000001
+        ],
+        "centre": [
+          0.0005043068581000971,
+          36.08501986266229,
+          29.99895840883586
+        ],
+        "label": "hole_band",
+        "mass": 298.3670709809077,
+        "tag": 2
+      },
+      "ring_A": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          60.96910712798607,
+          26.0000001
+        ],
+        "centre": [
+          -2.7808178272096694e-12,
+          8.44428963165333,
+          12.63524734311278
+        ],
+        "label": "ring_A",
+        "mass": 459.151571152237,
+        "tag": 1
+      },
+      "ring_B": {
+        "bbox": [
+          -48.59411916293519,
+          -48.59411916293519,
+          33.99999989999998,
+          48.59411916293519,
+          48.59411916293519,
+          60.0000001
+        ],
+        "centre": [
+          4.876770777675674e-12,
+          6.593663437765464,
+          46.532280496929644
+        ],
+        "label": "ring_B",
+        "mass": 358.07092582610494,
+        "tag": 3
+      }
+    },
+    "zones_fragmented_si": {
+      "hole_band": {
+        "bbox": [
+          -0.05150598093706482,
+          -0.05150598093706482,
+          0.025999899999999975,
+          0.05150598093706482,
+          0.0637780404685324,
+          0.034000100000000005
+        ],
+        "centre": [
+          5.04306857235359e-07,
+          0.03608501986266194,
+          0.029998958408836505
+        ],
+        "label": "hole_band",
+        "mass": 2.983670709809178e-07,
+        "tag": 2
+      },
+      "ring_A": {
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1.0000000000195156e-07,
+          0.060969207027986076,
+          0.060969207027986076,
+          0.0260001
+        ],
+        "centre": [
+          -1.7038078784287373e-15,
+          0.00844428963165487,
+          0.012635247343113191
+        ],
+        "label": "ring_A",
+        "mass": 4.591515711521851e-07,
+        "tag": 1
+      },
+      "ring_B": {
+        "bbox": [
+          -0.04859421906293519,
+          -0.04859421906293519,
+          0.03399989999999998,
+          0.04859421906293519,
+          0.04859421906293519,
+          0.06000010000000001
+        ],
+        "centre": [
+          -5.618169766473684e-15,
+          0.006593663437768423,
+          0.04653228049692991
+        ],
+        "label": "ring_B",
+        "mass": 3.5807092582601583e-07,
+        "tag": 3
+      }
+    },
+    "zones_imported": {
+      "hole_band": {
+        "bbox": [
+          -51.50588103706481,
+          -51.50588103706481,
+          25.999999899999974,
+          51.50588103706481,
+          63.7779405685324,
+          34.0000001
+        ],
+        "centre": [
+          0.0005043068581000971,
+          36.08501986266229,
+          29.99895840883586
+        ],
+        "label": "hole_band",
+        "mass": 298.3670709809077,
+        "tag": 2
+      },
+      "ring_A": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          60.96910712798607,
+          26.0000001
+        ],
+        "centre": [
+          -2.7808178272096694e-12,
+          8.44428963165333,
+          12.63524734311278
+        ],
+        "label": "ring_A",
+        "mass": 459.151571152237,
+        "tag": 1
+      },
+      "ring_B": {
+        "bbox": [
+          -48.59411916293519,
+          -48.59411916293519,
+          33.99999989999998,
+          48.59411916293519,
+          48.59411916293519,
+          60.0000001
+        ],
+        "centre": [
+          4.876770777675674e-12,
+          6.593663437765464,
+          46.532280496929644
+        ],
+        "label": "ring_B",
+        "mass": 358.07092582610494,
+        "tag": 3
+      }
+    }
+  },
+  "error": null,
+  "inputs": {
+    "gui": false,
+    "outdir": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/gmsh_preflight_e03_g20",
+    "params": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/params.json",
+    "unsplit": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/film_unsplit.brep",
+    "zones": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/film_zones.brep"
+  },
+  "mesh_generated": false,
+  "outputs": {
+    "brep_manifest.json": {
+      "bytes": 2039,
+      "coordinate_unit": "explicit per BREP entry",
+      "scale_to_m": null,
+      "sha256": "d56de068b628e021f350bdb4b07e38f1a969494f30024d7df3cd078bbc65edfc"
+    },
+    "film_zones_SI.brep": {
+      "bytes": 29023,
+      "coordinate_unit": "m",
+      "scale_to_m": 1.0,
+      "sha256": "c4b0eef35d75a3ac41a0bc2772534eca34861c2848b8798cbaf18d1f02c3f2a7"
+    },
+    "film_zones_fragmented.brep": {
+      "bytes": 26762,
+      "coordinate_unit": "mm",
+      "scale_to_m": 0.001,
+      "sha256": "4ae5fc630adc6c88e42e1c003f2392c0652e5975742670597665e75e7357d7c5"
+    },
+    "gmsh_preflight.log": {
+      "bytes": 20641,
+      "coordinate_unit": "n/a",
+      "scale_to_m": null,
+      "sha256": "fb75a27a27c7c651c25b0e6128669781cde54f0046981152fbf4b188d72ff07f"
+    },
+    "surfaces.csv": {
+      "bytes": 15411,
+      "coordinate_unit": "explicit per row",
+      "scale_to_m": null,
+      "sha256": "001fe6fa4993da5f6bc87ebf7c6797df22de166f973285b96b9333d3d9e1d522"
+    },
+    "volumes.csv": {
+      "bytes": 3655,
+      "coordinate_unit": "explicit per row",
+      "scale_to_m": null,
+      "sha256": "dd8a694b4d1f9772a284165461edc754f981389767b9a3f6bb322688ecbb86f6"
+    }
+  },
+  "overall": "PASS",
+  "tolerances": {
+    "area_relative": 1e-10,
+    "bbox_absolute_mm": 1e-06,
+    "bbox_span_relative": 5e-05,
+    "position_absolute_mm": 1e-06,
+    "scale_relative": 1e-10,
+    "topology_tolerance_maximum_gap_fraction": 0.01,
+    "volume_relative": 1e-10
+  },
+  "validation_records": [
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/film_unsplit.brep",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.unsplit.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/film_zones.brep",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.zones.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_case_e03_g20/params.json",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.params.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "585b1cf17eb48144410cd7fd3b199c5e1e6eb3e297c44ae0794f5c032b3357a2",
+      "expected": "585b1cf17eb48144410cd7fd3b199c5e1e6eb3e297c44ae0794f5c032b3357a2",
+      "mandatory": true,
+      "name": "input.unsplit.sha256",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "43cb4123e6ca8e8b9b7ebe0544bf1a46c16bffc30bd71b40a305bcbff2ac41a0",
+      "expected": "43cb4123e6ca8e8b9b7ebe0544bf1a46c16bffc30bd71b40a305bcbff2ac41a0",
+      "mandatory": true,
+      "name": "input.zones.sha256",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "absolute_volume_error_mm3": 7.321432349272072e-11,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 1115.589567959105,
+        "format": "BREP",
+        "labels": [],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 6.56283687079123e-14,
+        "solid_count": 1,
+        "step_precision_mode": null,
+        "total_volume_mm3": 1115.589567959178
+      },
+      "expected": {
+        "manifold": true,
+        "relative_volume_error_max": 1e-12,
+        "solid_count": 1,
+        "valid": true
+      },
+      "mandatory": true,
+      "name": "input.native_brep_record.film_unsplit.brep",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "absolute_volume_error_mm3": 1.0982148523908108e-10,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 3,
+        "expected_volume_mm3": 1115.58956795914,
+        "format": "BREP",
+        "labels": [],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 9.844255306186536e-14,
+        "solid_count": 3,
+        "step_precision_mode": null,
+        "total_volume_mm3": 1115.5895679592497
+      },
+      "expected": {
+        "manifold": true,
+        "relative_volume_error_max": 1e-12,
+        "solid_count": 3,
+        "valid": true
+      },
+      "mandatory": true,
+      "name": "input.native_brep_record.film_zones.brep",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "unsplit.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1,
+      "expected": 1,
+      "mandatory": true,
+      "name": "unsplit.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 6.56283687079123e-14,
+        "value": 1115.589567959178
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "unsplit.occ_mass_vs_native",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          63.7779405685324,
+          60.0000001
+        ],
+        "max_abs_error_mm": 7.105427357601002e-15
+      },
+      "expected": [
+        -60.96910712798607,
+        -60.96910712798607,
+        -1e-07,
+        60.96910712798607,
+        63.7779405685324,
+        60.00000010000001
+      ],
+      "mandatory": true,
+      "name": "unsplit.bounding_box_vs_native_brep",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": {
+        "reference_length_mm": 60.0,
+        "z_span": 60.0000002
+      },
+      "expected": "1 model coordinate = 1 mm",
+      "mandatory": true,
+      "name": "unsplit.coordinates_are_millimetres",
+      "status": "PASS",
+      "tolerance": 1e-08
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "zones_import.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "zones_import.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.298300337482613e-13,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "zones_import.total_mass_vs_native",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "zones_import.geometric_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.74311793282517e-13,
+        "value": 459.151571152237
+      },
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "name": "zones_import.ring_A.mass_vs_native",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.7146354926680542e-15,
+        "value": 298.3670709809077
+      },
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "name": "zones_import.hole_band.mass_vs_native",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 8.127951296126783e-14,
+        "value": 358.07092582610494
+      },
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "name": "zones_import.ring_B.mass_vs_native",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "hole_band": [
+          [
+            3,
+            2
+          ]
+        ],
+        "ring_A": [
+          [
+            3,
+            1
+          ]
+        ],
+        "ring_B": [
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "expected": "one unique final 3D volume per source zone and no extra 3D output",
+      "mandatory": true,
+      "name": "fragment.source_to_output_mapping",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "fragment.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.298300337482613e-13,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "fragment.total_mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "fragment.geometric_volume_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.74311793282517e-13,
+        "value": 459.151571152237
+      },
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "name": "fragment.ring_A.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.7146354926680542e-15,
+        "value": 298.3670709809077
+      },
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "name": "fragment.hole_band.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 8.127951296126783e-14,
+        "value": 358.07092582610494
+      },
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "name": "fragment.ring_B.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "mandatory": true,
+      "name": "fragment.all_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A"
+      ],
+      "mandatory": true,
+      "name": "fragment.interface_z1.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "fragment.interface_z2.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 2.5444437451708145e-15,
+        "value": 12.566370614359199
+      },
+      "expected": 12.566370614359167,
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.area_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.240739575284689e-16,
+        "value": 12.566370614359167
+      },
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.params_area_vs_diameter",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "centre": [
+          0.0,
+          63.7779404685324,
+          30.0
+        ],
+        "max_abs_error": 0.0
+      },
+      "expected": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.centre",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.support_plane_direction",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "minus_y_point_inside": true,
+        "plus_y_point_inside": false,
+        "probe_distance": 0.1
+      },
+      "expected": "-Y probe inside and +Y probe outside",
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.outward_orientation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "Circle"
+      ],
+      "expected": "contains Circle",
+      "mandatory": true,
+      "name": "fragment.pressure_inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          63.7779405685324,
+          60.0000001
+        ],
+        "centre_error": 0.0,
+        "span_relative_errors": [
+          1.6401749351964052e-09,
+          1.603244490044191e-09,
+          3.3333333722869915e-09
+        ]
+      },
+      "expected": [
+        -60.96910702798607,
+        -60.96910702798607,
+        0.0,
+        60.96910702798607,
+        63.7779404685324,
+        60.0
+      ],
+      "mandatory": true,
+      "name": "fragment.bounding_box",
+      "status": "PASS",
+      "tolerance": {
+        "centre_absolute": 1e-06,
+        "span_relative": 5e-05
+      }
+    },
+    {
+      "actual": {
+        "hole_band": 2,
+        "ring_A": 1,
+        "ring_B": 3
+      },
+      "expected": {
+        "hole_band": 2,
+        "ring_A": 1,
+        "ring_B": 3
+      },
+      "mandatory": true,
+      "name": "fragment.source_mapping_preserves_zone_identity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 0.0,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.5895679592497,
+      "mandatory": true,
+      "name": "fragment.total_mass_conservation",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 1.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 1.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.298300337482613e-13,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.total_mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.geometric_volume_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.74311793282517e-13,
+        "value": 459.151571152237
+      },
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.ring_A.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.7146354926680542e-15,
+        "value": 298.3670709809077
+      },
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.hole_band.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 8.127951296126783e-14,
+        "value": 358.07092582610494
+      },
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.ring_B.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.all_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A"
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.interface_z1.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.interface_z2.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 2.5444437451708145e-15,
+        "value": 12.566370614359199
+      },
+      "expected": 12.566370614359167,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.area_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.240739575284689e-16,
+        "value": 12.566370614359167
+      },
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.params_area_vs_diameter",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "centre": [
+          0.0,
+          63.7779404685324,
+          30.0
+        ],
+        "max_abs_error": 0.0
+      },
+      "expected": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.centre",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.support_plane_direction",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "minus_y_point_inside": true,
+        "plus_y_point_inside": false,
+        "probe_distance": 0.1
+      },
+      "expected": "-Y probe inside and +Y probe outside",
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.outward_orientation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "Circle"
+      ],
+      "expected": "contains Circle",
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.pressure_inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          63.7779405685324,
+          60.0000001
+        ],
+        "centre_error": 0.0,
+        "span_relative_errors": [
+          1.6401749351964052e-09,
+          1.603244490044191e-09,
+          3.3333333722869915e-09
+        ]
+      },
+      "expected": [
+        -60.96910702798607,
+        -60.96910702798607,
+        0.0,
+        60.96910702798607,
+        63.7779404685324,
+        60.0
+      ],
+      "mandatory": true,
+      "name": "boolean_simplify_on_probe.bounding_box",
+      "status": "PASS",
+      "tolerance": {
+        "centre_absolute": 1e-06,
+        "span_relative": 5e-05
+      }
+    },
+    {
+      "actual": {
+        "changed": false,
+        "simplify_off": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 298.3670709809077,
+            "ring_A": 459.151571152237,
+            "ring_B": 358.07092582610494
+          }
+        },
+        "simplify_on": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 298.3670709809077,
+            "ring_A": 459.151571152237,
+            "ring_B": 358.07092582610494
+          }
+        },
+        "zone_volume_relative_errors": {
+          "hole_band": 0.0,
+          "ring_A": 0.0,
+          "ring_B": 0.0
+        }
+      },
+      "expected": "difference reported; production remains OCCBooleanSimplify=0",
+      "mandatory": false,
+      "name": "fragment.boolean_simplify_topology_comparison",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 26762,
+      "expected": "> 0 bytes",
+      "mandatory": true,
+      "name": "fragment.brep_export",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "fragment_disk_mm.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "fragment_disk_mm.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.298300337482613e-13,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "fragment_disk_mm.total_mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.geometric_volume_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.74311793282517e-13,
+        "value": 459.151571152237
+      },
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "name": "fragment_disk_mm.ring_A.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.7146354926680542e-15,
+        "value": 298.3670709809077
+      },
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "name": "fragment_disk_mm.hole_band.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 8.127951296126783e-14,
+        "value": 358.07092582610494
+      },
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "name": "fragment_disk_mm.ring_B.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "mandatory": true,
+      "name": "fragment_disk_mm.all_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A"
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.interface_z1.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.interface_z2.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 2.5444437451708145e-15,
+        "value": 12.566370614359199
+      },
+      "expected": 12.566370614359167,
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.area_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.240739575284689e-16,
+        "value": 12.566370614359167
+      },
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.params_area_vs_diameter",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "centre": [
+          0.0,
+          63.7779404685324,
+          30.0
+        ],
+        "max_abs_error": 0.0
+      },
+      "expected": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.centre",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.support_plane_direction",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "minus_y_point_inside": true,
+        "plus_y_point_inside": false,
+        "probe_distance": 0.1
+      },
+      "expected": "-Y probe inside and +Y probe outside",
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.outward_orientation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "Circle"
+      ],
+      "expected": "contains Circle",
+      "mandatory": true,
+      "name": "fragment_disk_mm.pressure_inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "bbox": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1.0000000188737914e-07,
+          60.96910712798607,
+          63.7779405685324,
+          60.0000001
+        ],
+        "centre_error": 0.0,
+        "span_relative_errors": [
+          1.6401749351964052e-09,
+          1.603244490044191e-09,
+          3.3333333722869915e-09
+        ]
+      },
+      "expected": [
+        -60.96910702798607,
+        -60.96910702798607,
+        0.0,
+        60.96910702798607,
+        63.7779404685324,
+        60.0
+      ],
+      "mandatory": true,
+      "name": "fragment_disk_mm.bounding_box",
+      "status": "PASS",
+      "tolerance": {
+        "centre_absolute": 1e-06,
+        "span_relative": 5e-05
+      }
+    },
+    {
+      "actual": {
+        "changed": false,
+        "simplify_off": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 298.3670709809077,
+            "ring_A": 459.151571152237,
+            "ring_B": 358.07092582610494
+          }
+        },
+        "simplify_on": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 298.3670709809077,
+            "ring_A": 459.151571152237,
+            "ring_B": 358.07092582610494
+          }
+        },
+        "zone_volume_relative_errors": {
+          "hole_band": 0.0,
+          "ring_A": 0.0,
+          "ring_B": 0.0
+        }
+      },
+      "expected": "no topology or volume change",
+      "mandatory": true,
+      "name": "fragment_disk_mm.topology_round_trip",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 0.001,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 0.001,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "si_scaled_from_mm.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.2148309329265446e-14,
+        "value": 1.1155895679591186e-06
+      },
+      "expected": 1.115589567959105e-06,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.total_mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.geometric_volume_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 6.12235865086183e-14,
+        "value": 4.591515711521851e-07
+      },
+      "expected": 4.59151571152157e-07,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.ring_A.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 3.530876328557551e-14,
+        "value": 2.983670709809178e-07
+      },
+      "expected": 2.9836707098090725e-07,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.hole_band.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.6765801355737078e-13,
+        "value": 3.5807092582601583e-07
+      },
+      "expected": 3.5807092582607587e-07,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.ring_B.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.all_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A"
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.interface_z1.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.interface_z2.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 2.426570649309935e-15,
+        "value": 1.2566370614359197e-05
+      },
+      "expected": 1.2566370614359167e-05,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.area_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.240739575284689e-16,
+        "value": 12.566370614359167
+      },
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.params_area_vs_diameter",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "centre": [
+          -4.336808689942018e-19,
+          0.0637779404685324,
+          0.030000000000001137
+        ],
+        "max_abs_error": 1.1379786002407855e-15
+      },
+      "expected": [
+        0.0,
+        0.0637779404685324,
+        0.03
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.centre",
+      "status": "PASS",
+      "tolerance": 1e-09
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.support_plane_direction",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "minus_y_point_inside": true,
+        "plus_y_point_inside": false,
+        "probe_distance": 0.0001
+      },
+      "expected": "-Y probe inside and +Y probe outside",
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.outward_orientation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "Circle"
+      ],
+      "expected": "contains Circle",
+      "mandatory": true,
+      "name": "si_scaled_from_mm.pressure_inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1.0000000000195156e-07,
+          0.060969207027986076,
+          0.0637780404685324,
+          0.06000010000000001
+        ],
+        "centre_error": 3.469446951953614e-18,
+        "span_relative_errors": [
+          1.6401749160763256e-06,
+          1.6032443574372602e-06,
+          3.333333333544834e-06
+        ]
+      },
+      "expected": [
+        -0.06096910702798607,
+        -0.06096910702798607,
+        0.0,
+        0.06096910702798607,
+        0.0637779404685324,
+        0.06
+      ],
+      "mandatory": true,
+      "name": "si_scaled_from_mm.bounding_box",
+      "status": "PASS",
+      "tolerance": {
+        "centre_absolute": 1e-09,
+        "span_relative": 5e-05
+      }
+    },
+    {
+      "actual": {
+        "relative_error": 1.1766644213566819e-13,
+        "value": 9.999999999998824e-10
+      },
+      "expected": 1e-09,
+      "mandatory": true,
+      "name": "si.volume_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.2351647362715017e-16,
+        "value": 1.0000000000000004e-06
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "si.area_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.1311694876662652e-13,
+        "value": 9.99999999999887e-10
+      },
+      "expected": 1e-09,
+      "mandatory": true,
+      "name": "si.ring_A.volume_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 3.370760996153588e-14,
+        "value": 1.0000000000000338e-09
+      },
+      "expected": 1e-09,
+      "mandatory": true,
+      "name": "si.hole_band.volume_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 2.4898136437846133e-13,
+        "value": 9.99999999999751e-10
+      },
+      "expected": 1e-09,
+      "mandatory": true,
+      "name": "si.ring_B.volume_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "mm": {
+          "axial_length": 60.0,
+          "feed_centre_z": 30.0,
+          "feed_end_y": 63.7779404685324,
+          "split_z1": 26.0,
+          "split_z2": 34.0
+        },
+        "relative_errors": {
+          "axial_length": 0.0,
+          "feed_centre_z": 3.7947076036992655e-14,
+          "feed_end_y": 0.0,
+          "split_z1": 0.0,
+          "split_z2": 0.0
+        },
+        "si": {
+          "axial_length": 0.060000000000000005,
+          "feed_centre_z": 0.030000000000001137,
+          "feed_end_y": 0.0637779404685324,
+          "split_z1": 0.026000000000000002,
+          "split_z2": 0.034
+        }
+      },
+      "expected": 0.001,
+      "mandatory": true,
+      "name": "si.length_scale",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 29023,
+      "expected": "> 0 bytes",
+      "mandatory": true,
+      "name": "si.brep_export",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "si_disk.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "si_disk.volume_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.2148309329265446e-14,
+        "value": 1.1155895679591186e-06
+      },
+      "expected": 1.115589567959105e-06,
+      "mandatory": true,
+      "name": "si_disk.total_mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "si_disk.geometric_volume_classification",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 6.12235865086183e-14,
+        "value": 4.591515711521851e-07
+      },
+      "expected": 4.59151571152157e-07,
+      "mandatory": true,
+      "name": "si_disk.ring_A.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 3.530876328557551e-14,
+        "value": 2.983670709809178e-07
+      },
+      "expected": 2.9836707098090725e-07,
+      "mandatory": true,
+      "name": "si_disk.hole_band.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.6765801355737078e-13,
+        "value": 3.5807092582601583e-07
+      },
+      "expected": 3.5807092582607587e-07,
+      "mandatory": true,
+      "name": "si_disk.ring_B.mass",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 12,
+      "expected": 12,
+      "mandatory": true,
+      "name": "si_disk.all_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_A"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_A"
+      ],
+      "mandatory": true,
+      "name": "si_disk.interface_z1.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "hole_band",
+        "ring_B"
+      ],
+      "expected": [
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": true,
+      "name": "si_disk.interface_z2.two_sided_adjacency",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 2.426570649309935e-15,
+        "value": 1.2566370614359197e-05
+      },
+      "expected": 1.2566370614359167e-05,
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.area_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 4.240739575284689e-16,
+        "value": 12.566370614359167
+      },
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.params_area_vs_diameter",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "centre": [
+          -4.336808689942018e-19,
+          0.0637779404685324,
+          0.030000000000001137
+        ],
+        "max_abs_error": 1.1379786002407855e-15
+      },
+      "expected": [
+        0.0,
+        0.0637779404685324,
+        0.03
+      ],
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.centre",
+      "status": "PASS",
+      "tolerance": 1e-09
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.support_plane_direction",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "minus_y_point_inside": true,
+        "plus_y_point_inside": false,
+        "probe_distance": 0.0001
+      },
+      "expected": "-Y probe inside and +Y probe outside",
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.outward_orientation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "Circle"
+      ],
+      "expected": "contains Circle",
+      "mandatory": true,
+      "name": "si_disk.pressure_inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "bbox": [
+          -0.060969207027986076,
+          -0.060969207027986076,
+          -1.0000000000195156e-07,
+          0.060969207027986076,
+          0.0637780404685324,
+          0.06000010000000001
+        ],
+        "centre_error": 3.469446951953614e-18,
+        "span_relative_errors": [
+          1.6401749160763256e-06,
+          1.6032443574372602e-06,
+          3.333333333544834e-06
+        ]
+      },
+      "expected": [
+        -0.06096910702798607,
+        -0.06096910702798607,
+        0.0,
+        0.06096910702798607,
+        0.0637779404685324,
+        0.06
+      ],
+      "mandatory": true,
+      "name": "si_disk.bounding_box",
+      "status": "PASS",
+      "tolerance": {
+        "centre_absolute": 1e-09,
+        "span_relative": 5e-05
+      }
+    },
+    {
+      "actual": {
+        "changed": false,
+        "simplify_off": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 2.983670709809178e-07,
+            "ring_A": 4.591515711521851e-07,
+            "ring_B": 3.5807092582601583e-07
+          }
+        },
+        "simplify_on": {
+          "surface_count": 12,
+          "surface_role_counts": {
+            "interface_z1": 1,
+            "interface_z2": 1,
+            "journal_rotating_wall": 3,
+            "outlet_z0": 1,
+            "outlet_zL": 1,
+            "pressure_inlet": 1,
+            "stationary_bushing_feed_wall": 4
+          },
+          "volume_count": 3,
+          "zone_volumes": {
+            "hole_band": 2.983670709809178e-07,
+            "ring_A": 4.591515711521851e-07,
+            "ring_B": 3.5807092582601583e-07
+          }
+        },
+        "zone_volume_relative_errors": {
+          "hole_band": 0.0,
+          "ring_A": 0.0,
+          "ring_B": 0.0
+        }
+      },
+      "expected": "no topology or volume change",
+      "mandatory": true,
+      "name": "si_disk.topology_round_trip",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.1564823173178715e-16,
+        "value": 0.060000000000000005
+      },
+      "expected": 0.06,
+      "mandatory": true,
+      "name": "si_disk.file_contains_si_coordinates",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "ocp_fragment_mm.solid_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "manifold": [
+          true,
+          true,
+          true
+        ],
+        "valid": [
+          true,
+          true,
+          true
+        ]
+      },
+      "expected": {
+        "manifold": [
+          true,
+          true,
+          true
+        ],
+        "valid": [
+          true,
+          true,
+          true
+        ]
+      },
+      "mandatory": true,
+      "name": "ocp_fragment_mm.valid_manifold",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.298300337482613e-13,
+        "value": 1115.5895679592497
+      },
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "name": "ocp_fragment_mm.total_volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.74311793282517e-13,
+        "value": 459.151571152237
+      },
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "name": "ocp_fragment_mm.ring_A.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.7146354926680542e-15,
+        "value": 298.3670709809077
+      },
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "name": "ocp_fragment_mm.hole_band.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 8.127951296126783e-14,
+        "value": 358.07092582610494
+      },
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "name": "ocp_fragment_mm.ring_B.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "maxima_in_file_units": {
+          "edge": 1e-07,
+          "face": 1e-07,
+          "vertex": 1.00000014920357e-07
+        },
+        "maxima_mm": {
+          "edge": 1e-07,
+          "face": 1e-07,
+          "vertex": 1.00000014920357e-07
+        },
+        "maximum_gap_fraction": 2.8571432834387712e-06
+      },
+      "expected": "<= 1.000% of h_min",
+      "mandatory": true,
+      "name": "ocp_fragment_mm.topology_tolerance_vs_minimum_gap",
+      "status": "PASS",
+      "tolerance": 0.01
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "ocp_fragment_si.solid_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "manifold": [
+          true,
+          true,
+          true
+        ],
+        "valid": [
+          true,
+          true,
+          true
+        ]
+      },
+      "expected": {
+        "manifold": [
+          true,
+          true,
+          true
+        ],
+        "valid": [
+          true,
+          true,
+          true
+        ]
+      },
+      "mandatory": true,
+      "name": "ocp_fragment_si.valid_manifold",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "relative_error": 1.2148309329265446e-14,
+        "value": 1.1155895679591186e-06
+      },
+      "expected": 1.115589567959105e-06,
+      "mandatory": true,
+      "name": "ocp_fragment_si.total_volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 6.12235865086183e-14,
+        "value": 4.591515711521851e-07
+      },
+      "expected": 4.59151571152157e-07,
+      "mandatory": true,
+      "name": "ocp_fragment_si.ring_A.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 3.530876328557551e-14,
+        "value": 2.983670709809178e-07
+      },
+      "expected": 2.9836707098090725e-07,
+      "mandatory": true,
+      "name": "ocp_fragment_si.hole_band.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "relative_error": 1.6765801355737078e-13,
+        "value": 3.5807092582601583e-07
+      },
+      "expected": 3.5807092582607587e-07,
+      "mandatory": true,
+      "name": "ocp_fragment_si.ring_B.volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "maxima_in_file_units": {
+          "edge": 1e-07,
+          "face": 1e-07,
+          "vertex": 1e-07
+        },
+        "maxima_mm": {
+          "edge": 9.999999999999999e-05,
+          "face": 9.999999999999999e-05,
+          "vertex": 9.999999999999999e-05
+        },
+        "maximum_gap_fraction": 0.0028571428571428567
+      },
+      "expected": "<= 1.000% of h_min",
+      "mandatory": true,
+      "name": "ocp_fragment_si.topology_tolerance_vs_minimum_gap",
+      "status": "PASS",
+      "tolerance": 0.01
+    }
+  ]
+}

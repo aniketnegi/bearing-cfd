@@ -1,0 +1,1 @@
+"""Shared solver-format adapters."""

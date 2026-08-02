@@ -1,0 +1,13 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.oil;
+}
+
+viscosityModel  constant;
+
+// Sakai, Ochiai, and Hashimoto (2019), VG22 oil at 40 degC.
+nu              2.2093023255813954e-05;
+rho             860;

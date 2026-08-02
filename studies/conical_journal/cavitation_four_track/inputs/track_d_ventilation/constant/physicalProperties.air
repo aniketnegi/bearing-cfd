@@ -1,0 +1,13 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.air;
+}
+
+viscosityModel  constant;
+
+// Sakai, Ochiai, and Hashimoto (2019), air at 28 degC.
+nu              1.4227642276422765e-05;
+rho             1.23;

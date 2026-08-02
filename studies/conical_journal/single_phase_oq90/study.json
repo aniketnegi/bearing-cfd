@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "study": "single-phase-oq90",
+  "question": "What pressure, flow, load, and convergence evidence does the accepted single-phase OQ90 case provide at the retained operating stages?",
+  "status": "ACCEPTED_SINGLE_PHASE_NUMERICAL_EVIDENCE",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "origin": {
+    "kind": "ignored-worktree-source",
+    "path": "out/openfoam_oq90_single_phase/visualization/generate_visuals.py",
+    "sha256": "7c2902b1b614003d45a2492798ba7e388a23baccb7bed6d2398dc5246ef6cd5a"
+  },
+  "commands": [
+    ["bearing-cfd", "conical-journal", "study", "single-phase-oq90"]
+  ],
+  "required_external_tools": ["ParaView pvpython", "VTK", "FFmpeg"],
+  "source_artifacts": [
+    {
+      "path": "out/openfoam_oq90_single_phase/RUN_RESULTS.md",
+      "sha256": "1071989ae4c0a87d04240a2d3ba5a0d56f4c8fb977261b506c75a14237aabf17",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    }
+  ],
+  "large_artifact_regeneration": [
+    "foamToVTK -case out/openfoam_oq90_single_phase -time '1,128,266,402'"
+  ],
+  "large_artifacts": [
+    {"path": "out/openfoam_oq90_single_phase/VTK/openfoam_oq90_single_phase_1.vtk", "sha256": "99e34e6368c7ffa7fdb8064da8a0464702e2b3db29b72b8c10ecefff4d4e913a"},
+    {"path": "out/openfoam_oq90_single_phase/VTK/openfoam_oq90_single_phase_128.vtk", "sha256": "03c0cd47460ea32e0770c45a0958395f11aa51bfc4c24b103565623e1ba9f8e5"},
+    {"path": "out/openfoam_oq90_single_phase/VTK/openfoam_oq90_single_phase_266.vtk", "sha256": "b66edc4364f55c461918b06a865d4225b8fffc307f61f18ebe1e86e1bc53027e"},
+    {"path": "out/openfoam_oq90_single_phase/VTK/openfoam_oq90_single_phase_402.vtk", "sha256": "a2eb956346efc0396c19d52ef45540be7c12f25f14a9ce1481c1ef386da203fe"}
+  ],
+  "expected_outputs": [
+    {"path": "run_summary.png", "role": "four-stage operating summary"},
+    {"path": "convergence_496rpm.png", "role": "intermediate convergence evidence"},
+    {"path": "convergence_2000rpm.png", "role": "target-speed convergence evidence"},
+    {"path": "unwrapped_rotating_fields.png", "role": "unwrapped pressure fields"},
+    {"path": "pressure_stage_sweep.mp4", "role": "stage animation"},
+    {"path": "pressure_orbit_2000rpm.mp4", "role": "fixed-state orbit"},
+    {"path": "run.json", "role": "generation provenance"}
+  ]
+}

@@ -38,10 +38,10 @@ face.  Incidence counts then mean:
 | >2 | non-manifold overlap |
 
 Hex8 implementation:
-[[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_topology][validate_topology]].
 Prism6 helpers and implementation:
-[[file:../../meshing/layered_prism_central_feed.py::def _face_census][_face_census]]
-and [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _face_census][_face_census]]
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][validate_topology]].
 
 * Boundary completeness
 
@@ -57,7 +57,7 @@ detects several common failures at once:
 
 Boundary winding is checked separately.  For Hex8, each area vector must point
 away from the incident cell and agree with the analytic cone/end direction.
-For Prism6, [[file:../../meshing/layered_prism_central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]]
+For Prism6, [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]]
 requires every external Tri3 and Quad4 normal to point from its sole incident
 cell centroid toward the face centroid.  The signed exterior-boundary volume
 remains a global conservation check, but it cannot hide locally reversed faces.
@@ -72,14 +72,14 @@ The final theta block must share its circumferential face with block zero, and
 those seam keys must not occur in any external patch.
 
 Relevant functions:
-[[file:../../meshing/structured_hex_no_port.py::def expected_neighbour_pairs][expected_neighbour_pairs]]
-and [[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def expected_neighbour_pairs][expected_neighbour_pairs]]
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_topology][validate_topology]].
 
 ** Prism6 generic graph
 
 The ported mesh builds cell adjacency from every two-incident-cell triangular and
 quadrilateral face.  A union-find pass in
-[[file:../../meshing/layered_prism_central_feed.py::def _component_count][_component_count]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _component_count][_component_count]]
 must return one connected component.  Extruded master edges prove that the
 collapsed theta seam and the =z1/z2= partitions remain internal owner-neighbour
 faces through every gap layer.
@@ -103,8 +103,8 @@ This proves an open, conformal fluid connection.  The triangle is a shared
 internal owner-neighbour face, not a cap.  A cap would have one incident cell and would appear in an
 external boundary group.  The code and focused test are:
 
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][Prism validate_topology]]
-- [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][test_mouth_nodes_faces_and_continuous_journal]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][Prism validate_topology]]
+- [[file:../../tests/conical_journal/test_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][test_mouth_nodes_faces_and_continuous_journal]]
 
 The same validation proves the journal remains continuous: =journal_wall=
 contains one triangle for every complete master triangle, including the feed
@@ -117,11 +117,11 @@ disk footprint.
 The smoke stage computes Euclidean triangle area and asks Gmsh for =minSICN=.
 Every area and =minSICN= must be finite and positive.  It reports distribution
 statistics rather than imposing a high isotropic threshold.  See
-[[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def validate_mesh][validate_mesh]].
 
 ** Hex8
 
-[[file:../../meshing/structured_hex_no_port.py::def compute_custom_metrics][compute_custom_metrics]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def compute_custom_metrics][compute_custom_metrics]]
 uses oriented face area vectors and a 2x2x2 Gauss rule.  Hard gates are:
 
 - positive face-based signed volume;
@@ -135,9 +135,9 @@ uses oriented face area vectors and a 2x2x2 Gauss rule.  Hard gates are:
 
 Aspect ratio is reported, not capped, because the film is intentionally thin.
 
-** Standard Fluent Orthogonal Quality and the 2-D/3-D incident
+** Fluent-equivalent Orthogonal Quality
 
-[[file:../../interchange/fluent_legacy_msh.py::def orthogonal_quality][orthogonal_quality]]
+[[file:../../bearing_cfd/interchange/fluent_legacy.py::def orthogonal_quality][orthogonal_quality]]
 computes the standard hexahedral Fluent-equivalent metric: for every face it
 checks normalized face-area-vector alignment with the cell-to-face vector and,
 for an internal face, the cell-to-neighbour-centroid vector.  A cell receives
@@ -145,22 +145,13 @@ the minimum over its six faces.  This is distinct from Gmsh =minSICN= and from
 the custom maximum-non-orthogonality angle; one metric cannot be substituted
 for another.
 
-The earlier value =0.956754= belonged to the reduced Reynolds/JFO mesh: an
-unwrapped planar surface extruded through one arbitrary 1 mm pseudo-thickness
-cell.  It was a valid quality value for that reduced mesh but an invalid proxy
-for the physical 3-D bearing.  The production film is eccentric and conical,
-has a 20--80 micrometre radial gap (approximately 19.7--78.8 micrometres normal
-to the 10-degree conical surface), and uses 12 actual Hex8 cells through that
-gap.  Sweeping the same surface topology onto those two curved walls changes
-face normals and cell/face/neighbor centroid alignment, so its OQ must be
-recomputed on the complete 3-D volume.
+An Orthogonal Quality value from the reduced Reynolds--JFO surface mesh is not
+a proxy for the physical three-dimensional film.  The latter is eccentric and
+conical, has a 20--80 micrometre radial gap, and uses 12 Hex8 cells through the
+gap.  Its face normals and cell/face/neighbour-centroid directions must be
+evaluated on the complete volume.
 
-The first direct physical sweep at 256 by 80 by 12 exposed this mistake with
-minimum OQ =0.461367=.  Refining to 512 by 160 by 12 raised the minimum to
-=0.890532=, but 15,142 cells remained below the requested 0.9 gate.  Every one
-was in the unchanged background block, not the inlet O-grid, so further
-inlet-only tuning could not fix the global floor.  The accepted
-576 by 180 by 12 mesh gives:
+The =576 by 180 by 12= body-fitted mesh gives:
 
 | Statistic | Full 3-D value |
 |---+---:|
@@ -171,7 +162,8 @@ inlet-only tuning could not fix the global floor.  The accepted
 | Maximum custom non-orthogonality | 13.452850 degrees |
 
 The hard =0.9= gate is applied before the native Fluent file is atomically
-published.  The generated =volume_hex.vtu= carries per-cell
+published.  This establishes static mesh quality, not a live Fluent import.
+The generated =volume_hex.vtu= carries per-cell
 =fluent_orthogonal_quality=.  The lighter =viz/master_surface.vtu= carries the
 minimum across all 12 physical thickness cells for each surface column, with
 the worst gap-layer index beside it.  That projection is only a visualization
@@ -179,7 +171,7 @@ of the full 3-D calculation.
 
 ** Prism6
 
-[[file:../../meshing/layered_prism_central_feed.py::def _prism_gauss_metrics][_prism_gauss_metrics]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _prism_gauss_metrics][_prism_gauss_metrics]]
 evaluates the Jacobian at three triangle points and two through-prism Gauss
 points.  Every custom determinant and integrated volume must be positive.
 Gmsh independently supplies =minSICN=, =minDetJac=, and volume for every
@@ -227,7 +219,7 @@ to an already-complete mesh:
 
 ** Gmsh MSH
 
-Both production pipelines write Gmsh 4.1 binary and OpenFOAM-compatible Gmsh
+Both volume-mesh pipelines write Gmsh 4.1 binary and OpenFOAM-compatible Gmsh
 2.2 ASCII.  Fresh models reopen both files.  Node tags may be renumbered, so
 coordinates establish a canonical node mapping.  Oriented connectivity is
 then compared after geometric mapping, not by assuming imported tags/order.
@@ -260,14 +252,14 @@ markers are round-tripped independently.
 
 Each top-level run creates a sibling staging directory.  All requested gap
 levels, format round trips, plots, reports, and optional external audits are
-completed there.  A successful stage replaces the old output directory using
+completed there.  A successful stage replaces the existing output directory using
 =os.replace=.  If replacement fails, the previous directory is restored.
 
 Failure behavior is tested after solver-like artifacts already exist in the
 staging tree:
 
-- [[file:../../tests/test_structured_hex_no_port.py::def test_failure_atomically_removes_staged_solver_outputs][Hex8 atomic failure test]]
-- [[file:../../tests/test_layered_prism_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][Prism6 atomic failure test]]
+- [[file:../../tests/conical_journal/test_no_port.py::def test_failure_atomically_removes_staged_solver_outputs][Hex8 atomic failure test]]
+- [[file:../../tests/conical_journal/test_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][Prism6 atomic failure test]]
 
 The published failure directory contains no stale solve-eligible MSH, VTU, or
 NPZ.  The ported path retains diagnostic logs under their relative gap-level

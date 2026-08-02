@@ -1,142 +1,66 @@
-#+UPDATED_AT: [2026-07-30 Thu]
-#+TITLE: Eccentric Conical Bearing — Engineering Notebook
-#+SUBTITLE: Programmatic CAD, mesh construction, solver transfer, and OpenFOAM evidence
+#+TITLE: Bearing CFD Documentation
+#+UPDATED_AT: [2026-08-02 Sun]
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
-* Purpose
+* Tutorials
 
-This notebook explains how the geometry and meshes are constructed, transferred,
-and used in the downstream OpenFOAM study.  It assumes familiarity with Python
-and basic journal-bearing physics; it concentrates on programmatic B-rep
-modelling, mesh topology, data exchange, evidence boundaries, and solver
-handoff.
+Tutorials lead through a complete first result.
 
-* Current state
+- [[file:tutorials/first-run.org][First run]] :: install the project, run the
+  source-only checks, and generate a Reynolds--JFO result.
 
-| Stage                            | State             | Meaning                                                                                     |
-|----------------------------------+-------------------+---------------------------------------------------------------------------------------------|
-| Native build123d/OCCT CAD        | geometry PASS     | The B-rep is valid, manifold, connected, and analytically consistent.                       |
-| STEP exchange                    | strict audit FAIL | Re-imported port-intersection volume exceeds the project's =1e-6= relative regression gate. |
-| Native BREP into Gmsh OCC        | PASS              | Three zones, shared interfaces, dimensions, and SI scaling survive.                         |
-| Boundary surface smoke mesh      | PASS              | A conformal first-order Tri3 skin can be generated and classified.                          |
-| No-port analytic Hex8 mesh       | PASS              | A full-360 structured reference mesh passes topology and round-trip checks.                 |
-| Surface-inlet analytic Hex8 mesh | PASS              | Clustered film-only Hex8 mesh; near-circular pressure patch and no feed column.             |
-| Circular O-grid 3-D Hex8 mesh    | static PASS       | 1,252,800 Hex8 cells, 12 thickness layers, and standard Fluent-equivalent minimum OQ 0.922660. |
-| Central-feed layered Prism6 mesh | PASS              | Film and tube are one conformal fluid mesh with an open internal mouth.                     |
-| Clean MSH/CGNS interchange       | static PASS       | Canonical arrays survive MSH 4.1, MSH 2.2, and CGNS round trips with exact zones and scale. |
-| Native Fluent handoff            | static PASS only  | Exact native mesh and OQ gate pass; live Fluent Mesh Check/Report Quality remain required.  |
-| Earlier S100 Fluent solve        | not accepted      | The earlier solve diverged; it is evidence, not =FLUENT_IMPORT_PASS=.                       |
-| OpenFOAM 14 source build         | accepted          | The solver and conversion tools were built and run locally.                                  |
-| S100 OpenFOAM mesh import        | accepted          | =gmshToFoam=, patch correction, and standard =checkMesh= accepted 294,912 Hex8 cells.         |
-| Zero-flow solver proof           | accepted          | Fields, patches, numerics, and solver plumbing are consistent.                               |
-| Pressure-fed 0-rpm case          | accepted          | A stationary 0.5 MPa commissioning case converges; it is not pure hydrodynamic operation.    |
-| 200-rpm liquid-only diagnostic   | rejected          | It drives pressure below absolute vacuum and demonstrates missing rupture physics.           |
-| Zero-bias liquid continuation    | accepted to 20 rpm | The 0, 1, 5, 10, 12, 14, 15, and 20-rpm checkpoints remain bounded and single-liquid.       |
-| First 20-to-50-rpm update        | guarded stop      | At 20.2 rpm, ~p_min=-0.177 Pa < pSat=0.5 Pa~; this is a threshold bracket, not cavitation.    |
-| Native Reynolds/JFO result       | unvalidated candidate | Its active-set kernel passes a coarse published graph-consistency check, but the conical feed mask is grid-dependent and the severe 64.455% rupture region is not physically validated. |
-| Four-track cavitation screen     | mixed evidence     | Sourced JFO, oil-vapour, gas, and ventilation cases were run; only JFO passed its numerical gates, while the other branches remain unsettled or rejected. |
+* How-to guides
 
-The STEP result does not invalidate the native CAD or BREP mesh path.  See
-[[file:geometry/interchange.org][Interchange formats and strict STEP failure]].
+Use these pages to carry out a specific task.
 
-* Documentation map
+- [[file:operations/running-and-testing.org][Run geometry, meshing, export, simulation, and tests]]
+- [[file:operations/visualization.org][Inspect geometry, meshes, and fields]]
+- [[file:operations/openfoam-conversion.org][Convert a mesh for OpenFOAM]]
+- [[file:interchange/operations-and-reports.org][Export and audit solver-neutral meshes]]
+- [[file:contributing.org][Update the code and documentation]]
 
-** Pipeline
+* Reference
 
-1. [[file:project/pipeline.org][Pipeline and trust boundaries]]
-2. [[file:project/architecture.org][Architecture and sources of truth]]
-3. [[file:geometry/index.org][Geometry subsystem map]]
-4. [[file:meshing/index.org][Meshing subsystem map]]
-5. [[file:interchange/index.org][Solver-neutral interchange map]]
-6. [[file:operations/code-reading-guide.org][Code-reading guide]]
+Reference pages define parameters, file formats, reports, status values, and
+testable invariants.
 
-** Geometry and mathematics
+- [[file:geometry/coordinates-and-parameters.org][Coordinates, units, and parameters]]
+- [[file:geometry/cad-validation.org][CAD validation checks]]
+- [[file:meshing/topology-and-quality.org][Mesh topology and quality metrics]]
+- [[file:interchange/canonical-source.org][Canonical mesh-array format]]
+- [[file:interchange/formats-and-cgns.org][MSH and CGNS formats]]
+- [[file:interchange/fluent-import-audit.org][Fluent import statuses]]
+- [[file:operations/outputs-and-reports.org][Output directories and reports]]
+- [[file:concepts/glossary.org][Glossary]]
+- [[file:references/index.org][Literature, software, and provenance]]
 
-- [[file:physics/lubrication-context.org][Lubrication physics and model boundary]]
-- [[file:geometry/coordinates-and-parameters.org][Coordinates, parameters, and cone laws]]
-- [[file:geometry/clearance-mathematics.org][Radial and surface-normal clearance]]
-- [[file:geometry/cad-construction.org][Exact B-rep construction]]
-- [[file:geometry/cad-validation.org][CAD validation and invariants]]
-- [[file:geometry/acceptance-results.org][Strict CAD acceptance snapshot]]
-- [[file:geometry/interchange.org][BREP, STEP, and round trips]]
+* Explanation
 
-** Meshing
+These pages describe the physical model, geometry, algorithms, and design
+choices.
 
-- [[file:meshing/brep-preflight.org][Native BREP preflight in Gmsh OCC]]
-- [[file:meshing/surface-smoke.org][Two-dimensional surface smoke test]]
-- [[file:meshing/structured-hex-no-port.org][Structured full-360 no-port Hex8 baseline]]
-- [[file:meshing/structured-hex-surface-inlet.org][Structured Hex8 film with surface pressure inlet]]
-- [[file:meshing/layered-prism-central-feed.org][Conformal central-feed Prism6 mesh]]
-- [[file:meshing/topology-and-quality.org][Topology proofs and quality metrics]]
+- [[file:physics/lubrication-context.org][Lubrication model and physical scope]]
+- [[file:geometry/index.org][Conical-bearing geometry]]
+- [[file:geometry/clearance-mathematics.org][Radial and normal clearance]]
+- [[file:meshing/index.org][Mesh families]]
+- [[file:interchange/index.org][Solver-neutral interchange]]
+- [[file:project/architecture.org][Software architecture]]
+- [[file:project/pipeline.org][Pipeline and validation boundaries]]
+- [[file:project/decisions.org][Design rationale]]
+- [[file:operations/code-reading-guide.org][Code-reading guide]]
 
-** Solver-neutral interchange
+* Study results
 
-- [[file:interchange/canonical-source.org][Canonical NPZ source contract]]
-- [[file:interchange/discrete-model.org][Clean discrete reconstruction]]
-- [[file:interchange/static-topology-and-geometry.org][Static topology and geometry audit]]
-- [[file:interchange/round-trip-validation.org][MSH and CGNS round trips]]
-- [[file:interchange/formats-and-cgns.org][Format and CGNS semantics]]
-- [[file:interchange/fluent-import-audit.org][Fluent import-only audit]]
-- [[file:interchange/operations-and-reports.org][Interchange operations and reports]]
+These reports collect the current simulation inputs, numerical results, and
+remaining validation work.
 
-** Running and inspecting
+- [[file:studies/conical-journal/index.org][Conical-journal studies]]
+- [[file:studies/conical-journal/reynolds-jfo-validation.org][Reynolds--JFO verification and validation]]
+- [[file:studies/conical-journal/cavitation-model-comparison.org][Cavitation and film-rupture model comparison]]
+- [[file:cavitation-model-discussion.pdf][Cavitation-model discussion PDF]]
+- [[file:../studies/conical_journal/][Executable studies and compact inputs]]
+- [[file:../evidence/conical_journal/][Figures, animations, and result ledgers]]
 
-- [[file:operations/running-and-testing.org][Commands, cases, and tests]]
-- [[file:operations/outputs-and-reports.org][Artifact and report contracts]]
-- [[file:operations/visualization.org][Gmsh and ParaView inspection]]
-- [[file:operations/openfoam-handoff.org][OpenFOAM conversion boundary]]
-- [[file:interchange/fluent-import-audit.org][Fluent import boundary]]
-
-** OpenFOAM CFD study
-
-- [[file:handoff/00-index.org][Current status and reading order]]
-- [[file:handoff/03-zero-flow-proof.org][Zero-flow solver proof]]
-- [[file:handoff/05-single-phase-results.org][Pressure-fed commissioning and rejected 200-rpm diagnostic]]
-- [[file:handoff/11-pure-hydrodynamic-ramp.org][Zero-pressure-bias continuation]]
-- [[file:handoff/12-five-rpm-jump-diagnosis.org][Direct-jump diagnosis and accepted native ramp]]
-- [[file:handoff/13-guarded-2000rpm-ramp.org][Accepted 20-rpm point and guarded 20.2-rpm stop]]
-- [[file:handoff/14-native-jfo-candidate.org][Native OpenFOAM Reynolds/JFO candidate and validation blockers]]
-- [[file:handoff/15-jfo-validation-and-fluent.org][Published JFO benchmark, hierarchical validation targets, final 3-D audit, and Fluent branch matrix]]
-- [[file:handoff/16-four-track-cavitation-results.org][Four-track sourced runs, exact inputs, geometry/mesh figures, results, animations, and professor discussion]]
-
-** Rationale and provenance
-
-- [[file:project/decisions.org][Decision register]]
-- [[file:concepts/glossary.org][Modelling and meshing glossary]]
-- [[file:references/literature.org][Bearing literature]]
-- [[file:references/software.org][Software manuals]]
-- [[file:references/provenance.org][Project provenance and conversational context]]
-
-* Source entry points
-
-- CAD: [[file:../bearing_film.py::def main][bearing_film.main]]
-- Native BREP preflight: [[file:../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]]
-- Surface smoke mesh: [[file:../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]]
-- No-port Hex8 mesh: [[file:../meshing/structured_hex_no_port.py::def run_structured][run_structured]]
-- Surface-inlet Hex8 mesh: [[file:../meshing/structured_hex_surface_inlet.py::def run_surface_inlet][run_surface_inlet]]
-- Body-fitted circular O-grid Hex8 mesh: [[file:../meshing/structured_hex_body_fitted_inlet.py::def run_body_fitted_case][run_body_fitted_case]]
-- Native Fluent mesh and OQ: [[file:../interchange/fluent_legacy_msh.py::def write_fluent_legacy_mesh][write_fluent_legacy_mesh]]
-- Ported Prism6 mesh: [[file:../meshing/layered_prism_central_feed.py::def run_ported][run_ported]]
-- Solver-neutral export: [[file:../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
-- Live Fluent audit: [[file:../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
-- Tests: [[file:../tests][tests/]]
-- OpenFOAM study: [[file:handoff/00-index.org][CFD handoff]]
-
-* Scope boundary
-
-The CAD and mesh-generation stages prove geometry, topology/quality, and static
-solver-neutral transfer without assigning CFD physics.  The later OpenFOAM
-study assigns its own boundary conditions and material/model inputs in isolated
-cases documented under [[file:handoff/00-index.org][=docs/handoff/=]].  Its
-accepted result boundary is currently the single-liquid branch through 20 rpm.
-The 20.2-rpm threshold crossing and rejected 200-rpm liquid-only run must not
-be reported as physical bearing performance.  The later four-track screen
-retains the Reynolds/JFO speed study as an unvalidated numerical candidate,
-the oil-vapour and non-condensable-gas cases as unsettled diagnostics, and the
-ventilation startup as physically rejected evidence.
-
-* Maintenance
-
-- [[file:contributing.org][Documentation conventions]]
-- [[file:project/decisions.org][Decision register]]
+Large meshes, OpenFOAM time directories, processor partitions, and logs are
+generated under =out/= and are not versioned.

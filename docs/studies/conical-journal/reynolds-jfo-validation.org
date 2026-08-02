@@ -1,0 +1,200 @@
+#+TITLE: Reynolds--JFO Verification and Validation
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+[[file:index.org][Conical-journal results]] | [[file:../../index.org][Documentation index]]
+
+* Model
+
+The Reynolds--JFO solver represents the lubricant on an unwrapped conical-film
+midsurface.  It solves pressure and fill fraction with an active-set
+complementarity method:
+
+\[
+p-p_\mathrm{cav}\ge 0,\qquad
+0\le \theta\le 1,\qquad
+(p-p_\mathrm{cav})(1-\theta)=0.
+\]
+
+Full-film cells have \(\theta=1\) and solve the Reynolds pressure equation.
+Ruptured cells remain at \(p=p_\mathrm{cav}\) and transport the available
+liquid fraction.  This enforces mass conservation through rupture and
+reformation without resolving the 20--80 micrometre film thickness in three
+dimensions.
+
+The model predicts film pressure, fill, flow, load, and torque under the
+thin-film assumptions.  It does not represent oil-vapour bubble dynamics,
+atmospheric air transport, thermal viscosity changes, or elastic deformation.
+
+* Implementations
+
+| Implementation | Source | Discretization |
+|---+---+---|
+| Python | [[file:../../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py][reynolds_jfo.py]] | NumPy/SciPy finite volume and active-set solve |
+| OpenFOAM | [[file:../../../openfoam/solvers/jfoBearingFoam/jfoBearingFoam.C][jfoBearingFoam.C]] | native finite-volume fields and matrices |
+
+The implementations are independent code paths.  Agreement between them checks
+their assembly and update order; it does not check physical assumptions shared
+by both models.
+
+The tracked OpenFOAM inputs are:
+
+- [[file:../../../cases/conical_journal/openfoam/jfo_paper_exact/][paper-input case]];
+- [[file:../../../cases/conical_journal/openfoam/jfo_sae10w40/][SAE 10W-40 sensitivity case]].
+
+* Published slider check
+
+The Python active-set kernel is tested against the 60-cell sinusoidal slider
+reported by Giacopini et al. and plotted in Figure 9 of Miraskari et al.  The
+local test uses the incompressible limit with a 125 mm slider, 15--25
+micrometre film thickness, 0.015 Pa s viscosity, and 4 m/s sliding speed.
+
+| Outlet pressure | Published graph | Local result |
+|---+---+---|
+| 0 MPa | peak about 5.9 MPa; rupture near \(x/a=0.65\); no reformation | 5.918 MPa; first cavity-cell centre 0.658; cavity reaches outlet |
+| 1 MPa | peak about 6.6 MPa; rupture near 0.65; reformation near 0.95 | 6.618 MPa; first and last cavity-cell centres 0.675 and 0.942 |
+
+Run the check with:
+
+#+begin_src sh
+uv run pytest -q \
+  tests/conical_journal/test_jfo_published_benchmark.py \
+  tests/conical_journal/test_reynolds_jfo.py
+#+end_src
+
+The assertions use bands read from the published graph.  They check the
+pressure peak and rupture/reformation locations, not the complete pressure
+curve or the conical-bearing assembly.
+
+Sources:
+
+- [[https://doi.org/10.1115/1.4002215][Giacopini et al. (2010)]];
+- [[https://doi.org/10.1115/1.4034244][Miraskari et al. (2017)]];
+- [[https://doi.org/10.1115/1.3251669][Elrod (1981)]].
+
+* Conical-bearing inputs
+
+| Quantity | Paper-input case |
+|---+---:|
+| bearing length | 100 mm |
+| mean journal radius | 50 mm |
+| cone semi-angle | 10 degrees |
+| radial clearance | 50 micrometres |
+| eccentricity | 30 micrometres; \(\epsilon=0.6\) |
+| feed | 4 mm diameter at the axial mid-plane |
+| feed pressure | 0.5 MPa gauge |
+| axial and rupture pressure | 101325 Pa absolute |
+| dynamic viscosity | 0.0277 Pa s |
+| grid | 256 circumferential by 80 axial cells |
+
+The source paper gives both 2.6 m/s and 2000 rpm.  At a 50 mm radius,
+2.6 m/s equals 496.563 rpm, so the calculations keep these operating points
+separate.
+
+* Numerical results
+
+The paper-input continuation =0 -> 20 -> 496.563 -> 1000 -> 2000 rpm=
+converged at each saved point.  At 2000 rpm:
+
+| Quantity | Value |
+|---+---:|
+| minimum absolute pressure | 101325 Pa |
+| maximum absolute pressure | 17.521898 MPa |
+| maximum gauge pressure divided by 0.5 MPa | 34.8411 |
+| minimum fill fraction | 0.255817 |
+| ruptured area, \(\theta<1-10^{-8}\) | 64.4549% |
+| feed flow | \(4.409971\times10^{-6}\) m3/s |
+| relative global flow imbalance | \(4.76\times10^{-8}\) |
+| total force \((F_x,F_y,F_z)\) | \((37045.810, 50425.411, -12113.821)\) N |
+| journal torque | -9.688458 N m |
+
+Graph-read values from Gangrade et al. at the same reported geometry are about
+35.6 for the FEA curve and 32.0 for the Fluent curve.  The agreement is a
+single peak-pressure comparison; it does not validate the fill field, rupture
+front, load, flow, or torque.
+
+The separate SAE 10W-40 sensitivity uses 0.0125 Pa s viscosity and a 29185 Pa
+absolute rupture pressure:
+
+| Speed | Maximum gauge pressure | Minimum fill | Ruptured area |
+|---+---+---+---|
+| 0 rpm | 0.500000 MPa | 1.000000 | 0% |
+| 20 rpm | 0.500000 MPa | 1.000000 | 0% |
+| 496.563 rpm | 2.206270 MPa | 0.273684 | 32.9129% |
+| 1000 rpm | 4.400088 MPa | 0.268618 | 39.6223% |
+| 2000 rpm | 8.607458 MPa | 0.265566 | 46.9312% |
+| 3000 rpm | 12.626763 MPa | 0.263936 | 51.2572% |
+| 4000 rpm | 16.495019 MPa | 0.263152 | 54.1630% |
+
+The Python and OpenFOAM maximum pressures differ by at most 0.0257% over this
+sweep.
+
+#+CAPTION: SAE 10W-40 speed sensitivity and narrow paper comparison.
+#+ATTR_ORG: :width 1100
+[[file:../../../evidence/conical_journal/cavitation_four_track/paper_comparison_and_higher_rpm.png]]
+
+#+CAPTION: Pressure and fill at 4000 rpm.
+#+ATTR_ORG: :width 1100
+[[file:../../../evidence/conical_journal/jfo_sae10w40/final_fields_4000rpm.png]]
+
+* Feed and grid sensitivity
+
+The uniform-grid solver applies the 4 mm circular feed to cells whose centres
+fall inside the nominal radius.  Its represented area changes discontinuously
+with resolution:
+
+| Grid | Feed cells | Effective area | Error from \(\pi(2\ \mathrm{mm})^2\) |
+|---+---+---+---|
+| 128 by 40 | 4 | 24.927 mm2 | +98.4% |
+| 192 by 60 | 4 | 11.079 mm2 | -11.8% |
+| 256 by 80 | 10 | 15.559 mm2 | +23.8% |
+| 384 by 120 | 16 | 11.079 mm2 | -11.8% |
+| 512 by 160 | 32 | 12.464 mm2 | -0.8% |
+
+A mapped 512 by 160 run at 2000 rpm changed maximum pressure by -0.932%,
+feed flow by +0.486%, and the largest force component by -1.305% relative to
+the 256 by 80 result.  This pair is not a grid-convergence study: the feed
+areas do not form a consistent refinement family, and the coarser sequence is
+non-monotonic.
+
+The body-fitted surface adapter provides a conforming circular rim and matches
+the specified feed area within 0.1% in its regression test.  A complete
+three-grid solution study using that representation has not been run.
+
+* Reproduction
+
+Run the Python default 0-to-20-rpm case:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal simulate reynolds-jfo
+#+end_src
+
+Run the OpenFOAM build and zero-speed smoke test:
+
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
+
+Both commands write generated results outside the tracked source tree.  The
+selected plots and checkpoint tables are under
+[[file:../../../evidence/conical_journal/][=evidence/conical_journal/=]].
+
+* Remaining validation
+
+1. Use one feed geometry across at least three systematically refined grids.
+2. Report pressure, load components, feed flow, torque, rupture boundary, and
+   liquid deficit with observed-order or GCI estimates.
+3. Exercise the native OpenFOAM conical assembly against a manufactured or
+   published field, not only the Python active-set kernel.
+4. Report local control-volume imbalance and complementarity residuals in
+   addition to global flow balance.
+5. Compare the complete pressure distribution with experimental taps or an
+   independent numerical dataset.
+6. Resolve lubricant properties, rupture pressure, feed-pressure convention,
+   and flooded versus vented axial boundaries.
+
+Until these checks are complete, the conical results are numerical sensitivity
+data rather than a validated bearing-performance prediction.
+
+[[file:index.org][Conical-journal results]] | [[file:../../index.org][Documentation index]]

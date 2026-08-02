@@ -1,0 +1,88 @@
+#+TITLE: First Run
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+This tutorial installs the project, checks the source tree, and computes a
+small Reynolds--JFO speed continuation.  It does not require OpenFOAM, Fluent,
+or files from a previous =out/= directory.
+
+* Install the environment
+
+From the repository root:
+
+#+begin_src sh
+uv sync --locked
+#+end_src
+
+The Python version and dependencies are defined by =.python-version=,
+=pyproject.toml=, and =uv.lock=.
+
+* Run the source-only tests
+
+#+begin_src sh
+uv run pytest
+#+end_src
+
+The default suite uses compact fixtures under =tests/fixtures/=.  Mesh-kernel
+and external-runtime tests are excluded from this command.
+
+* Solve the 0-to-20-rpm example
+
+#+begin_src sh
+uv run bearing-cfd conical-journal simulate reynolds-jfo \
+  --rpm 0 20 \
+  --n-theta 128 \
+  --n-axial 40 \
+  --outdir out/conical_journal/tutorial/reynolds-jfo
+#+end_src
+
+The solver starts from a full film at 0 rpm and passes the converged fill field
+to the 20-rpm calculation.  A successful run exits with status 0 and creates:
+
+#+begin_example
+out/conical_journal/tutorial/reynolds-jfo/
+├── 0rpm/
+│   ├── fields.png
+│   ├── jfo_surface.vtu
+│   ├── state.npz
+│   └── summary.json
+├── 20rpm/
+│   ├── fields.png
+│   ├── jfo_surface.vtu
+│   ├── state.npz
+│   └── summary.json
+├── ramp_summary.json
+└── run.json
+#+end_example
+
+Open =20rpm/fields.png= to inspect gauge pressure and liquid fill fraction.
+Print the numerical summary with:
+
+#+begin_src sh
+uv run python -m json.tool \
+  out/conical_journal/tutorial/reynolds-jfo/20rpm/summary.json
+#+end_src
+
+The =acceptance.accepted= field should be =true=.  The checks require a
+converged state, pressure no lower than the declared absolute rupture pressure,
+fill within =[0,1]=, and relative mass imbalance no greater than 0.5%.
+
+* Inspect provenance
+
+=run.json= identifies the exact inputs and source used to produce the
+directory:
+
+#+begin_src sh
+uv run python -m json.tool \
+  out/conical_journal/tutorial/reynolds-jfo/run.json
+#+end_src
+
+It includes the command arguments, input units, Git revision and dirty state,
+producer-file hash, dependency versions, and output hashes.
+
+* Continue
+
+- [[file:../operations/running-and-testing.org][Run individual geometry, mesh, export, and study commands]].
+- [[file:../studies/conical-journal/reynolds-jfo-validation.org][Read the Reynolds--JFO verification and validation results]].
+- [[file:../physics/lubrication-context.org][Read the lubrication-model scope and assumptions]].

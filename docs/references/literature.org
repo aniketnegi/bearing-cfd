@@ -32,7 +32,7 @@ its 10-degree, aspect-ratio-one case is compared with five experimental
 pressure taps.  This makes it the closest target for conical pressure-field
 validation, but not for calibrated three-dimensional cavitation.
 
-The final circular O-grid Fluent candidate now matches its 100 mm length,
+The body-fitted circular O-grid case matches the paper's 100 mm length,
 50 mm mean radius, 50 micrometre radial clearance, and 10-degree semi-cone
 angle.  The paper does not establish the operating temperature, exact =V-32=
 product, pressure reference, complete three-dimensional feed treatment, or
@@ -108,7 +108,7 @@ compared with Giacopini's incompressible LCP; the local test directly assembles
 that incompressible limit.  This is a coarse check of the shared active-set
 kernel, not a digitized pressure-profile comparison or validation of the
 conical model.  Exact inputs and results are recorded in
-[[file:../handoff/15-jfo-validation-and-fluent.org][JFO validation and Fluent path]].
+[[file:../studies/conical-journal/reynolds-jfo-validation.org][Reynolds--JFO verification and validation]].
 
 * Manufactured solution and grid convergence
 

@@ -1,0 +1,111 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      equilibriumAlphaFunctions;
+}
+
+p0
+{
+    type            uniform;
+    libs            ("libfieldFunctionObjects.so");
+    fieldType       volScalarField;
+    field           p0Field;
+    dimensions      [1 -1 -2 0 0 0 0];
+    value           101325;
+}
+
+pRatio
+{
+    type            divide;
+    libs            ("libfieldFunctionObjects.so");
+    fields          (p_rgh p0Field);
+    result          pRatio;
+}
+
+pTemperatureTerm
+{
+    type            scale;
+    libs            ("libfieldFunctionObjects.so");
+    field           pRatio;
+    scale           0.922636546495;
+    result          pTemperatureTerm;
+}
+
+alphaB
+{
+    type            uniform;
+    libs            ("libfieldFunctionObjects.so");
+    fieldType       volScalarField;
+    field           alphaBField;
+    dimensions      [];
+    value           0.09;
+}
+
+denominator
+{
+    type            add;
+    libs            ("libfieldFunctionObjects.so");
+    fields          (alphaBField pTemperatureTerm);
+    result          gasFractionDenominator;
+}
+
+gasFraction
+{
+    type            divide;
+    libs            ("libfieldFunctionObjects.so");
+    fields          (alphaBField gasFractionDenominator);
+    result          gasFractionEq14;
+}
+
+one
+{
+    type            uniform;
+    libs            ("libfieldFunctionObjects.so");
+    fieldType       volScalarField;
+    field           oneField;
+    dimensions      [];
+    value           1;
+}
+
+oilFraction
+{
+    type            subtract;
+    libs            ("libfieldFunctionObjects.so");
+    fields          (oneField gasFractionEq14);
+    result          oilFractionEq14;
+}
+
+oilFractionMin
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       min;
+    fields          (oilFractionEq14);
+}
+
+oilFractionMax
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       max;
+    fields          (oilFractionEq14);
+}
+
+oilFractionMean
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       volAverage;
+    fields          (oilFractionEq14);
+}

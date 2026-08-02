@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "study": "body-fitted-mesh",
+  "question": "Which circular surface-inlet topology preserves the conical film geometry while passing the declared Hex8 quality gates?",
+  "status": "CURATED_MIXED_PASS_AND_REJECTION",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "commands": [
+    [
+      "bearing-cfd",
+      "conical-journal",
+      "geometry",
+      "--length",
+      "100",
+      "--hole-axial-pos",
+      "50",
+      "--outdir",
+      "out/conical_journal/geometry/paper-100mm"
+    ],
+    [
+      "bearing-cfd",
+      "conical-journal",
+      "mesh",
+      "body-fitted-inlet",
+      "--params",
+      "out/conical_journal/geometry/paper-100mm/params.json",
+      "--outdir",
+      "out/conical_journal/meshing/body-fitted-inlet-paper-oq90",
+      "--case-name",
+      "paper-oq90",
+      "--q",
+      "18",
+      "--inner-layers",
+      "1",
+      "--outer-layers",
+      "9",
+      "--n-theta",
+      "576",
+      "--n-axial",
+      "180",
+      "--n-gap",
+      "12",
+      "--quality-optimized-ogrid",
+      "--control-radius-factor",
+      "2.87",
+      "--control-square-blend",
+      "0.36",
+      "--central-corner-radius-factor",
+      "0.9",
+      "--smoothing-iterations",
+      "100",
+      "--smoothing-damping",
+      "0.5",
+      "--smoothing-fixed-nodes",
+      "background-and-rim",
+      "--minimum-fluent-orthogonal-quality",
+      "0.9",
+      "--openfoam",
+      "skip",
+      "--ansys",
+      "required"
+    ],
+    [
+      "bearing-cfd",
+      "conical-journal",
+      "study",
+      "body-fitted-mesh",
+      "--openfoam",
+      "skip",
+      "--ansys",
+      "skip"
+    ]
+  ],
+  "required_external_tools": [
+    "Gmsh",
+    "ParaView pvpython (optional renders)",
+    "OpenFOAM gmshToFoam/checkMesh (only with --openfoam required)"
+  ],
+  "source_artifacts": [
+    {
+      "path": "tests/fixtures/conical_journal/geometry/strict_default",
+      "sha256": "d14131e498ce6348d7c2e797daec3b6fdbae31479401e09201e8ab37aaaad677",
+      "hash_kind": "sha256-tree-v1",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "tests/fixtures/conical_journal/geometry/strict_case_e03_g20",
+      "sha256": "96a6e87a7c2c34d4a0956de9bcc4b00d036c7eb90a6266ac9d433ba3334d75fd",
+      "hash_kind": "sha256-tree-v1",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet16/mesh_report.json",
+      "sha256": "cff98b79258606c72ec5648fa57d09d7eae498cb13de0a5578a5fb9c5416a608",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet100/mesh_report.json",
+      "sha256": "3da5d88f18e60d16eae336d35e10f31882ee2d1e8aba3ff2d725e1738b5007ba",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet390/mesh_report.json",
+      "sha256": "88def4ac70e781155d7a82f3b20f6755dcac94e4ccc00cd6202a40b45a67e549",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/structured_surface_inlet_default/nGap_12/mesh_report.json",
+      "sha256": "6142aebc7d2652da94fcf122e78e0046889f10633461529783e3c7464232044e",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/paper_exact_geometry_e06/params.json",
+      "sha256": "399c008c00fa5bd3694a4d9f447d32e11d62bbdcb43f83ea70fe3ba9f721eb91",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/paper_exact_current_circular_ogrid_3d_oq90/validation_report.json",
+      "sha256": "2cd14c48f7ced871cd04ef1db74f188f4f699e9f66cfe9d675ac7a663b20c819",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    }
+  ],
+  "expected_outputs": [
+    {"path": "index.html", "role": "combined gallery"},
+    {"path": "all_studies.json", "role": "machine-readable study summary"},
+    {"path": "uniform-study/comparison.json", "role": "uniform comparison"},
+    {"path": "cross-case/comparison.json", "role": "second-geometry comparison"},
+    {"path": "inflation-audit/comparison.json", "role": "through-gap grading audit"},
+    {"path": "run.json", "role": "generation provenance"}
+  ]
+}

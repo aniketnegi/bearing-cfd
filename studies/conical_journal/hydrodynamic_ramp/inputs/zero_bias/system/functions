@@ -1,0 +1,79 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      functions;
+}
+
+#includeFunc patchFlowRate(name=feedFlowRate, patch=pressure_feed)
+#includeFunc patchFlowRate(name=z0FlowRate, patch=axial_end_z0)
+#includeFunc patchFlowRate(name=zLFlowRate, patch=axial_end_zL)
+#includeFunc volAverage(name=meanAlphaOil, alpha.oil)
+
+maxU
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       maxMag;
+    fields          (U);
+}
+
+minPressure
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       min;
+    fields          (p_rgh);
+}
+
+maxPressure
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       max;
+    fields          (p_rgh);
+}
+
+minAlphaOil
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       min;
+    fields          (alpha.oil);
+}
+
+maxAlphaOil
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       max;
+    fields          (alpha.oil);
+}
+
+journalForces
+{
+    type            forces;
+    libs            ("libforces.so");
+    writeControl    timeStep;
+    writeInterval   1;
+    log             true;
+    patches         (journal_wall);
+    CofR            (0 -3e-05 0.03);
+    pRef            101325;
+}

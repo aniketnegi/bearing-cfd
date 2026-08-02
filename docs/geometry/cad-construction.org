@@ -10,7 +10,7 @@ use STL, tessellated offsets, mesh-derived geometry, fuzzy Booleans, or relaxed
 modelling tolerance.
 
 The shared helper
-[[file:../../bearing_film.py::def _revolved_frustum][_revolved_frustum()]] draws
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _revolved_frustum][_revolved_frustum()]] draws
 a closed polygon in the =XZ= plane,
 
 #+begin_example
@@ -24,13 +24,13 @@ the axis closes the profile and yields a solid rather than a conical shell.
 
 ** Bore-volume blank
 
-[[file:../../bearing_film.py::def make_bore_blank][make_bore_blank()]] revolves
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_bore_blank][make_bore_blank()]] revolves
 the bore radius law over =[0,L]=.  This solid is everything inside the bearing
 bore.  It is a Boolean blank for the fluid, not the bushing metal.
 
 ** Extended eccentric journal cutter
 
-[[file:../../bearing_film.py::def make_journal][make_journal()]] first revolves
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_journal][make_journal()]] first revolves
 the journal about global =Z= and then translates the completed solid by
 =(e_x,e_y,0)=.  Revolving about an offset axis would describe a different
 surface.
@@ -42,7 +42,7 @@ copy over =[0,L]= is created for context export.
 
 ** Deliberately overlapping feed cylinder
 
-[[file:../../bearing_film.py::def make_feed_cylinder][make_feed_cylinder()]]
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_feed_cylinder][make_feed_cylinder()]]
 constructs a radius-=r_h= cylinder from =y=0= to =y_feed_end= along global
 =+Y=.  Parameter validation has already proven that its entire starting disk
 lies inside the journal cutter.  The remote end clears the largest outer-wall
@@ -70,8 +70,8 @@ film = wet - journal
 #+end_src
 
 The corresponding functions are
-[[file:../../bearing_film.py::def make_base_film][make_base_film()]] and
-[[file:../../bearing_film.py::def make_full_film][make_full_film()]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_base_film][make_base_film()]] and
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_full_film][make_full_film()]].
 
 This order matters.  =F= intentionally overlaps both =B= and =J=.  Fusing
 =B+F= first must produce one valid connected wet solid.  Subtracting =J= last
@@ -84,7 +84,7 @@ retry a failed operation with fuzzy or loosened tolerances.
 
 * Axial zones
 
-[[file:../../bearing_film.py::def split_axial_zones][split_axial_zones()]]
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def split_axial_zones][split_axial_zones()]]
 splits the already valid full film at =z_1=z_h-w= and =z_2=z_h+w=.  It expects
 exactly three solids, sorts them by centre-of-mass =Z=, and verifies each
 bounding interval before naming them:
@@ -99,7 +99,7 @@ mesh; see [[file:../meshing/index.org][Meshing]].
 
 * Context metal
 
-[[file:../../bearing_film.py::def make_context_bushing][make_context_bushing()]]
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_context_bushing][make_context_bushing()]]
 constructs
 
 #+begin_example
@@ -127,14 +127,14 @@ interpretation is developed in
 [[file:../physics/lubrication-context.org][Lubrication physics and model boundary]].
 
 =--export-debug-half= creates an explicitly labelled inspection artifact only.
-[[file:../../bearing_film.py::def export_all][export_all()]] prints
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def export_all][export_all()]] prints
 =GEOMETRY DEBUG ONLY — NOT VALID FOR ROTATING-JOURNAL CFD= and never presents
 the half as a solver model.
 
 * Common construction failures
 
 | Failure | Likely cause | Guard |
-|-
+|---+---+---|
 | Feed is detached | Cylinder does not overlap bore, or journal was subtracted in the wrong order | Validate =wet= and final one-solid topology |
 | Feed is capped at journal | Cylinder was not overlapped and journal was not subtracted last | Fixed Boolean order |
 | Dirty axial faces | Cutter caps coincide with bore caps | =delta= overrun |

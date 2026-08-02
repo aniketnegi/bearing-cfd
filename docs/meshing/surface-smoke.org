@@ -9,7 +9,7 @@
 
 * Purpose and boundary
 
-[[file:../../meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]] answers a
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py][surface_smoke.py]] answers a
 narrow question: can Gmsh produce a valid first-order triangular mesh on every
 classified boundary and shared axial interface of the fragmented BREP?
 
@@ -19,7 +19,7 @@ The output is therefore a boundary-mesh smoke test, not a CFD volume mesh.
 
 * Consuming the preflight contract
 
-[[file:../../meshing/gmsh_surface_smoke.py::def load_preflight_contract][load_preflight_contract]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def load_preflight_contract][load_preflight_contract]]
 requires:
 
 - a preflight report with =overall: PASS=;
@@ -30,17 +30,17 @@ requires:
 The BREP is imported with =Geometry.OCCScaling=0.001=.  Geometry, nodes, and
 mesh sizes inside the Gmsh model are consequently SI.  User-facing size
 arguments stay in millimetres and are converted once in
-[[file:../../meshing/gmsh_surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
 
 * Geometry and physical-group reuse
 
 The script reuses the preflight's geometry classifiers instead of inventing a
-second tag convention.  [[file:../../meshing/gmsh_surface_smoke.py::def _run_mesh][_run_mesh]]
+second tag convention.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def _run_mesh][_run_mesh]]
 imports the BREP and calls
-[[file:../../meshing/gmsh_brep_preflight.py::def validate_zone_model][validate_zone_model]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def validate_zone_model][validate_zone_model]]
 before any mesh is generated.
 
-[[file:../../meshing/gmsh_surface_smoke.py::def create_physical_groups][create_physical_groups]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def create_physical_groups][create_physical_groups]]
 then creates external diagnostic groups:
 
 | Group | Meaning |
@@ -66,13 +66,13 @@ from the port size to the global size over the requested refinement radius.
 Implicit point, curvature, and boundary-extension sizing are disabled.  This
 makes the field, rather than hidden defaults, responsible for the size
 transition.  See
-[[file:../../meshing/gmsh_surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def configure_mesh_sizes][configure_mesh_sizes]].
 
 * What is validated
 
-[[file:../../meshing/gmsh_surface_smoke.py::def collect_surface_elements][collect_surface_elements]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def collect_surface_elements][collect_surface_elements]]
 walks each classified surface entity and accepts only first-order three-node
-triangles.  [[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]]
+triangles.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def validate_mesh][validate_mesh]]
 then checks:
 
 - every classified surface has elements;
@@ -96,7 +96,7 @@ strict positivity rather than an arbitrary high isotropic-quality threshold.
 
 * Outputs
 
-[[file:../../meshing/gmsh_surface_smoke.py::def export_surface_meshes][export_surface_meshes]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def export_surface_meshes][export_surface_meshes]]
 writes:
 
 - =surface_mesh.msh=: Gmsh 4.1 binary;
@@ -108,8 +108,8 @@ writes:
 
 Publication follows the same staging/atomic-replacement discipline as the
 preflight.  See
-[[file:../../meshing/gmsh_surface_smoke.py::def _publish_smoke_success][_publish_smoke_success]]
-and [[file:../../meshing/gmsh_surface_smoke.py::def _publish_failure][_publish_failure]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def _publish_smoke_success][_publish_smoke_success]]
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def _publish_failure][_publish_failure]].
 
 * PASS scope
 
@@ -118,5 +118,5 @@ naming, and SI scaling.  It does not establish 3-D connectivity, through-gap
 layers, or the film/feed mouth.
 
 The end-to-end regression is
-[[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight]];
-the CLI path is [[file:../../meshing/gmsh_surface_smoke.py::def run_surface_smoke][run_surface_smoke]].
+[[file:../../tests/conical_journal/test_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight]];
+the CLI path is [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def run_surface_smoke][run_surface_smoke]].

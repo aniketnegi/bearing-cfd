@@ -1,0 +1,40 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      T;
+}
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform 323.15;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            fixedValue;
+        value           uniform 323.15;
+    }
+    stationary_wall
+    {
+        type            fixedValue;
+        value           uniform 323.15;
+    }
+    axial_end_z0
+    {
+        type            fixedValue;
+        value           uniform 323.15;
+    }
+    axial_end_zl
+    {
+        type            fixedValue;
+        value           uniform 323.15;
+    }
+    pressure_feed
+    {
+        type            fixedValue;
+        value           uniform 323.15;
+    }
+}

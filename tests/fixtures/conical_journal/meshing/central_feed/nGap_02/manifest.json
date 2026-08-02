@@ -1,0 +1,216 @@
+{
+  "boundary_roles": {
+    "axial_ends": [
+      "axial_end_z0",
+      "axial_end_zL"
+    ],
+    "moving_wall": [
+      "journal_wall"
+    ],
+    "pressure_inlet": [
+      "pressure_feed"
+    ],
+    "stationary_walls": [
+      "bushing_bore_wall",
+      "feed_tube_wall"
+    ]
+  },
+  "cfd_solution_executed": false,
+  "commands": {
+    "gmsh_cutaway": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_cutaway_exact.msh",
+    "gmsh_feed_boundary": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_boundary_only.msh",
+    "gmsh_full": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/ported_prism.msh",
+    "paraview_cutaway": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_cutaway_exact.vtu",
+    "paraview_helper": "pvpython /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/open_in_paraview.py",
+    "paraview_volume": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/volume_prism.vtu",
+    "paraview_x0": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/x0_section.vtu"
+  },
+  "coordinate_unit": "m",
+  "counts": {
+    "boundary_faces": {
+      "axial_end_z0": 256,
+      "axial_end_zL": 256,
+      "bushing_bore_wall": 8860,
+      "feed_tube_wall": 512,
+      "journal_wall": 9694,
+      "pressure_feed": 834
+    },
+    "feed_prisms": 3336,
+    "film_prisms": 19388,
+    "mouth_triangles": 834,
+    "nodes": 16853,
+    "total_boundary_faces": 20412,
+    "total_prisms": 22724
+  },
+  "diagnostic_subsets": {
+    "coordinates_unchanged": true,
+    "cutaway": {
+      "cell_count": 20172,
+      "coordinates_unchanged": true,
+      "omitted_cell_count": 2552,
+      "solve_eligible": false,
+      "wedge_removed_around_theta_deg": [
+        -30.0,
+        30.0
+      ]
+    },
+    "distorted_geometry": false,
+    "gmsh_round_trip": {
+      "cutaway_prisms": 20172,
+      "feed_boundary_quads": 512,
+      "feed_boundary_triangles": 834
+    },
+    "mouth_interface": {
+      "default_representation": "wireframe",
+      "diagnostic_only": true,
+      "solve_eligible": false,
+      "triangle_count": 834
+    },
+    "paraview": {
+      "pvpython": "/usr/bin/pvpython",
+      "reason": null,
+      "status": "AVAILABLE"
+    },
+    "solve_eligible": false,
+    "x0_section": {
+      "point_count": 496,
+      "solve_eligible": false,
+      "triangle_count": 720
+    }
+  },
+  "distorted_geometry": false,
+  "field_value_maps": {
+    "axial_zone_id": {
+      "0": "ring_A",
+      "1": "hole_band",
+      "2": "ring_B"
+    },
+    "distorted_geometry": {
+      "0": "true coordinates"
+    },
+    "gap_layer_index": "0..nGap-1 for film; -1 for feed",
+    "region_id": {
+      "0": "film",
+      "1": "feed"
+    },
+    "solve_eligible": {
+      "1": "canonical complete solver mesh"
+    }
+  },
+  "fields": [
+    "region_id",
+    "axial_zone_id",
+    "gap_layer_index",
+    "gap_um",
+    "theta_deg",
+    "minSICN",
+    "minDetJac",
+    "volume_m3",
+    "aspect_ratio",
+    "solve_eligible",
+    "distorted_geometry"
+  ],
+  "film_inflation": {
+    "centre_to_wall_cell_thickness_ratio": 1.0,
+    "layer_coordinates": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "layer_fractions": [
+      0.5,
+      0.5
+    ]
+  },
+  "full_360_degrees": true,
+  "geometry": "eccentric conical film plus open central feed tube",
+  "gmsh_generated_2d_master": true,
+  "gmsh_generated_3d_volume_mesh": false,
+  "journal_continuous_under_feed": true,
+  "mouth_internal_two_incident_cell_triangles": 834,
+  "overall": "PASS",
+  "physical_groups": {
+    "boundaries": {
+      "axial_end_z0": {
+        "entity_tag": 23,
+        "moving_wall": false,
+        "physical_id": 103,
+        "stationary_wall": false
+      },
+      "axial_end_zL": {
+        "entity_tag": 24,
+        "moving_wall": false,
+        "physical_id": 104,
+        "stationary_wall": false
+      },
+      "bushing_bore_wall": {
+        "entity_tag": 22,
+        "moving_wall": false,
+        "physical_id": 102,
+        "stationary_wall": true
+      },
+      "feed_tube_wall": {
+        "entity_tag": 25,
+        "moving_wall": false,
+        "physical_id": 105,
+        "stationary_wall": true
+      },
+      "journal_wall": {
+        "entity_tag": 21,
+        "moving_wall": true,
+        "physical_id": 101,
+        "stationary_wall": false
+      },
+      "pressure_feed": {
+        "entity_tag": 26,
+        "moving_wall": false,
+        "physical_id": 106,
+        "stationary_wall": false
+      }
+    },
+    "coordinate_unit": "m",
+    "forbidden_solver_patches_absent": [
+      "feed_mouth",
+      "mouth_cap",
+      "internal_feed",
+      "defaultFaces"
+    ],
+    "volume": {
+      "fluid": {
+        "entity_tag": 31,
+        "moving": false,
+        "physical_id": 201
+      }
+    }
+  },
+  "rim": {
+    "axial_partition_cells": [
+      11,
+      3,
+      10
+    ],
+    "collapsed_node_count": 4975,
+    "coordinate_unit": "mm",
+    "disk_triangle_count": 834,
+    "far_size_mm": 2.454369260617026,
+    "full_width_mm": 314.1592653589793,
+    "periodic_pairs": {
+      "band_0": 12,
+      "band_1": 4,
+      "band_2": 11
+    },
+    "raw_node_count": 5000,
+    "rim_chord_mm": 0.09816491409164915,
+    "rim_polygon_area_mm2": 12.561324627819012,
+    "rim_polygon_circle_relative_error": 0.0004015468503208683,
+    "rim_sagitta_mm": 0.0006023626075915001,
+    "rim_segments": 128,
+    "rim_statement": "rim nodes are analytic cylinder/bore intersections; first-order Tri3 edges are circular chords",
+    "triangle_count": 9694
+  },
+  "scale_to_m_applied_exactly_once": 0.001,
+  "schema_version": 2,
+  "solve_eligible": true,
+  "source_parameter_unit": "mm",
+  "volume_cell_type": "Prism6"
+}

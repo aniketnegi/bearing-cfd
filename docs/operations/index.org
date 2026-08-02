@@ -1,24 +1,19 @@
-#+TITLE: Operations Map
+#+TITLE: How-To Guides
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:nil num:nil
-#+STARTUP: content
 
-Commands assume the repository root as the working directory.
+- [[file:running-and-testing.org][Running and testing]] :: install the environment; run geometry,
+  mesh, export, solver, study, and test commands.
+- [[file:visualization.org][Visualization]] :: inspect CAD, mesh topology, quality fields, and
+  solver results in FreeCAD, Gmsh, or ParaView.
+- [[file:outputs-and-reports.org][Outputs and reports]] :: find generated artifacts and interpret
+  =run.json= and stage-specific reports.
+- [[file:openfoam-conversion.org][OpenFOAM mesh conversion]] :: run =gmshToFoam= and =checkMesh=
+  without mixing mesh acceptance with CFD validation.
+- [[file:../interchange/operations-and-reports.org][Solver-neutral export]] :: write and audit
+  clean MSH, CGNS, and Fluent files.
+- [[file:code-reading-guide.org][Code-reading guide]] :: follow the main call paths through geometry,
+  meshing, interchange, and simulation.
 
-- [[file:running-and-testing.org][Running and testing]] :: stage order, default and second-case commands, and
-  regression tests.
-- [[file:visualization.org][Visualization]] :: FreeCAD, Gmsh, and ParaView inspection without confusing
-  diagnostic subsets with solver meshes.
-- [[file:outputs-and-reports.org][Outputs and reports]] :: artifact contracts, units, hashes, stage statuses,
-  and atomic failure behavior.
-- [[file:openfoam-handoff.org][OpenFOAM mesh handoff]] :: optional =gmshToFoam= and =checkMesh= integration in
-  the canonical mesh-generation CLIs.
-- [[file:../handoff/00-index.org][OpenFOAM CFD handoff]] :: accepted S100 import and commissioning evidence,
-  rejected diagnostics, low-speed continuation, and the current guarded stop.
-- [[file:../interchange/operations-and-reports.org][Solver-neutral and Fluent handoff]] :: clean MSH/CGNS exports, static reports,
-  live-import promotion, and Workbench boundary.
-- [[file:code-reading-guide.org][Code-reading guide]] :: shortest route from entry points through geometry,
-  meshing, validation, export, and tests.
-
-Reference material is indexed separately in [[file:../references/index.org][References]].  Mesh-design details live in
-[[file:../meshing/index.org][Meshing]]; transfer semantics live in
-[[file:../interchange/index.org][Solver-neutral interchange]].
+[[file:../index.org][Documentation index]]

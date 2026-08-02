@@ -1,0 +1,12 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      phaseProperties;
+}
+
+phases          (oil air);
+
+// Sakai, Ochiai, and Hashimoto (2019), measured by the du Nouy method.
+sigma           0.04;

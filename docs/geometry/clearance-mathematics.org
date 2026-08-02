@@ -58,9 +58,9 @@ h_{radial,max}=c+e=c(1+\epsilon).
 \]
 
 The resolved targets are stored by
-[[file:../../bearing_film.py::def resolve_params][resolve_params()]].  Their
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::def resolve_geometry][=resolve_geometry()=]].  Their
 five-station geometric measurement is in
-[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def validate_geometry][validate_geometry()]].
 
 * Why the common formula is only approximate
 
@@ -75,7 +75,7 @@ is the first-order expansion of the exact square-root result for small
 angle.  Away from those meridians, the exact result also has a small =z=
 dependence because =R_j(z)= varies along the cone.
 
-[[file:../../bearing_film.py::def _plot_thickness_map][_plot_thickness_map()]]
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _plot_thickness_map][_plot_thickness_map()]]
 uses the exact expression.  Its PNG is a geometry diagnostic, not pressure,
 temperature, velocity, cavitation, or load.
 
@@ -102,8 +102,8 @@ The code selects only the lateral conical faces and calls
 =(c-e)cos(gamma)=, not with =c-e=.  The closest points generally have different
 =z= coordinates, which is direct evidence that this segment is not a same-=z=
 radial measurement.  See
-[[file:../../bearing_film.py::def _lateral_face][_lateral_face()]] and
-[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _lateral_face][_lateral_face()]] and
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def validate_geometry][validate_geometry()]].
 
 * Exact base-film volume
 
@@ -124,9 +124,9 @@ This result is independent of transverse journal translation while the journal
 remains contained, and independent of cone angle when =L=, =R_m=, and =c=
 remain fixed.  It provides an analytic check independent of the Boolean
 algorithm.  The implementation stores it in
-[[file:../../bearing_film.py::def resolve_params][resolve_params()]] and checks
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::def resolve_geometry][=resolve_geometry()=]] and checks
 the Boolean volume to relative tolerance =1e-8= in
-[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def validate_geometry][validate_geometry()]].
 
 * How radial gaps are measured from CAD
 

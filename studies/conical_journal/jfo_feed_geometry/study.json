@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "study": "jfo-feed-geometry",
+  "question": "How does the conforming body-fitted pressure-feed boundary differ from the cell-centre mask used by the earlier reduced JFO model?",
+  "status": "CURATED_GEOMETRY_EVIDENCE",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "origin": {
+    "kind": "git-stash",
+    "object": "406c789d07b2d584c3a3aae98352ea9c0b1d367f",
+    "path": "openfoam/visualize_jfo_feed_geometry.py",
+    "sha256": "4087352f55290aa1ebf06b2a7513d0f66dc770ad56aa9b1a41332b799cc0399a"
+  },
+  "commands": [
+    ["bearing-cfd", "conical-journal", "study", "jfo-feed-geometry"]
+  ],
+  "required_external_tools": [],
+  "source_artifacts": [
+    {
+      "path": "bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py",
+      "sha256": "e6ddf0673b4df2dc257f957bfef7f0e898fdaadbc3d03404a3b459b64dda3c52",
+      "hash_kind": "sha256-file",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "bearing_cfd/bearings/conical_journal/simulation/jfo_surface_mesh.py",
+      "sha256": "df74c0829c801cf4422b86c42cfc86eb0f6b6aeb3cc6ecfae4ab2da9c04e4ff2",
+      "hash_kind": "sha256-file",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "out/jfo_body_fitted_sim_256x80/VTK/jfo_body_fitted_sim_256x80_3098.vtk",
+      "sha256": "05f0f22c69c13a686318ba626f4c930562e1718756ed7ebed0c8b386b19eecb0",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": false
+    }
+  ],
+  "expected_outputs": [
+    {"path": "feed_geometry_comparison.png", "role": "mask-to-conforming comparison"},
+    {"path": "accepted/accepted_geometry_and_mesh.png", "role": "accepted feed mesh evidence"},
+    {"path": "accepted/accepted_geometry_and_mesh.pdf", "role": "printable accepted mesh evidence"},
+    {"path": "result", "role": "optional solved-field evidence"},
+    {"path": "run.json", "role": "generation provenance"}
+  ]
+}

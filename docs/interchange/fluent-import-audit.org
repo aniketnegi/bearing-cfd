@@ -1,184 +1,103 @@
-#+TITLE: Fluent Import-Only Audit
-#+STARTUP: content
+#+TITLE: Fluent Import Audit
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
-* Why a second audit is mandatory
+* Acceptance boundary
 
-The static CGNS round trip proves what Gmsh wrote and can read.  Fluent has its
-own importer, zone mapping, element interpretation, license boundary, and
-native mesh representation.  Therefore =FLUENT_IMPORT_PASS= is reserved for
-[[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
-executing against a real Fluent process.
+A static CGNS round trip establishes what the local writer produced and read
+back.  Fluent has a separate importer, zone model, unit interpretation, licence
+boundary, and native mesh representation.  =FLUENT_IMPORT_PASS= therefore
+requires [[file:../../bearing_cfd/interchange/fluent_live.py::def run_fluent_import_audit][=run_fluent_import_audit()=]]
+to execute against a real Fluent process.
 
-The 2026-07-16 acceptance environment had no PyFluent/Fluent installation, so
-the retained production outputs are =STATICALLY_VALIDATED_NOT_IMPORTED=.  No
-parser fixture, mocked session, or CGNS round trip can promote that state.
+Parser fixtures, mocked sessions, and CGNS round trips cannot produce this
+status.
 
-* CLI modes and license behavior
+* Runtime policy
 
-The exporter exposes three policies:
+| Mode | Behaviour |
+|---+---|
+| =--fluent skip= | do not import PyFluent or request a licence |
+| =--fluent auto= | run when PyFluent and a licence are available; otherwise record =NOT_RUN= |
+| =--fluent required= | return failure unless a real import audit passes |
 
-| Mode | Behavior |
-|------+----------|
-| =--fluent skip= | never imports PyFluent and never requests an Ansys license |
-| =--fluent auto= | runs only when PyFluent can be imported; launch/license failure becomes an explicit =NOT_RUN= |
-| =--fluent required= | exits nonzero unless a real import returns PASS |
+[[file:../../bearing_cfd/interchange/fluent_live.py::def fluent_capability][=fluent_capability()=]]
+checks package availability without launching Fluent.  Licence availability is
+known only after launch succeeds.
 
-[[file:../../interchange/fluent_import_check.py::def fluent_capability][fluent_capability]]
-can detect the Python package without consuming a license.  A license is known
-to be usable only when =launch_fluent= succeeds; package presence alone is not
-reported as availability.
+* Session configuration
 
-The required/auto distinction is enforced by
-[[file:../../interchange/export_solver_neutral.py::def enforce_fluent_mode][enforce_fluent_mode]]
-and tested without a proprietary runtime in
-[[file:../../tests/test_solver_neutral_interchange.py::def test_fluent_unavailable_auto_skip_and_required_failure][the unavailable-runtime regression]].
+The audit launches Fluent in:
 
-* Live session configuration
+- meshing mode;
+- three dimensions;
+- double precision;
+- one process;
+- GUI or headless mode according to =--gui=.
 
-The automated audit launches Fluent with:
+It imports the CGNS volume mesh, runs mesh and quality checks, captures the
+transcript, and queries zone data.  It never enters solution mode, initializes
+a flow field, assigns boundary values, or iterates.
 
-#+begin_src python
-session = pyfluent.launch_fluent(
-    mode=pyfluent.FluentMode.MESHING,
-    dimension=pyfluent.Dimension.THREE,
-    precision=pyfluent.Precision.DOUBLE,
-    processor_count=1,
-    ui_mode="gui" if gui else "no_gui_or_graphics",
-)
-#+end_src
+* Required comparisons
 
-Meshing/import mode is sufficient and avoids entering a solve workflow.  Three
-dimensions and double precision are explicit rather than inherited from local
-defaults.  One process is enough for an import audit; parallel performance is
-outside this stage.
-
-PyFluent's launcher and meshing APIs are documented in its
-[[https://fluent.docs.pyansys.com/version/stable/user_guide/session/launching_ansys_fluent.html][launch guide]]
-and [[https://fluent.docs.pyansys.com/version/stable/api/meshing/tui/file/import_/import__contents.html][meshing import API]].
-
-* Import and checks
-
-The session performs only:
-
-#+begin_src python
-session.tui.file.import_.cgns_vol_mesh(str(cgns.resolve()))
-session.tui.mesh.check_quality_level(1)
-session.tui.mesh.check_mesh()
-session.tui.mesh.check_quality()
-#+end_src
-
-The transcript is captured from before import through the mesh/quality checks.
-No code switches to solution mode, initializes a field, assigns boundary
-values, or calls an iteration command.
-
-The live data-model queries then obtain:
-
-- all boundary and cell-zone IDs and names;
-- face count for each required boundary;
-- cell count and cell-zone shape/type;
-- mesh-check transcript metrics and warnings.
-
-* Mandatory comparisons
-
-The Fluent result must match the canonical NPZ-derived summary, not merely the
-CGNS reader result:
-
-| Fluent observation | Required result |
-|--------------------+-----------------|
+| Observation | Required result |
+|---+---|
 | cell zones | exactly one =fluid= zone |
-| cell shape | Prism/wedge only |
-| boundary zones | exactly the six required names |
-| boundary counts | exact canonical count for every patch |
-| nodes, faces, cells | exact canonical totals |
-| bounding box | metre-scale canonical extents |
-| total volume | canonical volume within strict tolerance |
+| cell type | Prism6/wedge only |
+| boundary zones | exactly the six canonical names |
+| boundary counts | exact canonical face count for every patch |
+| nodes, faces, and cells | exact canonical totals |
+| bounds | canonical metre-scale extents within tolerance |
+| total volume | canonical volume within tolerance |
 | minimum cell volume | positive |
 | maximum skewness | finite and in Fluent's valid range |
 | connected regions | one |
-| mesh check | no invalid-connectivity, negative-volume, or zero-volume failure |
-| feed mouth | absent from the boundary-zone set |
+| feed mouth | absent from boundary zones |
+| mesh check | no invalid connectivity, negative volume, or zero volume |
 
-Missing or merged patches, unknown/default zones, an unexpected fluid split,
-or incomplete transcript metrics are hard failures.
+Missing or merged patches, default/unknown zones, an unexpected region split,
+or incomplete transcript metrics are failures.
 
-* Transcript parsing is deliberately conservative
+* Transcript parsing
 
-[[file:../../interchange/fluent_import_check.py::def parse_fluent_transcript][parse_fluent_transcript]]
-extracts counts, extents, volume statistics, skewness, and region count from the
-captured Fluent transcript.  Fluent wording can vary by release, so the audit
-does not substitute a guessed value when a metric cannot be parsed.  The
-=transcript_metrics_complete= check fails and the native mesh is not written.
+[[file:../../bearing_cfd/interchange/fluent_live.py::def parse_fluent_transcript][=parse_fluent_transcript()=]]
+extracts counts, bounds, volume statistics, skewness, and region count.  If a
+Fluent release changes its output and a required value cannot be parsed, the
+audit fails.  Update the parser against a saved real transcript before
+supporting that release.
 
-When a new Fluent release changes output text, update the parser against a real
-saved transcript and retain that transcript as evidence.  Do not relax the
-required-metric set merely to obtain a PASS.
+* Native mesh promotion
 
-* Guarded native save
+=bearing_prism_imported.msh.h5= is written only after every mandatory check
+passes.  It is therefore a promoted output of the audit, not evidence that an
+import was merely attempted.
 
-=bearing_prism_imported.msh.h5= is written only inside the branch where every
-mandatory check is true.  This ordering makes the native Fluent mesh a
-promotion artifact rather than an import attempt:
+The native mesh still has no material model, boundary values, initialization,
+or solution.  Those belong to a solver case.
 
-#+begin_src python
-if report["status"] == "PASS":
-    session.tui.file.write_mesh(str(native_path.resolve()))
-#+end_src
+* Manual equivalent
 
-An optional import-only =.cas.h5= may be saved manually after the same audit,
-but it must remain explicitly marked as having no material model, boundary
-values, initialization, or solution.
+When PyFluent automation is unavailable:
 
-* Manual Fluent audit
+1. launch Fluent in 3-D double precision;
+2. import =bearing_prism.cgns= as a mesh;
+3. run *Mesh Check* and *Report Quality*;
+4. require one wedge-cell =fluid= zone and the six canonical boundary zones;
+5. compare all counts, bounds, volume, minimum cell volume, quality, and region
+   count with =interchange_report.json=;
+6. verify that no mouth, default, unknown, or merged boundary exists;
+7. save =bearing_prism_imported.msh.h5= only after all comparisons pass.
 
-This section is the older full-passage Prism6/CGNS six-boundary audit only.
-For the current native body-fitted Hex8 mesh with five external boundaries,
-use [[file:../handoff/15-jfo-validation-and-fluent.org::3-D Fluent mesh incident and final handoff][the Chapter 15 audit]] and read the native =.msh= through
-*File > Read > Mesh*.
+The portable [[file:../../fluent/import_check.jou][=fluent/import_check.jou=]]
+runs console import and mesh checks.  It does not decide acceptance or save a
+native mesh because those steps require comparison with the canonical report.
 
-When automation is unavailable, the equivalent import-only review is:
+* Test
 
-1. launch Fluent in 3-D, double precision;
-2. import =bearing_prism.cgns= through *File > Import > CGNS > Mesh* rather
-   than *Mesh & Data*;
-3. run *Mesh > Check* at maximum verbosity;
-4. require one =fluid= zone containing only wedge/Prism6 cells and exactly the
-   six canonical external zones with report-matching counts;
-5. reject any mouth, default, unknown, or merged boundary zone;
-6. compare nodes, faces, cells, bounds, volume, minimum cell volume, skewness,
-   and connected-region count with =interchange_report.json=;
-7. inspect the full mesh, the feed boundaries, the bore opening, and an =x=0=
-   clipped section through the film/feed junction;
-8. save =bearing_prism_imported.msh.h5= only after all checks pass.
+[[file:../../tests/interchange/test_central_feed_export.py::def test_real_fluent_import_when_available][The live integration test]]
+is marked =integration= and skips when PyFluent or a licence is unavailable.
+A skip leaves the status untested; it is not converted into a pass.
 
-Generic roles may then be assigned without values—walls, =pressure-inlet=, and
-=pressure-outlet=—but that is outside the interchange acceptance state.
-
-* Manual visual proof
-
-When Fluent is available, retain screenshots or a documented display record of:
-
-1. the complete ported volume mesh;
-2. =pressure_feed= and =feed_tube_wall= only;
-3. =bushing_bore_wall= only, with the circular opening visible;
-4. an =x=0= section through tube and film;
-5. a clipped cell view through the shared feed-film junction;
-6. the boundary-zone list, demonstrating that no mouth zone exists.
-
-Visual proof supports the count audit but does not replace it.  No Fluent
-screenshots were produced in the 2026-07-16 acceptance run because Fluent was
-unavailable.
-
-* Journal boundary
-
-[[file:../../interchange/fluent_import_check.jou][fluent_import_check.jou]]
-is a portable console import/check aid.  It deliberately does not save a
-native mesh: a static journal cannot reliably interpret every release-specific
-transcript and decide whether all canonical comparisons passed.  The guarded
-save belongs in the PyFluent audit or a documented manual review.
-
-* Separately marked integration test
-
-[[file:../../tests/test_solver_neutral_interchange.py::def test_real_fluent_import_when_available][test_real_fluent_import_when_available]]
-is marked =integration=.  It skips when PyFluent or a license is unavailable;
-a skip is not converted into an import pass.
+[[file:index.org][Solver-neutral interchange]] | [[file:operations-and-reports.org][Export a solver-neutral mesh]]

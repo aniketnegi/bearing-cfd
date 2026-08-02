@@ -1,5 +1,5 @@
 [project]
-name = "eccentric-conical-bearing"
+name = "bearing-cfd"
 version = "0.1.0"
 requires-python = ">=3.10,<3.14"
 dependencies = [
@@ -8,17 +8,32 @@ dependencies = [
     "h5py==3.16.0",
     "matplotlib==3.10.7",
     "meshio==5.3.5",
+    "numpy==2.2.6; python_full_version < '3.11'",
+    "numpy==2.4.6; python_full_version == '3.11.*'",
+    "numpy==2.5.1; python_full_version >= '3.12'",
     "ocp-vscode==4.0.0",
     "scipy==1.15.3; python_full_version < '3.11'",
     "scipy==1.17.1; python_full_version == '3.11.*'",
     "scipy==1.18.0; python_full_version >= '3.12'",
 ]
 
+[project.scripts]
+bearing-cfd = "bearing_cfd.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["bearing_cfd*", "studies*"]
+
 [dependency-groups]
 dev = [
     "pytest==9.1.1",
+    "ruff==0.14.8",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-markers = ["integration: requires a real licensed external solver"]
+addopts = "-m 'not integration'"
+markers = ["integration: generates meshes or requires an external solver/runtime"]

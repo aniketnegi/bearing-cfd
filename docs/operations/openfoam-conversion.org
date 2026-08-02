@@ -1,0 +1,133 @@
+#+TITLE: Convert a Mesh for OpenFOAM
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+The mesh generators can call =gmshToFoam= and =checkMesh= after their native
+topology, geometry, quality, and round-trip checks pass.  This procedure checks
+mesh conversion only; it does not define material properties, rotation,
+cavitation, turbulence, or solver controls.
+
+* Check the OpenFOAM environment
+
+#+begin_src sh
+command -v gmshToFoam
+command -v checkMesh
+foamVersion
+#+end_src
+
+Source the OpenFOAM =etc/bashrc= first if these commands are not in the current
+shell.
+
+* Choose conversion policy
+
+Volume-mesh commands accept:
+
+| Value | Behaviour |
+|---+---|
+| =--openfoam auto= | run conversion when both utilities exist; otherwise record =SKIPPED= |
+| =--openfoam required= | fail when a utility is absent or any conversion/check condition fails |
+| =--openfoam skip= | do not invoke OpenFOAM; record =SKIPPED= |
+
+Use =required= when producing an OpenFOAM input.
+
+* Convert a generated mesh
+
+Generate and preflight geometry first:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal geometry
+uv run bearing-cfd conical-journal mesh brep-preflight --no-gui
+#+end_src
+
+Convert the central-feed Prism6 family during generation:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal mesh central-feed \
+  --openfoam required --no-gui
+#+end_src
+
+For the no-port Hex8 reference:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal mesh no-port \
+  --openfoam required --no-gui
+#+end_src
+
+The generator uses its Gmsh 2.2 ASCII file for conversion.  Do not substitute a
+Gmsh 4.1 visualization mesh, VTU, surface-smoke mesh, cutaway, section, mouth
+diagnostic, or gap-exaggerated file.
+
+* Audit conditions
+
+The mesh report requires:
+
+- =gmshToFoam= return code zero;
+- no fatal, inverted, undefined, unmatched, or dropped-element diagnostic;
+- =checkMesh= return code zero and an explicit =Mesh OK.= line;
+- expected volume-cell count and one connected fluid region;
+- exact patch names and counts;
+- no =defaultFaces= patch;
+- no negative-volume, illegal, or inverted cells.
+
+If the installed converter cannot represent Prism6 cells, =required= mode
+fails.  The generator does not silently tetrahedralize or omit them.
+
+* Expected patches
+
+** No-port Hex8
+
+| Name | Role |
+|---+---|
+| =journal_wall= | moving journal surface |
+| =stationary_wall= | stationary bore surface |
+| =axial_end_z0= | axial opening at =z=0= |
+| =axial_end_zL= | axial opening at =z=L= |
+| =fluid= | one volume region |
+
+The no-port mesh has no =pressure_feed= patch.
+
+** Central-feed Prism6
+
+| Name | Role |
+|---+---|
+| =journal_wall= | journal surface, continuous below the feed |
+| =bushing_bore_wall= | bore surface outside the feed mouth |
+| =axial_end_z0= and =axial_end_zL= | axial openings |
+| =feed_tube_wall= | wall of the resolved feed passage |
+| =pressure_feed= | remote inlet disk |
+| =fluid= | one connected volume region |
+
+The feed mouth is an internal owner-neighbour interface.  It must not appear as
+=feed_mouth=, =mouth_cap=, =internal_feed=, or =defaultFaces=.
+
+* Read the report
+
+For the default =nGap_08= central-feed case:
+
+#+begin_src sh
+uv run python -m json.tool \
+  out/conical_journal/meshing/central-feed/nGap_08/mesh_report.json
+#+end_src
+
+The =openfoam= section contains executable paths, version/help output, command
+transcripts, cell count, connected-region count, and patch inventory.
+
+A passing conversion establishes that OpenFOAM accepted the mesh and its patch
+topology.  CFD acceptance requires a separate case with declared physical
+inputs, initial/boundary conditions, convergence criteria, and conservation
+checks.
+
+* Run the native JFO smoke check
+
+The reduced-film JFO solver has a separate check that does not use the
+three-dimensional mesh above:
+
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
+
+See [[file:../studies/conical-journal/reynolds-jfo-validation.org][Reynolds--JFO verification and validation]]
+for its model and result scope.
+
+[[file:index.org][How-to guides]] | [[file:../index.org][Documentation index]]

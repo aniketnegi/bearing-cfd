@@ -1,119 +1,142 @@
-#+UPDATED_AT: [2026-07-29 Wed]
-#+TITLE: Eccentric Conical Journal Bearing
-#+SUBTITLE: Exact fluid CAD, validated meshes, and guarded OpenFOAM continuation
+#+TITLE: Bearing CFD
+#+SUBTITLE: Geometry, meshing, and lubrication models for an eccentric conical journal bearing
+#+UPDATED_AT: [2026-08-02 Sun]
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
-* Scope
+* Overview
 
-This repository constructs and validates the lubricant-fluid domain of an
-eccentric conical journal bearing with a radial central feed.  It contains:
+Bearing CFD contains the geometry, mesh generators, format converters, and
+lubrication solvers used to study an eccentric conical journal bearing with a
+central pressure feed.
 
-- exact build123d/OCCT B-rep construction of the film and feed passage;
-- native-BREP assurance inside Gmsh/OpenCASCADE;
-- a full-360 no-port structured Hex8 regression mesh;
-- a film-only structured Hex8 mesh with a surface pressure-inlet patch;
-- a body-fitted circular O-grid Hex8 mesh with a native Fluent handoff and
-  full-3D Orthogonal Quality gate;
-- a retained conformal central-feed layered Prism6 full-passage mesh;
-- clean MSH 4.1, MSH 2.2, and CGNS interchange from canonical NumPy arrays;
-- optional OpenFOAM and Fluent import audits in the mesh-generation pipeline;
-- a separately documented OpenFOAM 14 study on the validated S100
-  surface-inlet Hex8 mesh.
+The geometry is defined in millimetres with the bearing axis along global
+=Z=.  Meshing code converts coordinates to metres before writing solver files.
+The repository includes both a Python Reynolds--JFO model and an independent
+OpenFOAM implementation.
 
-Solver meshes describe the lubricant control volume, not the metal assembly.
-Their annular centre is empty because the journal occupies that space
-physically; separately exported journal/bushing STEP solids are visual context,
-not additional fluid zones.
+#+CAPTION: Conical-film geometry, central-feed topology, and mesh-quality diagnostics.
+#+ATTR_ORG: :width 1100
+[[file:evidence/conical_journal/cavitation_four_track/geometry_mesh/accepted_geometry_and_mesh.png]]
 
-The canonical CAD and mesh-generation commands stop before assigning CFD
-physics.  The downstream OpenFOAM study is intentionally separate and is
-recorded in [[file:docs/handoff/00-index.org][the CFD handoff]].  It includes
-accepted commissioning and low-speed liquid checkpoints, rejected diagnostics,
-and a guarded saturation-threshold stop.  It does not yet contain an accepted
-two-phase cavitation result.
+* Implemented methods
 
-* Current state
+| Area | Implementation |
+|---+---|
+| Geometry | OCCT fluid-volume construction, radial and normal-clearance checks, native BREP and STEP round trips |
+| Meshing | surface smoke mesh, no-port Hex8, surface-inlet Hex8, body-fitted Hex8, and central-feed Prism6 |
+| Interchange | MSH 4.1, MSH 2.2 ASCII, CGNS, and Fluent legacy ASCII with topology and scale audits |
+| Lubrication | Python Reynolds--JFO model and native OpenFOAM =jfoBearingFoam= solver |
+| Studies | single-phase commissioning, guarded speed continuation, JFO comparisons, and four cavitation/rupture mechanisms |
 
-| Stage                                             | State                         |
-|---------------------------------------------------+-------------------------------|
-| Native OCCT CAD and BREP round trip               | PASS                          |
-| STEP exchange at =1e-6= relative-volume tolerance | FAIL at the feed intersection |
-| Gmsh OCC import, fragmentation, and SI round trip | PASS                          |
-| Surface-only Tri3 smoke mesh                      | PASS                          |
-| No-port structured Hex8 mesh                      | PASS                          |
-| Surface-inlet structured Hex8 mesh                | PASS                          |
-| Circular O-grid 3-D Hex8 mesh, static checks      | PASS, minimum OQ 0.922660     |
-| Central-feed layered Prism6 mesh                  | PASS                          |
-| Clean MSH/CGNS static interchange                 | PASS                          |
-| Native Fluent mesh export                         | STATIC PASS, FLUENT NOT RUN    |
-| Earlier S100 live Fluent solve                    | NOT ACCEPTED                  |
-| OpenFOAM 14 source build                          | ACCEPTED                      |
-| S100 =gmshToFoam= import and standard =checkMesh= | ACCEPTED                      |
-| Zero-flow solver proof                            | ACCEPTED                      |
-| 0 rpm, 0.5 MPa pressure-fed commissioning case   | ACCEPTED                      |
-| 200 rpm single-liquid diagnostic                  | REJECTED                      |
-| Zero-bias liquid continuation through 20 rpm      | ACCEPTED                      |
-| First 20-to-50-rpm update at 20.2 rpm             | GUARDED SATURATION STOP       |
-| Native Reynolds/JFO high-speed result             | UNVALIDATED CANDIDATE         |
+The four-model comparison is documented in
+[[file:docs/studies/conical-journal/cavitation-model-comparison.org][Cavitation and film-rupture model comparison]].
+A presentation version is available as
+[[file:docs/cavitation-model-discussion.pdf][PDF]].
 
-The STEP failure is isolated to neutral-format translation; native BREP is the
-accepted CAD handoff to the open-source mesh pipeline.
+* Installation
 
-The earlier Fluent S100 solve log is rejected divergence evidence, not a
-canonical import-pass result.  The current body-fitted circular O-grid handoff
-has 1,252,800 Hex8 cells in *12 physical thickness layers*, passes the
-full-volume standard Fluent-equivalent Orthogonal Quality gate at
-=0.9226601271 >= 0.9=, and is still
-=STATICALLY_VALIDATED_NOT_IMPORTED= until Fluent Mesh Check and Report Quality
-are run.  At 20 rpm the OpenFOAM branch remains
-single-liquid and passes its acceptance gates; the 20.2-rpm update crossed the
-configured =pSat= threshold and was stopped before being treated as cavitation.
-The later native Reynolds/JFO midsurface application reaches 2000 rpm.  Its
-active-set kernel is consistent with graph-read peaks and fronts from a
-published 60-cell slider comparison, but the conical model's feed footprint is
-grid-dependent and its 64.455% severe rupture region has not passed full-model
-verification.  It is preserved for validation, not reported as trusted bearing
-performance.
-
-* Pipeline
-
-| Stage          | Entry point                   | Principal contract                                               |
-|----------------+-------------------------------+------------------------------------------------------------------|
-| CAD            | [[file:bearing_film.py][bearing_film.py]]               | one connected fluid B-rep plus zoned and context geometry        |
-| OCC preflight  | [[file:meshing/gmsh_brep_preflight.py][gmsh_brep_preflight.py]]        | native geometry, conformal zone interfaces, explicit units       |
-| Surface smoke  | [[file:meshing/gmsh_surface_smoke.py][gmsh_surface_smoke.py]]         | classified first-order boundary triangulation; no volume cells   |
-| Hex8 baseline  | [[file:meshing/structured_hex_no_port.py][structured_hex_no_port.py]]     | analytic full-360 no-feed reference                              |
-| Surface inlet  | [[file:meshing/structured_hex_surface_inlet.py][structured_hex_surface_inlet.py]] | clustered Hex8 film with near-circular bore pressure patch and no feed tube |
-| Circular O-grid | [[file:meshing/structured_hex_body_fitted_inlet.py][structured_hex_body_fitted_inlet.py]] | body-fitted circular patch, 3-D Hex8 sweep, Gmsh/CGNS/VTU, and OQ visualization |
-| Prism6 mesh    | [[file:meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]] | one conformal film/feed fluid region with an internal open mouth |
-| Neutral export | [[file:interchange/export_solver_neutral.py][export_solver_neutral.py]]      | clean MSH/CGNS files reconstructed from canonical arrays         |
-| Native Fluent  | [[file:interchange/fluent_legacy_msh.py][fluent_legacy_msh.py]]            | native Fluent ASCII plus standard full-3D Orthogonal Quality gate |
-| Fluent audit   | [[file:interchange/fluent_import_check.py][fluent_import_check.py]]        | live import, zone/count/quality checks, guarded native save      |
-| CFD study      | [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]                  | accepted, exploratory, and rejected solver evidence              |
-
-* Environment and regression
+The project uses [[https://docs.astral.sh/uv/][uv]] and Python 3.10--3.13.
 
 #+begin_src sh
+git clone git@github.com:aniketnegi/bearing-cfd.git
+cd bearing-cfd
 uv sync --locked
-uv run pytest -q
 #+end_src
 
-Production commands and output contracts are maintained in
-[[file:docs/operations/running-and-testing.org][Running and testing]] and
-[[file:docs/operations/outputs-and-reports.org][Outputs and reports]].
+Show the installed commands:
+
+#+begin_src sh
+uv run bearing-cfd --help
+#+end_src
+
+* Quick checks
+
+The default tests use tracked fixtures and do not read =out/=.
+
+#+begin_src sh
+uv run pytest
+uv run ruff check bearing_cfd studies tests
+#+end_src
+
+Mesh-generating tests are marked as integrations:
+
+#+begin_src sh
+uv run pytest -m integration
+#+end_src
+
+The native OpenFOAM solver has a separate build and zero-speed smoke check:
+
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
+
+See [[file:docs/tutorials/first-run.org][First run]] for a guided installation and
+simulation, or [[file:docs/operations/running-and-testing.org][Running and testing]]
+for individual stage commands.
+
+* Command-line interface
+
+#+begin_example
+bearing-cfd conical-journal geometry [options]
+bearing-cfd conical-journal mesh <method> [options]
+bearing-cfd conical-journal export central-feed [options]
+bearing-cfd conical-journal simulate reynolds-jfo [options]
+bearing-cfd conical-journal study <study> [options]
+#+end_example
+
+Use =--help= after a complete command to inspect its arguments, for example:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal simulate reynolds-jfo --help
+#+end_src
+
+Generated files use =out/conical_journal/<stage>/...=.  Successful generations
+include =run.json= with the resolved inputs, producing source revision, tool
+versions, upstream hashes, output hashes, and acceptance status.
+
+** CAD exchange status
+
+The default native BREP geometry passes its geometry and round-trip checks and
+is published for meshing.  STEP re-import exceeds the strict relative-volume
+tolerance at the feed intersection, so STEP is recorded as =REJECTED= and is
+excluded from the published geometry directory.  Use =--retain-failed-step= to
+keep the rejected files in a separate =default.rejected-step/= directory for
+inspection.
+
+* Repository layout
+
+| Path | Contents |
+|---+---|
+| [[file:bearing_cfd/bearings/conical_journal/geometry/][=bearing_cfd/.../geometry/=]] | parameter model and OCCT construction |
+| [[file:bearing_cfd/bearings/conical_journal/meshing/][=bearing_cfd/.../meshing/=]] | conical-bearing mesh generators |
+| [[file:bearing_cfd/bearings/conical_journal/simulation/][=bearing_cfd/.../simulation/=]] | Python JFO solver and surface-mesh adapter |
+| [[file:bearing_cfd/interchange/][=bearing_cfd/interchange/=]] | CGNS and Fluent format adapters |
+| [[file:openfoam/][=openfoam/=]] | native solver and smoke-check script |
+| [[file:cases/conical_journal/openfoam/][=cases/=]] | compact OpenFOAM reference cases |
+| [[file:studies/conical_journal/][=studies/=]] | executable study drivers and input dictionaries |
+| [[file:tests/][=tests/=]] | unit tests, integration tests, and compact fixtures |
+| [[file:evidence/conical_journal/][=evidence/=]] | selected plots, animations, and result ledgers |
+| [[file:docs/][=docs/=]] | tutorials, procedures, reference, explanations, and study notes |
+
+* Results and limitations
+
+| Result | Current state |
+|---+---|
+| Full 3-D body-fitted mesh | 1,252,800 Hex8 cells; standard =checkMesh= passes; minimum Fluent-equivalent Orthogonal Quality 0.922660 |
+| Solver-neutral export | static MSH/CGNS/Fluent-ASCII round trips pass; no live Fluent pass is recorded for the versioned evidence |
+| Reynolds--JFO sweep | numerical gates pass from 0 to 4000 rpm; mesh independence and full pressure-curve validation remain open |
+| Oil-vapour model | phase onset observed; convergence gate not met |
+| Non-condensable-gas model | zero-speed conservation gate not met |
+| Atmospheric-ventilation model | rejected after inadmissible negative absolute pressure during startup |
+
+Numerical convergence does not establish physical validation.  The JFO sweep
+still needs a consistent three-grid comparison and comparison with the full
+experimental pressure distribution.  The three-dimensional cavitation model
+also depends on unresolved lubricant, supply-pressure, and axial-boundary
+conditions listed in the [[file:docs/studies/conical-journal/cavitation-model-comparison.org::*Open questions][study notes]].
 
 * Documentation
 
-- [[file:docs/index.org][Engineering notebook and subsystem map]]
-- [[file:docs/physics/lubrication-context.org][Lubrication physics and model boundary]]
-- [[file:docs/geometry/index.org][CAD geometry and validation]]
-- [[file:docs/meshing/index.org][Mesh construction and topology]]
-- [[file:docs/interchange/index.org][Solver-neutral interchange]]
-- [[file:docs/handoff/00-index.org][OpenFOAM CFD handoff]]
-- [[file:docs/handoff/15-jfo-validation-and-fluent.org][JFO validation and Fluent path]]
-- [[file:docs/project/decisions.org][Decision register]]
-- [[file:docs/references/literature.org][Literature]]
-
-Generated geometry, meshes, reports, and solver handoff artifacts are written
-under =out/= and are intentionally excluded from version control.
+The [[file:docs/index.org][documentation index]] separates tutorials, how-to
+guides, reference material, explanations, and current study results.

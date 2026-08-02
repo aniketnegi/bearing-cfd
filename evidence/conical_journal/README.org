@@ -1,0 +1,28 @@
+#+TITLE: Conical-Journal Evidence
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+This directory contains selected plots, animations, and compact result tables
+for the conical-journal studies.  The files are publication artifacts, not
+inputs to geometry, meshing, or simulation code.
+
+| Collection | Contents | Result scope |
+|---+---+---|
+| =cavitation_four_track/= | geometry/mesh figures, four-model status, screening diagnostics, and Tracks B--D fields | Track A passed numerical checks; B and C are unsettled; D is rejected |
+| =jfo_candidate/= | paper-input JFO continuation through 2000 rpm | numerical candidate with incomplete grid and physical validation |
+| =jfo_sae10w40/= | SAE 10W-40 JFO continuation through 4000 rpm | numerical sensitivity study |
+| =oq90_3d/= | full three-dimensional mesh-quality projection and summary | static mesh-quality evidence; not a live Fluent import |
+
+The scientific interpretation is documented in:
+
+- [[file:../../docs/studies/conical-journal/reynolds-jfo-validation.org][Reynolds--JFO verification and validation]];
+- [[file:../../docs/studies/conical-journal/cavitation-model-comparison.org][Cavitation and film-rupture model comparison]].
+
+[[file:manifest.json][=manifest.json=]] binds each collection to a SHA-256 tree
+hash and the executable study manifest that produced or curated it.  A tree
+hash includes every relative file path and file SHA-256 in sorted order.
+
+Large source cases, OpenFOAM time directories, processor partitions, and raw
+logs remain under the ignored =out/= tree.  Their required hashes and
+regeneration notes are recorded in the corresponding =studies/.../study.json=.

@@ -2,13 +2,12 @@
 #+STARTUP: content
 #+OPTIONS: toc:2 num:nil
 
-* Validation is part of construction
+* Validation records
 
-The script does not equate “OCCT returned a shape” with success.
-[[file:../../bearing_film.py::def validate_geometry][validate_geometry()]]
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def validate_geometry][validate_geometry()]]
 builds structured records containing a name, mandatory flag, measurement,
 target, tolerance, and PASS/FAIL status.  Mandatory failures raise
-[[file:../../bearing_film.py::class GeometryValidationError][GeometryValidationError]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::class GeometryValidationError][GeometryValidationError]].
 Specific exceptions also distinguish invalid inputs, construction, Boolean,
 topology, export, and round-trip failures.
 
@@ -17,7 +16,7 @@ These checks are normal control flow, not bare Python =assert= statements, so
 
 * Topology checks
 
-[[file:../../bearing_film.py::def _shape_record][_shape_record()]] records solid
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _shape_record][_shape_record()]] records solid
 counts, individual volumes, face counts, bounding boxes, and property-form
 =is_valid= and =is_manifold= results.
 
@@ -105,7 +104,7 @@ Face ordering and persistent naming are not assumed.
 * Main in-memory tolerances
 
 | Check | Acceptance |
-|-
+|---+---|
 | Base-film analytic volume | relative =<= 1e-8= |
 | Feed Boolean identity | relative =<= 5e-5= |
 | Five-station radial gaps | absolute =<= 0.0005 mm= |
@@ -118,27 +117,28 @@ Interchange tolerances are separate; see [[file:interchange.org][Interchange]].
 
 * Failure reporting and publication
 
-The main flow in [[file:../../bearing_film.py::def main][main()]] prints the
-specific exception, emits diagnostics for every shape that exists, writes an
-=overall: FAIL= =params.json=, and exits nonzero.  Export is staged beside the
-requested output directory.  A failed STEP audit cannot leave newly staged or
-stale program-generated STEP files looking accepted.
+The main flow in [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def main][main()]] treats native geometry and STEP exchange independently.
+A valid native BREP generation is published with =overall: PASS= when only the
+STEP round trip fails; =step_exchange.status= is =REJECTED= and no STEP file
+appears in the accepted directory.
 
-[[file:../../bearing_film.py::def _failure_payload][_failure_payload()]] records
-the exception type/message, inputs, resolved parameters, dependencies,
-validation records, shape diagnostics, and hashes of any trusted native
-fallback.
+A geometry, topology, validation, or native-BREP failure prints the specific
+exception, emits diagnostics for every available shape, publishes an
+=overall: FAIL= =params.json= under =<destination>.failed/=, and exits nonzero.
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _failure_payload][_failure_payload()]] records the exception, inputs, resolved parameters,
+dependencies, validation records, and shape diagnostics.
 
-* Test boundary and downstream checks
+* Tests
 
-There is no standalone =tests/test_bearing_film.py= at present.  The CAD
-command itself performs its mandatory geometry checks for every run.  The
-native artifacts are then independently checked in Gmsh/OpenCASCADE by
-[[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][test_native_brep_preflight()]]
-for both strict parameter cases.
+[[file:../../tests/conical_journal/test_geometry_model.py][=test_geometry_model.py=]]
+checks parameter resolution and invalid-input boundaries.
+[[file:../../tests/conical_journal/test_geometry_cad.py][=test_geometry_cad.py=]]
+checks publication, rejected STEP isolation, and failure reports.  Native
+artifacts are independently checked in Gmsh/OpenCASCADE by
+[[file:../../tests/conical_journal/test_brep_preflight.py][=test_brep_preflight.py=]].
 
 Downstream analytic meshes cross-check the same geometry contract, including
-[[file:../../tests/test_structured_hex_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][no-port analytic geometry]]
-and [[file:../../tests/test_layered_prism_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][ported inlet, radial-gap, and volume agreement]].
+[[file:../../tests/conical_journal/test_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][no-port analytic geometry]]
+and [[file:../../tests/conical_journal/test_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][ported inlet, radial-gap, and volume agreement]].
 Those tests do not replace CAD validation; they verify that accepted CAD
 parameters and BREP survive the handoff into meshing.

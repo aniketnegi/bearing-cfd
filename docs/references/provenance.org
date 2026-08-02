@@ -1,135 +1,102 @@
 #+TITLE: Provenance and Evidence Boundaries
-#+DATE: <2026-07-29>
+#+UPDATED_AT: [2026-08-02 Sun]
 #+OPTIONS: toc:2 num:nil
 #+STARTUP: content
-
-* Scope
-
-This record covers the reproducible CAD, Gmsh preflight, surface-smoke,
-structured Hex8, central-feed Prism6, solver-neutral interchange, and
-downstream OpenFOAM evidence in this repository.  It records where claims come
-from and prevents screenshots, rejected formats, or an unavailable conversation
-link from becoming unstated technical evidence.
 
 * Data lineage
 
 #+begin_example
-bearing_film.py + CLI inputs
-  -> params.json + film_unsplit.brep + film_zones.brep (mm)
-  -> gmsh_brep_preflight.py
-       -> validated hashes + fragmented BREP (mm) + checked SI BREP (m)
-       -> gmsh_surface_smoke.py -> 2-D Tri3 smoke mesh (m)
-  -> structured_hex_no_port.py -> analytic no-port Hex8 reference (m)
-  -> layered_prism_central_feed.py
-       -> analytic film/tube Prism6 mesh (m)
-       -> node and volume comparison against film_unsplit.brep
-       -> mesh_arrays.npz + manifest/report
-            -> export_solver_neutral.py
-                 -> clean MSH 4.1 + MSH 2.2 + CGNS (m)
-                 -> static format round trips
-                 -> optional live Fluent import/check
+GeometryInputs (mm)
+  -> geometry/model.py: resolved dimensions and analytic invariants
+  -> geometry/cad.py: native BREP, optional STEP, params.json
+       -> meshing/brep_preflight.py: OCC import and SI copy
+       -> meshing/surface_smoke.py: boundary-only Tri3 check
+       -> meshing/no_port.py: no-feed Hex8 reference
+       -> meshing/surface_inlet.py: mesh-aligned bore inlet
+       -> meshing/body_fitted_inlet.py: conforming circular bore inlet
+       -> meshing/central_feed.py: film-and-passage Prism6 mesh
+            -> mesh_arrays.npz + manifest.json + mesh_report.json
+                 -> conical_journal/interchange.py
+                      -> clean MSH, CGNS, and Fluent-ASCII files
 
-validated S100 surface-inlet Hex8 mesh
-  -> gmshToFoam + patch correction + checkMesh
-  -> zero-flow solver proof
-  -> isolated pressure-fed and zero-pressure-bias OpenFOAM cases
-  -> accepted checkpoints + rejected diagnostics + guarded ramp state
+simulation/reynolds_jfo.py
+  -> pressure, fill, flow, force, torque, and convergence records
+
+openfoam/solvers/jfoBearingFoam
+  -> independent native implementation using tracked case dictionaries
 #+end_example
 
-The ported mesh reads =resolved_parameters= from =params.json=, including the
-actual =y_feed_end=.  It verifies the native BREP SHA-256 against both the CAD
-record and preflight record before meshing.  It does not hardcode the default
-inlet coordinate.
+CAD coordinates and inputs use millimetres.  Canonical solver-mesh coordinates
+use metres.  The conversion factor is applied at the meshing boundary and
+recorded in stage reports.
 
-Contract implementation:
+* Generated artifacts
 
-- [[file:../../meshing/layered_prism_central_feed.py::def load_contract][ported input/hash contract]];
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_native_brep][native BREP validity, volume, and bounds]];
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_nodes_against_brep][mesh-node closest-point checks]];
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][open-mouth and one-region topology proof]].
+Installed commands write below =out/conical_journal/=.  Each published
+generation contains =run.json= with:
 
-* Current recorded status boundary
+- the invoked argument array and resolved inputs with units;
+- producing Git commit, dirty-state flag, and source-file hashes;
+- upstream artifact paths and SHA-256 hashes;
+- relevant tool versions;
+- output paths, roles, and hashes;
+- acceptance state and the replaced artifact identity, when present.
 
-| Evidence | Status | Permitted conclusion |
-|----------+--------+----------------------|
-| Native build123d/OCCT geometry and BREP round trip | PASS checks inside strict CAD report | Native geometry is suitable as the downstream reference. |
-| STEP exchange at relative volume tolerance =1e-6= | FAIL | Do not mesh or promote the rejected STEP. |
-| BREP import, fragmentation, disk re-import, unit scaling | PASS | Gmsh OCC sees the expected native geometry and shared interfaces. |
-| 2-D surface smoke mesh | PASS | Boundary meshing/classification works; this says nothing about a 3-D volume mesh. |
-| No-port analytic Hex8 family | PASS | Frozen full-360 no-feed regression reference. |
-| Central-feed analytic Prism6 family | PASS | Conformal full-360 ported volume mesh passes its recorded topology, geometry, quality, and format gates. |
-| Solver-neutral MSH/CGNS for default nGap_04 and nGap_08 | STATIC PASS | Canonical mesh, exact six boundary memberships, metre scale, and internal mouth survive Gmsh/CGNS round trips. |
-| Canonical Fluent import audit | NOT ACCEPTED | The earlier S100 Fluent solve diverged; it is corroborating failure evidence, not =FLUENT_IMPORT_PASS=. |
-| OpenFOAM conversion in canonical production mesh reports | SKIPPED | Those reports used =--openfoam skip=; this remains true for that artifact family. |
-| Separate S100 OpenFOAM import | ACCEPTED | =gmshToFoam=, patch correction, and standard =checkMesh= accepted 294,912 Hex8 cells and the intended patches. |
-| Zero-flow and 0-rpm pressure-fed commissioning | ACCEPTED | Solver plumbing is proven; the 0.5 MPa case is pressure-driven, not pure hydrodynamic operation. |
-| 200-rpm single-liquid run and exploratory pressure-fed cavitation runs | REJECTED | Retain as failure evidence; do not report as bearing performance. |
-| Zero-bias OpenFOAM continuation | ACCEPTED THROUGH 20 RPM | Checkpoints remain bounded, conservative, and single-liquid through the accepted 20-rpm hold. |
-| First 20-to-50-rpm update | SATURATION_THRESHOLD at 20.2 rpm | The configured =pSat= threshold was crossed before cavity evolution; no two-phase result is accepted. |
-| Native Reynolds/JFO continuation | UNVALIDATED CANDIDATE | The active-set kernel passes a coarse published graph-consistency check; the conical feed representation, native assembly, grid convergence, and physical cavity interpretation remain unvalidated. |
+The =run.json= schema is listed in
+[[file:../operations/outputs-and-reports.org][Outputs and reports]].  Stage-specific
+reports remain authoritative for geometry, topology, quality, format, and
+solver checks.
 
-The canonical mesh reports and the downstream CFD cases are separate evidence
-families.  A skipped optional audit in an older mesh report does not erase the
-later S100 import, and a successful S100 import does not retroactively promote
-the canonical Fluent interchange audit.
+Output directories are published atomically.  A failed generation cannot
+leave new files beside an accepted report.  Failure-only directories do
+not contain solver-eligible meshes or exchange files.
 
-* Hash and unit provenance
+* Versioned evidence
 
-Use the reports rather than copying hashes into prose:
+Selected figures, animations, and compact result tables live in
+[[file:../../evidence/conical_journal/][=evidence/conical_journal/=]].  They are
+presentation artifacts, not pipeline inputs.
 
-#+begin_src sh
-jq '.sha256' out/strict_default/params.json
-jq '.outputs' out/gmsh_preflight/preflight_report.json
-jq '{overall,coordinate_unit,counts,solve_eligible,distorted_geometry}' \
-  out/ported_prism_default/nGap_08/manifest.json
-jq '.files' out/ported_prism_default/nGap_08/mesh_report.json
-sha256sum out/ported_prism_default/nGap_08/ported_prism.msh \
-  out/ported_prism_default/nGap_08/mesh_arrays.npz
-jq '{overall,readiness,source,exports,fluent}' \
-  out/interchange_default/nGap_04/interchange_report.json
-jq '.' out/interchange_default/nGap_04/file_hashes.json
-#+end_src
+[[file:../../evidence/conical_journal/manifest.json][=evidence/conical_journal/manifest.json=]]
+binds each collection to a SHA-256 tree hash and a study manifest.  A tree hash
+includes every relative path and file hash in sorted order.  The corresponding
+=studies/conical_journal/*/study.json= records the scientific question, status,
+source commit, commands, external tools, source artifacts, and expected
+outputs.
 
-CAD/native-BREP coordinates are millimetres.  Solver mesh coordinates are
-metres.  Every mesh report records the conversion factor and bounding box so a
-second application of =0.001= is detectable.
+Large meshes, mapped initial fields, solver time directories, processor
+partitions, and raw logs stay under =out/=.  A study that depends on them lists
+their hashes and regeneration procedure in its =study.json=.
 
-* External references consulted
+* Claim boundaries
 
-- build123d official documentation: [[https://build123d.readthedocs.io/en/stable/][build123d 0.11.1 documentation]];
-- Gmsh official documentation: [[https://gmsh.info/doc/texinfo/][Gmsh 4.15.2 reference manual]];
-- CGNS SIDS: [[https://cgns.org/standard/SIDS/hierarchy.html][hierarchy]] and
-  [[https://cgns.org/standard/SIDS/grid.html][grid/element structures]];
-- Fluent CGNS import: [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_ug/flu_ug_FileImport.html][Ansys Fluent file import]];
-- PyFluent launch/import APIs: [[https://fluent.docs.pyansys.com/version/stable/user_guide/session/launching_ansys_fluent.html][launch guide]];
-- OpenFOAM Foundation source guide: [[https://cpp.openfoam.org/v13/dir_70ca48d6efc076aae6c126917cb7ccc1.html][=gmshToFoam= reference]];
-- publisher DOI record for the local paper:
-  [[https://doi.org/10.1007/s40997-018-0217-2][10.1007/s40997-018-0217-2]].
-- published complementarity benchmark:
-  [[https://doi.org/10.1115/1.4034244][Miraskari et al. 2017]] and
-  [[https://doi.org/10.1115/1.4002215][Giacopini et al. 2010]];
-- Reynolds--Elrod manufactured solution and open forcing data:
-  [[https://doi.org/10.1016/j.cma.2023.116488][Gravenkamp et al. 2024]] and
-  [[https://doi.org/10.5281/zenodo.8315789][Zenodo 8315789]];
-- primary grid-convergence procedure:
-  [[https://doi.org/10.1115/1.2960953][Celik et al. 2008]];
-- Ansys Fluent theory for
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_th/flu_th_sec_multiphase_cavitation.html][liquid--vapour cavitation]]
-  and
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_op_press.html][operating versus absolute pressure]].
-- Ansys Fluent procedures for
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_setup.html][multiphase/cavitation setup]],
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_tg/flu_tg_cavitation.html][the cavitation tutorial]], and
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/flu_ug/flu_ug_sec_multiphase_post.html][multiphase postprocessing]].
-- Ansys Fluent VOF setup and time-treatment guidance:
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_ug/flu_ug_sec_mphase_using_steps_vof.html][VOF setup]]
-  and
-  [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_th/flu_th_vof_ss_td.html][steady versus transient VOF]].
+| Evidence | What it establishes | What it does not establish |
+|---+---+---|
+| analytic geometry checks | resolved dimensions and clearance laws | valid CAD topology |
+| native BREP validation and round trip | accepted OCCT geometry | accepted STEP exchange |
+| surface smoke mesh | boundary classification and surface meshing | three-dimensional solver readiness |
+| volume-mesh topology and quality | connectivity, geometry, named boundaries, and stated metric gates | valid flow physics |
+| static format round trip | serialized coordinates, cells, and group membership | successful licensed solver import |
+| =FLUENT_IMPORT_PASS= | live Fluent import, check, count/scale audit, and native save | converged or validated CFD |
+| numerical convergence gate | satisfaction of the declared numerical checks | agreement with physical measurements |
+| experimental or independent comparison | only the quantities and conditions compared | transfer to undisclosed operating conditions |
 
-These references explain software APIs or literature context; local validation
-records establish this project's numerical acceptance.
+Pass states do not transfer between rows.  In particular,
+=STATIC_PASS_FLUENT_NOT_RUN= and =FLUENT_IMPORT_PASS= are distinct statuses,
+and convergence is not physical validation.
 
-* Conversational provenance
+* Current published result scope
 
-[[https://chatgpt.com/share/6a58c32b-b590-83ee-a3f8-27c9e6f364cf][Project ChatGPT conversation]] — unavailable when these docs were written; no
-engineering claims were derived from it.
+| Collection | Status |
+|---+---|
+| native geometry and BREP route | accepted; current default STEP exchange is rejected separately |
+| central-feed Prism6 static interchange | static round trips accepted; current licensed Fluent import not run |
+| Reynolds--JFO continuation | numerical sensitivity accepted; grid and physical validation incomplete |
+| 3-D oil-vapour screen | unsettled |
+| 3-D non-condensable-gas screen | zero-speed conservation gate failed |
+| 3-D atmospheric-ventilation screen | physically rejected after negative absolute pressure |
+
+Exact inputs, results, and limitations are in
+[[file:../studies/conical-journal/index.org][Conical-journal studies]].
+
+[[file:index.org][References]] | [[file:../index.org][Documentation index]]

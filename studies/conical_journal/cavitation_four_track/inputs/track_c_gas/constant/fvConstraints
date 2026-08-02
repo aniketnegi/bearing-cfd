@@ -1,0 +1,17 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvConstraints;
+}
+
+isothermal50C
+{
+    type            fixedValue;
+    cellZone        all;
+    fieldValues
+    {
+        T           323.15;
+    }
+}

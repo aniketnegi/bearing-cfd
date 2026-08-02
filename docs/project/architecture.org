@@ -1,154 +1,126 @@
-#+TITLE: Architecture and Sources of Truth
-#+STARTUP: content
+#+TITLE: Software Architecture
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
-* Design rule: one authoritative representation per layer
+* Package structure
 
-The implementation avoids a vague “current model” that changes meaning as it
-moves between libraries.  Instead, each layer has an explicit source of truth:
+#+begin_example
+bearing_cfd/
+├── cli.py
+├── artifacts.py
+├── interchange/
+│   ├── cgns.py
+│   ├── fluent_legacy.py
+│   └── fluent_live.py
+└── bearings/
+    └── conical_journal/
+        ├── geometry/
+        │   ├── model.py
+        │   └── cad.py
+        ├── meshing/
+        │   ├── brep_preflight.py
+        │   ├── surface_smoke.py
+        │   ├── no_port.py
+        │   ├── surface_inlet.py
+        │   ├── body_fitted_inlet.py
+        │   └── central_feed.py
+        ├── interchange.py
+        └── simulation/
+            ├── reynolds_jfo.py
+            └── jfo_surface_mesh.py
+#+end_example
 
-| Layer | Source of truth | Derived representations |
-|-------+-----------------+-------------------------|
-| Inputs | frozen input/resolved dataclasses and =params.json= | console tables, plots |
-| CAD | native OCCT B-rep solids | STEP exchange, context assembly |
-| no-port mesh | immutable NumPy =MeshData= arrays | Gmsh MSH, VTU, NPZ |
-| ported mesh | =MasterMesh= plus =PrismMesh= arrays | Gmsh MSH, VTU, NPZ |
-| neutral mesh hand-off | canonical ported NPZ plus source reports | clean MSH 4.1, MSH 2.2, CGNS |
-| proprietary import | live Fluent process and canonical comparison | native Fluent =.msh.h5= only after PASS |
+Geometry, meshing, and solver code that depends on the conical-bearing model
+lives under =bearings/conical_journal=.  CGNS and Fluent adapters live at the
+package root because they translate file formats rather than bearing physics.
 
-Exports are not silently treated as equivalent to their source.  Each is
-re-imported and compared.
+The command-line interface in [[file:../../bearing_cfd/cli.py][=cli.py=]] uses
+explicit =argparse= dispatch.  Each command passes control to the corresponding
+module's =main()= function.
 
-* Parameter ownership
+* Ownership
 
-CAD inputs live in [[file:../../bearing_film.py::class InputParams][InputParams]].
-[[file:../../bearing_film.py::class ResolvedParams][ResolvedParams]] contains the
-resolved feed position and quantities derived from the independent inputs.
-Both are frozen dataclasses so geometry cannot drift through incidental mutation.
+| Responsibility | Source |
+|---+---|
+| independent geometry inputs, derived dimensions, radius laws, and parameter validation | [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py][geometry/model.py]] |
+| OCCT solid construction, geometric checks, BREP/STEP round trips, and CAD output | [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py][geometry/cad.py]] |
+| native BREP import and fragmentation inside Gmsh OCC | [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py][meshing/brep_preflight.py]] |
+| mesh topology, geometry, quality, and generator-specific files | [[file:../../bearing_cfd/bearings/conical_journal/meshing/][conical_journal/meshing/]] |
+| central-feed export from the canonical Prism6 arrays | [[file:../../bearing_cfd/bearings/conical_journal/interchange.py][conical_journal/interchange.py]] |
+| CGNS hierarchy and correction checks | [[file:../../bearing_cfd/interchange/cgns.py][interchange/cgns.py]] |
+| native Fluent ASCII serialization | [[file:../../bearing_cfd/interchange/fluent_legacy.py][interchange/fluent_legacy.py]] |
+| optional licensed Fluent import audit | [[file:../../bearing_cfd/interchange/fluent_live.py][interchange/fluent_live.py]] |
+| Python pressure/fill calculation | [[file:../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py][simulation/reynolds_jfo.py]] |
+| atomic output publication and =run.json= | [[file:../../bearing_cfd/artifacts.py][artifacts.py]] |
 
-Meshing scripts read =resolved_parameters= from =params.json= rather than
-reconstructing CAD choices from defaults:
+The native OpenFOAM solver is outside the Python package at
+[[file:../../openfoam/solvers/jfoBearingFoam/][=openfoam/solvers/jfoBearingFoam/=]].
+Its dictionaries are tracked separately under
+[[file:../../cases/conical_journal/openfoam/][=cases/conical_journal/openfoam/=]].
 
-- [[file:../../meshing/structured_hex_no_port.py::def load_params][load_params]]
-- [[file:../../meshing/layered_prism_central_feed.py::def load_contract][load_contract]]
+* Geometry data
 
-The ported pipeline also binds the parameter file, BREP, and preflight report by
-hash and by measured mass/bounding box.  A plausible path is not sufficient.
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class GeometryInputs][=GeometryInputs=]]
+contains independent user inputs.  [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class ResolvedGeometry][=ResolvedGeometry=]]
+contains derived quantities such as eccentricity components, feed bounds,
+clearance extrema, and cone slope.  Both records are immutable.
 
-* Coordinate representations and unit boundaries
+The serialized =params.json= representation is the boundary between CAD and
+meshing.  Mesh generators read its =resolved_parameters= rather than repeating
+the CAD defaults.
 
-There are three intentionally different coordinate spaces:
+* Coordinate systems and units
 
-1. *CAD space*: millimetres, global bearing axis =Z=.
-2. *Master-surface space*: unwrapped millimetres =(u,z)= with
-   =u=R_m theta=.
-3. *Solver mesh space*: metres, obtained by one multiplication by =0.001=.
+| Space | Coordinates | Unit |
+|---+---+---|
+| CAD | Cartesian =x,y,z=; bearing axis along =+Z= | mm |
+| unwrapped master surface | circumferential arc coordinate and axial =z= | mm |
+| solver mesh | Cartesian =x,y,z= | m |
+| Reynolds--JFO grid | circumferential angle and axial =z= | rad, m |
 
-The unwrapped plane is a meshing parameterization, not a physical flattening of
-the final fluid volume.  The final nodes are evaluated from the analytic
-eccentric-cone equations before the single SI conversion.
+The mesh generators evaluate the eccentric-cone equations before converting
+coordinates to metres.  Reports record the coordinate unit and bounding box so
+a missing or repeated =0.001= conversion is detectable.
 
-Each report records coordinate units.  Unit conversion belongs at a named
-boundary so it can be asserted and cannot be applied twice.
+* Mesh representations
 
-* Script boundaries
+Each mesh generator owns one canonical in-memory array representation.  Gmsh,
+VTU, NPZ, CGNS, and Fluent files are derived from those arrays and read back
+for comparison.
 
-** =bearing_film.py=
+| Mesh | Canonical representation |
+|---+---|
+| no-port and surface-inlet Hex8 | points, Hex8 connectivity, external Quad4 groups, and cell fields |
+| body-fitted inlet Hex8 | body-fitted points/connectivity plus feed-rim and quality metadata |
+| central-feed Prism6 | master Tri3 topology, swept Prism6 cells, external Tri3/Quad4 groups, and internal-mouth census |
 
-Owns exact B-rep construction, CAD invariants, CAD exports, and CAD round trips.
-It knows nothing about solver cells.
+Imported entity tags and writer-generated numbering are not stable identifiers.
+Round-trip audits compare coordinates, connectivity signatures, physical names,
+and group membership independently of numbering.
 
-** =gmsh_brep_preflight.py=
+* Validation and publication
 
-Owns the interpretation of native CAD inside Gmsh OCC: import options,
-fragmentation, volume/surface classification, SI copy, and BREP rechecks.  It
-does not create a mesh.
+Every stage writes into a sibling staging directory.  It validates the staged
+files and replaces the destination only after all mandatory checks pass.
+[[file:../../bearing_cfd/artifacts.py::def publish_generation][=publish_generation()=]]
+adds =run.json= before the atomic replacement.
 
-** =gmsh_surface_smoke.py=
+Geometry and mesh failures may publish a separate =*.failed= directory that
+contains reports but no solver-eligible output.  A rejected STEP batch uses
+=*.rejected-step= and never appears in the accepted native-BREP directory.
 
-Owns the low-cost 2-D boundary triangulation probe.  It intentionally refuses
-to create volume elements.
+The stage report contains detailed domain checks; =run.json= records the
+generation identity, inputs and units, source revision, producer hashes,
+upstream hashes, tool versions, output hashes, and acceptance state.
 
-** =structured_hex_no_port.py=
+* Solver separation
 
-Owns the frozen all-Hex no-port reference.  Its canonical arrays are computed
-analytically and must not be changed as a shortcut for ported-mesh work.
+The Python and OpenFOAM Reynolds--JFO solvers implement the same physical model
+through separate assemblies.  Neither imports the other's discrete operators.
+Their comparison therefore detects implementation differences while retaining
+independent numerical paths.  Shared assumptions such as rupture pressure,
+feed geometry, and axial boundary conditions require separate physical
+validation.
 
-** =layered_prism_central_feed.py=
-
-Owns the actual feed-connected volume mesh.  It reuses a Gmsh-generated master
-Tri3 topology, but constructs all 3-D Prism6 cells analytically.
-
-** =export_solver_neutral.py=
-
-Owns format-neutral reconstruction from the validated =mesh_arrays.npz=.  It
-does not read CAD or remesh.  It creates a clean discrete model, writes MSH and
-CGNS, and reopens every format against canonical signatures.
-
-** =fluent_import_check.py=
-
-Owns the optional proprietary runtime boundary.  It launches Fluent only for
-CGNS import, mesh/quality checks, canonical count/scale comparison, and a
-guarded native-mesh save.  It never initializes or iterates.
-
-* Data-model choices
-
-The mesh dataclasses carry arrays and metadata together:
-
-- [[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]]
-- [[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
-- [[file:../../interchange/export_solver_neutral.py::class CanonicalCase][CanonicalCase]]
-- [[file:../../interchange/export_solver_neutral.py::class CanonicalAudit][CanonicalAudit]]
-
-Connectivity uses stable integer node tags, while NumPy arrays use compact
-zero-based rows internally where convenient.  Conversion functions are explicit
-because an off-by-one error can preserve visual appearance while inverting or
-disconnecting cells.
-
-The canonical arrays are written to =mesh_arrays.npz=.  Generator MSH/VTU and
-interchange MSH/CGNS round trips are compared back to these arrays; the export
-library is never the authority.
-
-* Classification policy
-
-Imported CAD entity tags and Boolean return order are unstable implementation
-details.  Geometry is classified using centres of mass, bounding boxes, areas,
-adjacency, and known planes.  Analytic meshes derive boundary groups from
-logical indices and a generic face census.
-
-The generator's declared Gmsh physical IDs are stable local contracts, while
-elementary entity tags are model-local.  Neutral-format checks use physical
-names and exact memberships because another reader may remap both numeric ID
-classes.  See [[file:../meshing/topology-and-quality.org][Topology proofs and quality metrics]].
-
-* Validation and publication architecture
-
-Validation functions receive a record list and add named PASS/FAIL evidence.
-Exceptions stop the pipeline; they do not request relaxed tolerances.  Output is
-built in a sibling staging directory and atomically moved into place only after
-all mandatory checks and round trips succeed.
-
-The mesh generators publish an explicit failure directory with solver-eligible
-artifacts removed.  The interchange exporter instead discards its incomplete
-staging directory; an already published destination is left untouched.  In
-both cases partial new MSH/CGNS/VTU files cannot be mistaken for a completed
-run.
-
-Relevant entry points:
-
-- [[file:../../bearing_film.py::def validate_geometry][CAD validation]]
-- [[file:../../meshing/gmsh_brep_preflight.py::def require][preflight records]]
-- [[file:../../meshing/structured_hex_no_port.py::def run_structured][Hex atomic run]]
-- [[file:../../meshing/layered_prism_central_feed.py::def run_ported][Prism atomic run]]
-- [[file:../../interchange/export_solver_neutral.py::def run_interchange][interchange atomic run]]
-- [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][live Fluent import audit]]
-
-* What is intentionally not abstracted
-
-The stages share ideas, but they do not inherit from a general mesh framework.
-Their geometry, element types, and validation contracts differ enough that a
-common class hierarchy would obscure the physical reasoning.  The interchange
-stage reuses only the already-tested Prism6 discrete registration and face/
-metric helpers; it does not introduce an exporter framework for hypothetical
-future meshes.
+[[file:pipeline.org][Pipeline and validation boundaries]] | [[file:../index.org][Documentation index]]

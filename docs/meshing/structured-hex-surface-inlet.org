@@ -4,13 +4,14 @@
 #+PROPERTY: header-args :eval never
 
 [[file:structured-hex-no-port.org][No-port Hex8 baseline]] ·
+[[file:body-fitted-inlet.org][Body-fitted circular inlet]] ·
 [[file:layered-prism-central-feed.org][Full-passage Prism6 branch]] ·
 [[file:topology-and-quality.org][Topology and quality]] ·
 [[file:../geometry/clearance-mathematics.org][Clearance mathematics]]
 
 * Model boundary
 
-[[file:../../meshing/structured_hex_surface_inlet.py][structured_hex_surface_inlet.py]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_inlet.py][surface_inlet.py]]
 constructs the full-360 eccentric conical film as first-order Hex8 cells.  It
 does not include the radial drilling, bushing-wall passage, or external inlet
 stub in the fluid volume.  Instead, a set of outer-film Quad4 faces on the
@@ -165,51 +166,6 @@ local-block transition.  Pushing =s= toward one would further coarsen the
 remote bearing, so inlet-shape convergence should use
 =n_theta=/=n_axial= studies rather than unbounded clustering strength.
 
-* Body-fitted circular O-grid production mesh
-
-[[file:../../meshing/structured_hex_body_fitted_inlet.py][structured_hex_body_fitted_inlet.py]]
-is the body-fitted alternative to the tensor-grid staircase above.  It replaces
-the local background patch with a conformal central square, one inner ring, a
-72-node analytic circular rim, and nine outer transition rings.  The straight
-Quad4 edges form a 72-sided inscribed polygon whose nodes lie on the exact
-drilling-cylinder/conical-bore intersection; it must not be described as a
-curved high-order circle.
-
-The accepted 3-D Fluent handoff uses:
-
-| Quantity | Accepted value |
-|---+---:|
-| Circumferential by axial surface resolution | 576 by 180 |
-| Physical through-film Hex8 layers | *12* cells, indices 0--11 |
-| Nodal surfaces through the film | 13 |
-| Inlet rim segments | 72 |
-| O-grid inner / outer transition layers | 1 / 9 |
-| Nodes / Hex8 cells | 1,364,688 / 1,252,800 |
-| Pressure-feed Quad4 faces | 396 |
-| Standard Fluent-equivalent minimum OQ | 0.922660127056 |
-| Cells below the hard OQ 0.9 gate | 0 |
-
-An 11-layer alternative was screened but never exported or promoted.  Its
-higher predicted OQ came partly from making each through-film cell thicker;
-that is not a free quality improvement, so the production handoff retains 12
-physical layers.
-
-The same entry point generates the geometry, canonical arrays, Gmsh 4.1 and
-2.2 meshes, CGNS, native Fluent mesh, full-volume VTU, surface/cutaway VTUs,
-and the PNG/PDF OQ overview.  In ParaView, open =volume_hex.vtu= and color by
-=fluent_orthogonal_quality=.  For a lightweight view, open
-=viz/master_surface.vtu= and color by
-=fluent_orthogonal_quality_min_through_gap=; that surface field is the minimum
-over the 12 underlying 3-D cells and is not a separate 2-D quality metric.
-Gmsh geometry/topology inspection uses =structured_hex.msh=.
-
-Current generated bundle:
-[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/][paper_exact_current_circular_ogrid_3d_oq90]].
-The native Fluent file is
-[[file:../../out/paper_exact_current_circular_ogrid_3d_oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh][paper_exact_current_circular_ogrid_3d_oq90.msh]].
-Its status is =STATICALLY_VALIDATED_NOT_IMPORTED=: a live Fluent Mesh Check
-and Report Quality check remain mandatory.
-
 * Why the journal remains continuous
 
 The pressure patch is produced by partitioning the original stationary-bore
@@ -286,21 +242,21 @@ contracts.
 |--------+--------------+---------------------+-----|
 | [[file:structured-hex-no-port.org][No-port Hex8]] | Hex8 | none | frozen geometry, periodicity, quality, and convergence regression |
 | *Surface-inlet Hex8* | Hex8 | pressure patch on stationary bore | current film-only hydrodynamic model |
+| [[file:body-fitted-inlet.org][Body-fitted Hex8]] | Hex8 | conforming circular pressure patch | reduced film model with controlled feed geometry |
 | [[file:layered-prism-central-feed.org][Full-passage Prism6]] | Prism6 | resolved drilling, wall passage, stub, and remote inlet disk | studies that retain feed-passage hydraulics |
 
-The new branch does not replace or weaken either validated baseline.  It
-reuses tensor-product annular connectivity with nonuniform theta/z coordinates
-while changing the physical boundary partition required by the reduced-domain
-study.
+This mesh reuses tensor-product annular connectivity with nonuniform theta/z
+coordinates while applying the boundary partition required by the
+reduced-domain study.
 
 * Run and inspect
 
 Default production family:
 
 #+begin_src sh
-uv run python meshing/structured_hex_surface_inlet.py \
-  --params out/strict_default/params.json \
-  --outdir out/structured_surface_inlet_default \
+uv run bearing-cfd conical-journal mesh surface-inlet \
+  --params out/conical_journal/geometry/default/params.json \
+  --outdir out/conical_journal/meshing/surface-inlet \
   --n-theta 256 --n-axial 96 \
   --gap-levels 4 8 12 --preview-ngap 8 \
   --gap-inflation-ratio 5 \
@@ -314,20 +270,20 @@ Gmsh:
 
 #+begin_src sh
 uv run gmsh \
-  out/structured_surface_inlet_default/nGap_08/structured_hex.msh
+  out/conical_journal/meshing/surface-inlet/nGap_08/structured_hex.msh
 
 uv run gmsh \
-  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.msh
+  out/conical_journal/meshing/surface-inlet/nGap_08/viz/pressure_feed_only.msh
 #+end_src
 
 ParaView on Wayland:
 
 #+begin_src sh
 QT_QPA_PLATFORM=xcb paraview \
-  out/structured_surface_inlet_default/nGap_08/volume_hex.vtu
+  out/conical_journal/meshing/surface-inlet/nGap_08/volume_hex.vtu
 
 QT_QPA_PLATFORM=xcb paraview \
-  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.vtu
+  out/conical_journal/meshing/surface-inlet/nGap_08/viz/pressure_feed_only.vtu
 #+end_src
 
 For the full mesh, use =Surface With Edges= and color by =gap_layer_index= or

@@ -19,15 +19,15 @@ The authoritative interchange source is therefore:
 | =mesh_report.json= | volume, BREP error, boundary census, quality, and prior round-trip evidence |
 | =physical_groups.json= | expected volume/boundary names and forbidden patch names |
 
-[[file:../../interchange/export_solver_neutral.py::def load_canonical_case][load_canonical_case]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def load_canonical_case][load_canonical_case]]
 requires all four.  A valid NPZ beside a failed manifest is rejected; files
 cannot be mixed between cases merely because their array shapes are plausible.
 
 * In-memory contract
 
-[[file:../../interchange/export_solver_neutral.py::class CanonicalCase][CanonicalCase]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::class CanonicalCase][CanonicalCase]]
 binds the case path, reconstructed immutable =PrismMesh=, source manifest, and
-source report.  [[file:../../interchange/export_solver_neutral.py::class CanonicalAudit][CanonicalAudit]]
+source report.  [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::class CanonicalAudit][CanonicalAudit]]
 adds the verified summary plus face-to-cell incidence needed by later
 round-trip orientation checks.
 
@@ -67,7 +67,7 @@ same arrays pass directly to =gmsh.model.mesh.addElementsByType=.
 
 * Source checks before format construction
 
-[[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_canonical][audit_canonical]]
 does not assume that a previously published PASS remains sufficient.  It
 rechecks:
 
@@ -98,14 +98,14 @@ arrays and validates semantic equivalence.
 Case selection is path-based rather than encoded as a geometry mode:
 
 #+begin_src sh
-uv run python interchange/export_solver_neutral.py \
-  --case-dir out/ported_prism_default/nGap_04 \
-  --outdir out/interchange_default/nGap_04 \
+uv run bearing-cfd conical-journal export central-feed \
+  --case-dir out/conical_journal/meshing/central-feed/nGap_04 \
+  --outdir out/conical_journal/interchange/central-feed-ngap04 \
   --fluent skip
 
-uv run python interchange/export_solver_neutral.py \
-  --case-dir out/ported_prism_e03_g20/nGap_04 \
-  --outdir out/interchange_e03_g20/nGap_04 \
+uv run bearing-cfd conical-journal export central-feed \
+  --case-dir out/conical_journal/meshing/central-feed-e03-g20/nGap_04 \
+  --outdir out/conical_journal/interchange/central-feed-e03-g20-ngap04 \
   --fluent skip
 #+end_src
 
@@ -116,8 +116,7 @@ directory already contains the resolved geometry and mesh identity.
 * Regression boundary
 
 The loader and canonical audit are exercised through the clean mini-mesh
-fixture in [[file:../../tests/test_solver_neutral_interchange.py::def clean_export][clean_export]].
+fixture in [[file:../../tests/interchange/test_central_feed_export.py::def clean_export][clean_export]].
 Negative/reversed cells, missing patches, duplicate cells, and malformed group
 sets have focused rejection tests in
-[[file:../../tests/test_solver_neutral_interchange.py][test_solver_neutral_interchange.py]].
-
+[[file:../../tests/interchange/test_central_feed_export.py][test_central_feed_export.py]].

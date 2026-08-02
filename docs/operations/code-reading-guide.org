@@ -1,150 +1,136 @@
 #+TITLE: Code-Reading Guide
-#+STARTUP: content
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
-* Common control pattern
+* Command dispatch
 
-All pipelines follow this shape:
+Start with [[file:../../bearing_cfd/cli.py::def main][=bearing_cfd.cli.main()=]].
+It selects a bearing, stage, and operation, supplies the default output paths,
+and calls the selected module directly.
 
-#+begin_src python
-inputs = parse_args()
-contract = load_and_validate_inputs(inputs)
-stage = make_staging_directory(outdir)
-artifact = construct(contract)
-validate(artifact)
-export_to_stage(artifact)
-round_trip_and_compare()
-atomic_replace_directory(stage, outdir)
-#+end_src
+The common stage lifecycle is:
 
-Exceptions stop publication.  Mesh generators publish their failure contract;
-=run_interchange= discards the failed staging directory and leaves an existing
-published output untouched.  The concrete entry points are =run_preflight=,
-=run_surface_smoke=, =run_structured=, =run_ported=, and =run_interchange=.
+#+begin_example
+parse and validate inputs
+        |
+construct geometry, mesh, or solution
+        |
+validate in-memory result
+        |
+write into a staging directory
+        |
+reopen and compare serialized files
+        |
+write run.json and atomically publish
+#+end_example
 
-* CAD path
+Atomic publication is implemented by
+[[file:../../bearing_cfd/artifacts.py::def publish_generation][=publish_generation()=]].
 
-1. [[file:../../bearing_film.py::class InputParams][InputParams]] and
-   [[file:../../bearing_film.py::class ResolvedParams][ResolvedParams]]
-2. [[file:../../bearing_film.py::def resolve_params][resolve_params]] and
-   [[file:../../bearing_film.py::def validate_params][validate_params]]
-3. [[file:../../bearing_film.py::def make_bore_blank][make_bore_blank]],
-   [[file:../../bearing_film.py::def make_journal][make_journal]], and
-   [[file:../../bearing_film.py::def make_feed_cylinder][make_feed_cylinder]]
-4. [[file:../../bearing_film.py::def make_full_film][make_full_film]] and
-   [[file:../../bearing_film.py::def split_axial_zones][split_axial_zones]]
-5. [[file:../../bearing_film.py::def validate_geometry][validate_geometry]]
-6. [[file:../../bearing_film.py::def export_all][export_all]] and
-   [[file:../../bearing_film.py::def _round_trip_all][_round_trip_all]]
-7. [[file:../../bearing_film.py::def main][main]]
+* Geometry
 
-=validate_geometry= mixes same-=z= radial and surface-normal clearance checks;
-their distinct targets are derived in
-[[file:../geometry/clearance-mathematics.org][Clearance mathematics]].
+Read the parameter model before the CAD kernel:
 
-* Native-BREP assurance path
+1. [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class GeometryInputs][=GeometryInputs=]]
+2. [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class ResolvedGeometry][=ResolvedGeometry=]]
+3. [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::def resolve_geometry][=resolve_geometry()=]]
+4. [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_bore_blank][=make_bore_blank()=]],
+   [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_journal][=make_journal()=]], and
+   [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_feed_cylinder][=make_feed_cylinder()=]]
+5. [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def make_full_film][=make_full_film()=]] and
+   [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def split_axial_zones][=split_axial_zones()=]]
+6. [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def validate_geometry][=validate_geometry()=]]
+7. [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def main][=main()=]]
 
-1. [[file:../../meshing/gmsh_brep_preflight.py::class CadReference][CadReference]]
-2. [[file:../../meshing/gmsh_brep_preflight.py::def configure_occ_options][configure_occ_options]]
-3. [[file:../../meshing/gmsh_brep_preflight.py::def classify_volumes][classify_volumes]]
-4. [[file:../../meshing/gmsh_brep_preflight.py::def classify_surfaces][classify_surfaces]]
-5. [[file:../../meshing/gmsh_brep_preflight.py::def validate_fragment_mapping][validate_fragment_mapping]]
-6. [[file:../../meshing/gmsh_brep_preflight.py::def validate_boundaries][validate_boundaries]]
-7. [[file:../../meshing/gmsh_brep_preflight.py::def _run_occ_checks][_run_occ_checks]]
-8. [[file:../../meshing/gmsh_brep_preflight.py::def run_preflight][run_preflight]]
+The corresponding tests are
+[[file:../../tests/conical_journal/test_geometry_model.py][=test_geometry_model.py=]]
+and [[file:../../tests/conical_journal/test_geometry_cad.py][=test_geometry_cad.py=]].
 
-The classifiers derive meaning from geometry rather than entity tags.
-[[file:../../tests/test_gmsh_brep_preflight.py][The preflight tests]] define the
-production-case regression contract.
+* BREP preflight
 
-* No-port Hex8 reference
+1. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def load_reference][=load_reference()=]]
+2. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def configure_occ_options][=configure_occ_options()=]]
+3. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def classify_volumes][=classify_volumes()=]]
+4. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def classify_surfaces][=classify_surfaces()=]]
+5. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def validate_fragment_mapping][=validate_fragment_mapping()=]]
+6. [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def run_preflight][=run_preflight()=]]
 
-1. [[file:../../meshing/structured_hex_no_port.py::class BearingParams][BearingParams]]
-2. [[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]]
-3. [[file:../../meshing/structured_hex_no_port.py::def node_tag][node_tag]]
-4. [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]]
-5. [[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]]
-6. [[file:../../meshing/structured_hex_no_port.py::def validate_analytic_mesh][validate_analytic_mesh]]
-7. [[file:../../meshing/structured_hex_no_port.py::def add_discrete_model][add_discrete_model]]
-8. the three round trips, beginning with
-   [[file:../../meshing/structured_hex_no_port.py::def validate_gmsh_round_trip][validate_gmsh_round_trip]]
-9. [[file:../../tests/test_structured_hex_no_port.py][the Hex8 tests]]
+Entity tags are deliberately absent from the geometry contract.  The
+classifiers use position, area, bounds, and adjacency because OCC may renumber
+entities after import or fragmentation.
 
-Connectivity is expressed in logical circumferential, axial, and gap indices
-=(j,k,i)=, including the last-to-first periodic cell.
+* Structured Hex8 meshes
 
-* Central-feed Prism6 path
+The no-port mesh contains the shared analytic coordinate and connectivity
+rules:
 
-** Contract and analytic mouth
+1. [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::class BearingParams][=BearingParams=]]
+2. [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::class MeshData][=MeshData=]]
+3. [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def generate_mesh][=generate_mesh()=]]
+4. [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_topology][=validate_topology()=]]
+5. [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_analytic_mesh][=validate_analytic_mesh()=]]
 
-- [[file:../../meshing/layered_prism_central_feed.py::class PortedParams][PortedParams]]
-- [[file:../../meshing/layered_prism_central_feed.py::def load_contract][load_contract]]
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_native_brep][validate_native_brep]]
-- [[file:../../meshing/layered_prism_central_feed.py::def rim_coordinates][rim_coordinates]]
+The surface-inlet implementation adds nonuniform coordinates and bore-face
+selection in
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_inlet.py::def build_surface_inlet_mesh][=build_surface_inlet_mesh()=]].
+The body-fitted implementation constructs the conforming circular O-grid in
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py][=body_fitted_inlet.py=]].
 
-** Two-dimensional topology
+Tests are grouped by mesh family under
+[[file:../../tests/conical_journal/][=tests/conical_journal/=]].
 
-- [[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]]
+* Central-feed Prism6 mesh
 
-The feed-disk mask determines whether each outer film face becomes bore wall or
-internal mouth.
+Read this module in three sections:
 
-** Three-dimensional construction
+1. input and native-BREP checks:
+   [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def load_contract][=load_contract()=]] and
+   [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_native_brep][=validate_native_brep()=]];
+2. two-dimensional master topology:
+   [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_master_mesh][=build_master_mesh()=]];
+3. three-dimensional sweep and proof:
+   [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_prism_mesh][=build_prism_mesh()=]] and
+   [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][=validate_topology()=]].
 
-- [[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::def _prism_gauss_metrics][_prism_gauss_metrics]]
+The face census is the key topology check.  External faces have one incident
+cell; the feed mouth has two and therefore cannot appear as a boundary patch.
 
-A film triangle swept across one gap interval and a disk triangle swept across
-one tube interval both produce Prism6 cells.  The final film layer and first
-tube layer reuse node tags at the mouth; nothing is merged afterward.
+* Interchange
 
-** Proof and serialization
+Start with the bearing-specific coordinator:
 
-- [[file:../../meshing/layered_prism_central_feed.py::def _face_census][_face_census]]
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]]
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_geometry][validate_geometry]]
-- [[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]]
-- [[file:../../meshing/layered_prism_central_feed.py::def generate_gap_case][generate_gap_case]]
-- [[file:../../tests/test_layered_prism_central_feed.py][the Prism6 tests]]
+1. [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def load_canonical_case][=load_canonical_case()=]]
+2. [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_canonical][=audit_canonical()=]]
+3. [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def write_clean_meshes][=write_clean_meshes()=]]
+4. [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_round_trip][=audit_round_trip()=]]
+5. [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def run_interchange][=run_interchange()=]]
 
-* Solver-neutral interchange path
+Then read the format-specific edges:
 
-** Source and pre-write audit
+- [[file:../../bearing_cfd/interchange/cgns.py][CGNS inspection and correction]];
+- [[file:../../bearing_cfd/interchange/fluent_legacy.py][native Fluent ASCII writer and reader]];
+- [[file:../../bearing_cfd/interchange/fluent_live.py][licensed Fluent capability and transcript audit]].
 
-1. [[file:../../interchange/export_solver_neutral.py::class InterchangeInputs][InterchangeInputs]]
-2. [[file:../../interchange/export_solver_neutral.py::def load_canonical_case][load_canonical_case]]
-3. [[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+The round-trip comparison reconstructs canonical node and face signatures from
+coordinates, so a writer may renumber entities without weakening the audit.
 
-The exporter rebuilds =PrismMesh= from NPZ arrays but does not rebuild geometry
-or cells.  =audit_canonical= derives face incidence, patch owners, cell-graph
-connectivity, and the geometry summary used by every later comparison.
+* Reynolds--JFO
 
-** Clean model and format writes
+Read the Python solver in this order:
 
-4. [@4] [[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
-5. reused [[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]]
+1. [[file:../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py::class Inputs][=Inputs=]]
+2. grid construction and film-thickness evaluation
+3. conservative pressure/fill assembly
+4. [[file:../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py::def solve_lcp][=solve_lcp()=]]
+5. time stepping and convergence policy
+6. force, flow, and torque summaries
+7. [[file:../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py::def main][=main()=]]
 
-Read these together: the first controls clean/no-view writer state; the second
-owns the single tested Tri3/Quad4/Prism6 entity registration.
+The short numerical tests are in
+[[file:../../tests/conical_journal/test_reynolds_jfo.py][=test_reynolds_jfo.py=]]
+and [[file:../../tests/conical_journal/test_jfo_published_benchmark.py][=test_jfo_published_benchmark.py=]].
+The independent native implementation is
+[[file:../../openfoam/solvers/jfoBearingFoam/jfoBearingFoam.C][=jfoBearingFoam.C=]].
 
-** Renumbering-independent round trips
-
-6. [@6] [[file:../../interchange/export_solver_neutral.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
-7. [[file:../../interchange/export_solver_neutral.py::def _signature_mapping][_signature_mapping]]
-8. [[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
-
-Node tags are reconstructed from coordinates, then cell/face membership from
-canonical node signatures.  Imported ordering is still used for signed-volume
-and outward-normal checks.
-
-** Optional live Fluent boundary
-
-9. [@9] [[file:../../interchange/fluent_import_check.py::def fluent_capability][fluent_capability]]
-10. [[file:../../interchange/fluent_import_check.py::def parse_fluent_transcript][parse_fluent_transcript]]
-11. [[file:../../interchange/fluent_import_check.py::def run_fluent_import_audit][run_fluent_import_audit]]
-12. [[file:../../tests/test_solver_neutral_interchange.py][interchange tests]]
-
-The native Fluent mesh save occurs at the end of =run_fluent_import_audit= and
-only inside the all-checks-PASS branch.
+[[file:../project/architecture.org][Software architecture]] | [[file:../index.org][Documentation index]]

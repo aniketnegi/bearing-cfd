@@ -1,0 +1,4499 @@
+{
+  "commands": {
+    "gmsh_cutaway": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_cutaway_exact.msh",
+    "gmsh_feed_boundary": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_boundary_only.msh",
+    "gmsh_full": "uv run gmsh /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/ported_prism.msh",
+    "paraview_cutaway": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/feed_cutaway_exact.vtu",
+    "paraview_helper": "pvpython /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/open_in_paraview.py",
+    "paraview_volume": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/volume_prism.vtu",
+    "paraview_x0": "QT_QPA_PLATFORM=xcb paraview /home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/ported_prism_probe/nGap_02/viz/x0_section.vtu"
+  },
+  "coordinate_units": {
+    "construction": "mm",
+    "solver_exports": "m",
+    "volume": "m^3"
+  },
+  "counts": {
+    "boundary_faces": {
+      "axial_end_z0": 256,
+      "axial_end_zL": 256,
+      "bushing_bore_wall": 8860,
+      "feed_tube_wall": 512,
+      "journal_wall": 9694,
+      "pressure_feed": 834
+    },
+    "feed_prisms": 3336,
+    "film_prisms": 19388,
+    "mouth_triangles": 834,
+    "nodes": 16853,
+    "total_boundary_faces": 20412,
+    "total_prisms": 22724
+  },
+  "error": null,
+  "files": {
+    "boundary_faces.vtu": {
+      "bytes": 660838,
+      "sha256": "2a49e585b1728e235eff77b5274bc0ee39e0d576f2d3a3bd96a946641c03d983"
+    },
+    "gmsh_ported.log": {
+      "bytes": 9849,
+      "sha256": "7b6439f0d98936601ab00b6d2aaae688cb94d60a491587ad9068652e4a08389d"
+    },
+    "mesh_arrays.npz": {
+      "bytes": 2179459,
+      "sha256": "e49d1e11963edb6e4e2bf62906e62be0bcfa2bdab301ca398a481507379a8cd0"
+    },
+    "physical_groups.json": {
+      "bytes": 1115,
+      "sha256": "c40aafc65f78029cfb960230d55abab213636d97a4543c7d8cfab7d4dfa6cdd4"
+    },
+    "ported_prism.msh": {
+      "bytes": 5479587,
+      "sha256": "2b62caab93c6c3e9095f647787864ef423a8e89f29da64a329b150a908474e48"
+    },
+    "ported_prism_openfoam.msh": {
+      "bytes": 7227065,
+      "sha256": "2134b35b1d771f8747cc91ce148f33a9efbd6af13c2968b04f7680bc3da50573"
+    },
+    "surface_quality.csv": {
+      "bytes": 667,
+      "sha256": "4e14513e3cc343eefcf0b13d64a89cdf9c50484ef9d09ee512e9385a11176b33"
+    },
+    "viz/README_VISUALIZE.md": {
+      "bytes": 865,
+      "sha256": "495e0bd63b5db74e15ad3e5b39f87af618c54ae277406a24a17068f1d8cd93ab"
+    },
+    "viz/feed_boundary_only.msh": {
+      "bytes": 78597,
+      "sha256": "815fc7e5e066bc6376792eaa2c2edcea161c7858bbf53513d5a2800dc3e765bf"
+    },
+    "viz/feed_cutaway_exact.msh": {
+      "bytes": 4050961,
+      "sha256": "3e64442bd9e375cd21694fa2eb841e878d9c9b39b99beb2a4db4ee11c7041698"
+    },
+    "viz/feed_cutaway_exact.vtu": {
+      "bytes": 1850611,
+      "sha256": "0a0e430abef5f4e163fd35b9d566dace7e27a4e10d499647b37bfc22973a2fa5"
+    },
+    "viz/full_boundary_colored.vtu": {
+      "bytes": 660838,
+      "sha256": "2a49e585b1728e235eff77b5274bc0ee39e0d576f2d3a3bd96a946641c03d983"
+    },
+    "viz/launch_paraview_xcb.sh": {
+      "bytes": 147,
+      "sha256": "a5c045c55e3c010ee249ed17b2d9a041572123cc2df00e903a133e6cf379788c"
+    },
+    "viz/master_surface_2d.msh": {
+      "bytes": 492003,
+      "sha256": "6889458e7d8e184ed158b8d78c0875736d0ae3727a4a07568aa931ca5938ace5"
+    },
+    "viz/mouth_footprint.png": {
+      "bytes": 526387,
+      "sha256": "417aa9683bf8fa7d3f96452d919e2a790368ef91d19cc49a6e271c5709074161"
+    },
+    "viz/mouth_interface_DIAGNOSTIC_ONLY.vtu": {
+      "bytes": 22541,
+      "sha256": "93b4b3e2622fb925921a81e300f34dcb0732172c5a2631cb350039d9057343c0"
+    },
+    "viz/open_in_paraview.py": {
+      "bytes": 1214,
+      "sha256": "31acbb7782bef571aa7d99470558600dcf5c01db5d282b54a3a9b4a3a6afeb7e"
+    },
+    "viz/quality_histograms.png": {
+      "bytes": 78632,
+      "sha256": "557bb8093c1b6839f1d3d15ac10d10238afcd9f17bf42d2c4e31d961de03e5cc"
+    },
+    "viz/x0_feed_section.png": {
+      "bytes": 71345,
+      "sha256": "1fad79856802568866dd8a7425f0f8dfe21dab47804057801bc80e245c0046bc"
+    },
+    "viz/x0_section.vtu": {
+      "bytes": 15100,
+      "sha256": "9fb9c015590d6d144947727fed10f201c439db097152109be12bd7c7ec6e5ec5"
+    },
+    "volume_prism.vtu": {
+      "bytes": 2124609,
+      "sha256": "0914f60b05821df6aad38c87a1c9000b8b1425d9bbdf87304d0da52939d1b421"
+    }
+  },
+  "geometry": {
+    "bore_node_max_residual_mm": 1.4210854715202004e-14,
+    "external_face_orientation": {
+      "axial_end_z0": {
+        "face_count": 256,
+        "minimum_area_m2": 2.7171128404058744e-08,
+        "minimum_outward_projection_m": 0.0004306169563058585
+      },
+      "axial_end_zL": {
+        "face_count": 256,
+        "minimum_area_m2": 2.19752657401371e-08,
+        "minimum_outward_projection_m": 0.00047329455036121404
+      },
+      "bushing_bore_wall": {
+        "face_count": 8860,
+        "minimum_area_m2": 3.1630163604558853e-09,
+        "minimum_outward_projection_m": 4.920003378506904e-06
+      },
+      "feed_tube_wall": {
+        "face_count": 512,
+        "minimum_area_m2": 3.19042355494722e-07,
+        "minimum_outward_projection_m": 2.1128305665478285e-05
+      },
+      "journal_wall": {
+        "face_count": 9694,
+        "minimum_area_m2": 2.542310990297248e-09,
+        "minimum_outward_projection_m": 4.92000209204751e-06
+      },
+      "pressure_feed": {
+        "face_count": 834,
+        "minimum_area_m2": 2.5067925532970002e-09,
+        "minimum_outward_projection_m": 0.0016256169202821594
+      }
+    },
+    "feed_cylinder_node_max_residual_mm": 3.1308289294429414e-14,
+    "inlet": {
+      "CAD_area_relative_error": 0.00040154685032539193,
+      "CAD_centroid_max_error_mm": 4.618527782440651e-14,
+      "area_mm2": 12.56132462781895,
+      "centroid_mm": [
+        5.445159166001563e-15,
+        63.40265396141689,
+        29.999999999999954
+      ],
+      "circle_relative_error": 0.00040154685032581586,
+      "mean_normal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "polygon_area_mm2": 12.561324627819012,
+      "polygon_relative_error": 4.949516967447692e-15
+    },
+    "journal_node_max_residual_mm": 1.4210854715202004e-14,
+    "maximum_radial_gap_mm": 0.0799999999999983,
+    "minimum_radial_gap_mm": 0.01999999999999602,
+    "rim_vertex_max_coordinate_error_mm": 4.529709940470639e-14,
+    "volumes": {
+      "boundary_relative_error": 2.211925593258506e-14,
+      "cell_sum_m3": 1.1105235883720768e-06,
+      "gmsh_element_sum_m3": 1.110523588372082e-06,
+      "gmsh_vs_custom_relative_error": 4.7670810199536765e-15,
+      "native_brep_mm3": 1110.8718218616718,
+      "native_brep_relative_error": 0.0003134776512842311,
+      "oriented_boundary_m3": 1.1105235883720522e-06
+    }
+  },
+  "gmsh": {
+    "discrete_registration": {
+      "element_types": {
+        "Prism6": 6,
+        "Quad4": 3,
+        "Tri3": 2
+      },
+      "gmsh_generated_3d_mesh": false,
+      "prism_count": 22724,
+      "surface_element_counts": {
+        "axial_end_z0": {
+          "Quad4": 256,
+          "Tri3": 0
+        },
+        "axial_end_zL": {
+          "Quad4": 256,
+          "Tri3": 0
+        },
+        "bushing_bore_wall": {
+          "Quad4": 0,
+          "Tri3": 8860
+        },
+        "feed_tube_wall": {
+          "Quad4": 512,
+          "Tri3": 0
+        },
+        "journal_wall": {
+          "Quad4": 0,
+          "Tri3": 9694
+        },
+        "pressure_feed": {
+          "Quad4": 0,
+          "Tri3": 834
+        }
+      }
+    },
+    "log": "gmsh_ported.log",
+    "physical_groups": {
+      "2:101": {
+        "entities": [
+          21
+        ],
+        "name": "journal_wall"
+      },
+      "2:102": {
+        "entities": [
+          22
+        ],
+        "name": "bushing_bore_wall"
+      },
+      "2:103": {
+        "entities": [
+          23
+        ],
+        "name": "axial_end_z0"
+      },
+      "2:104": {
+        "entities": [
+          24
+        ],
+        "name": "axial_end_zL"
+      },
+      "2:105": {
+        "entities": [
+          25
+        ],
+        "name": "feed_tube_wall"
+      },
+      "2:106": {
+        "entities": [
+          26
+        ],
+        "name": "pressure_feed"
+      },
+      "3:201": {
+        "entities": [
+          31
+        ],
+        "name": "fluid"
+      }
+    },
+    "round_trips": {
+      "gmsh_2_2_ascii": {
+        "cell_count": 22724,
+        "element_type_counts": {
+          "2": 19388,
+          "3": 1024,
+          "6": 22724
+        },
+        "minimum_minDetJac": 1.0013132276627362e-13,
+        "minimum_volume_m3": 1.0017221658934894e-13,
+        "mouth_triangles_with_two_incident_cells": 834,
+        "path": "ported_prism_openfoam.msh",
+        "physical_groups": {
+          "2:101": {
+            "entities": [
+              21
+            ],
+            "name": "journal_wall"
+          },
+          "2:102": {
+            "entities": [
+              22
+            ],
+            "name": "bushing_bore_wall"
+          },
+          "2:103": {
+            "entities": [
+              23
+            ],
+            "name": "axial_end_z0"
+          },
+          "2:104": {
+            "entities": [
+              24
+            ],
+            "name": "axial_end_zL"
+          },
+          "2:105": {
+            "entities": [
+              25
+            ],
+            "name": "feed_tube_wall"
+          },
+          "2:106": {
+            "entities": [
+              26
+            ],
+            "name": "pressure_feed"
+          },
+          "3:201": {
+            "entities": [
+              31
+            ],
+            "name": "fluid"
+          }
+        },
+        "point_count": 16853,
+        "sha256": "2134b35b1d771f8747cc91ce148f33a9efbd6af13c2968b04f7680bc3da50573"
+      },
+      "gmsh_4_1_binary": {
+        "cell_count": 22724,
+        "element_type_counts": {
+          "2": 19388,
+          "3": 1024,
+          "6": 22724
+        },
+        "minimum_minDetJac": 1.0013132276629125e-13,
+        "minimum_volume_m3": 1.0017221658934697e-13,
+        "mouth_triangles_with_two_incident_cells": 834,
+        "path": "ported_prism.msh",
+        "physical_groups": {
+          "2:101": {
+            "entities": [
+              21
+            ],
+            "name": "journal_wall"
+          },
+          "2:102": {
+            "entities": [
+              22
+            ],
+            "name": "bushing_bore_wall"
+          },
+          "2:103": {
+            "entities": [
+              23
+            ],
+            "name": "axial_end_z0"
+          },
+          "2:104": {
+            "entities": [
+              24
+            ],
+            "name": "axial_end_zL"
+          },
+          "2:105": {
+            "entities": [
+              25
+            ],
+            "name": "feed_tube_wall"
+          },
+          "2:106": {
+            "entities": [
+              26
+            ],
+            "name": "pressure_feed"
+          },
+          "3:201": {
+            "entities": [
+              31
+            ],
+            "name": "fluid"
+          }
+        },
+        "point_count": 16853,
+        "sha256": "2b62caab93c6c3e9095f647787864ef423a8e89f29da64a329b150a908474e48"
+      }
+    }
+  },
+  "inputs": {
+    "gap_inflation_ratio": 5.0,
+    "n_axial": 24,
+    "n_gap": 2,
+    "n_theta": 128,
+    "openfoam": "skip",
+    "rim_segments": 128,
+    "tube_grading": 1.0,
+    "tube_layers": 4
+  },
+  "master_surface": {
+    "axial_partition_cells": [
+      11,
+      3,
+      10
+    ],
+    "collapsed_node_count": 4975,
+    "coordinate_unit": "mm",
+    "disk_triangle_count": 834,
+    "far_size_mm": 2.454369260617026,
+    "full_width_mm": 314.1592653589793,
+    "periodic_pairs": {
+      "band_0": 12,
+      "band_1": 4,
+      "band_2": 11
+    },
+    "raw_node_count": 5000,
+    "rim_chord_mm": 0.09816491409164915,
+    "rim_polygon_area_mm2": 12.561324627819012,
+    "rim_polygon_circle_relative_error": 0.0004015468503208683,
+    "rim_sagitta_mm": 0.0006023626075915001,
+    "rim_segments": 128,
+    "rim_statement": "rim nodes are analytic cylinder/bore intersections; first-order Tri3 edges are circular chords",
+    "triangle_count": 9694
+  },
+  "native_brep_nodal_probe": {
+    "axial_end_z0": {
+      "maximum_node_distance_mm": 0.0,
+      "sample_count": 384,
+      "surface_tag": 1
+    },
+    "axial_end_zL": {
+      "maximum_node_distance_mm": 0.0,
+      "sample_count": 384,
+      "surface_tag": 4
+    },
+    "bushing_bore_wall": {
+      "maximum_node_distance_mm": 9.352480803022575e-14,
+      "sample_count": 512,
+      "surface_tag": 2
+    },
+    "feed_tube_wall": {
+      "maximum_node_distance_mm": 3.095352763737108e-14,
+      "sample_count": 512,
+      "surface_tag": 5
+    },
+    "journal_wall": {
+      "maximum_node_distance_mm": 1.0512446157408443e-13,
+      "sample_count": 512,
+      "surface_tag": 3
+    },
+    "mouth_rim_on_bore": {
+      "maximum_node_distance_mm": 8.651423159652382e-14,
+      "sample_count": 128
+    },
+    "pressure_feed": {
+      "maximum_node_distance_mm": 0.0,
+      "sample_count": 482,
+      "surface_tag": 6
+    }
+  },
+  "npz_round_trip": {
+    "checks": {
+      "boundary_quad_axial_end_z0": true,
+      "boundary_quad_axial_end_zL": true,
+      "boundary_quad_feed_tube_wall": true,
+      "boundary_tri_bushing_bore_wall": true,
+      "boundary_tri_journal_wall": true,
+      "boundary_tri_pressure_feed": true,
+      "cell_centres_m": true,
+      "cell_tags": true,
+      "field_aspect_ratio": true,
+      "field_axial_zone_id": true,
+      "field_distorted_geometry": true,
+      "field_gap_layer_index": true,
+      "field_gap_um": true,
+      "field_minDetJac": true,
+      "field_minSICN": true,
+      "field_region_id": true,
+      "field_solve_eligible": true,
+      "field_theta_deg": true,
+      "field_volume_m3": true,
+      "metadata": true,
+      "mouth_triangles": true,
+      "node_tags": true,
+      "points_m": true,
+      "prisms": true
+    },
+    "sha256": "e49d1e11963edb6e4e2bf62906e62be0bcfa2bdab301ca398a481507379a8cd0"
+  },
+  "openfoam": {
+    "checkMesh": null,
+    "gmshToFoam": null,
+    "reason": "disabled by --openfoam skip",
+    "status": "SKIPPED"
+  },
+  "overall": "PASS",
+  "quality": {
+    "all": {
+      "aspect_ratio": {
+        "maximum": 309.64922313023044,
+        "median": 72.09084387944003,
+        "minimum": 1.9568527262456101,
+        "p01": 2.4878188990161,
+        "p05": 3.0297003398146622,
+        "p95": 244.2647339124362
+      },
+      "cell_count": 22724,
+      "minDetJac": {
+        "maximum": 5.107966396191776e-10,
+        "median": 4.10816959698573e-11,
+        "minimum": 1.0013132276629125e-13,
+        "p01": 1.531327197989257e-13,
+        "p05": 2.0081374874275077e-13,
+        "p95": 1.0735925623512127e-10
+      },
+      "minSICN": {
+        "maximum": 0.8246560900095479,
+        "median": 0.030257585769385788,
+        "minimum": 0.00732293899338564,
+        "p01": 0.008294909338584629,
+        "p05": 0.008964919071226653,
+        "p95": 0.6486886060339562
+      },
+      "volume_m3": {
+        "maximum": 5.137343257566715e-10,
+        "median": 4.16291743172392e-11,
+        "minimum": 1.0017221658934697e-13,
+        "p01": 1.5319492233036085e-13,
+        "p05": 2.0089697835015732e-13,
+        "p95": 1.078063664641416e-10
+      }
+    },
+    "feed_tube": {
+      "aspect_ratio": {
+        "maximum": 46.59994966784651,
+        "median": 29.048264643220723,
+        "minimum": 6.54513280074781,
+        "p01": 8.531602378064038,
+        "p05": 10.346080639550404,
+        "p95": 39.368653574886366
+      },
+      "cell_count": 3336,
+      "minDetJac": {
+        "maximum": 5.107966396191776e-10,
+        "median": 2.3146260912079682e-11,
+        "minimum": 8.534613458408442e-12,
+        "p01": 1.0643611080915863e-11,
+        "p05": 1.2002183614819163e-11,
+        "p95": 1.7168522501618878e-10
+      },
+      "minSICN": {
+        "maximum": 0.3425886491532039,
+        "median": 0.07820326653799449,
+        "minimum": 0.04732171568082524,
+        "p01": 0.05368276709255059,
+        "p05": 0.0572649740647048,
+        "p95": 0.21399090087119604
+      },
+      "volume_m3": {
+        "maximum": 5.137343257566715e-10,
+        "median": 2.3166130565026644e-11,
+        "minimum": 8.539149977992494e-12,
+        "p01": 1.0648546956727555e-11,
+        "p05": 1.2009810900425568e-11,
+        "p95": 1.7206253171075886e-10
+      }
+    },
+    "film": {
+      "aspect_ratio": {
+        "maximum": 309.64922313023044,
+        "median": 82.36643233021613,
+        "minimum": 1.9568527262456101,
+        "p01": 2.480702174133286,
+        "p05": 2.887674780042841,
+        "p95": 246.69125255293397
+      },
+      "cell_count": 19388,
+      "minDetJac": {
+        "maximum": 1.4635260757275723e-10,
+        "median": 4.4629616028225344e-11,
+        "minimum": 1.0013132276629125e-13,
+        "p01": 1.505255420818103e-13,
+        "p05": 1.870413728468829e-13,
+        "p95": 1.0390111421054038e-10
+      },
+      "minSICN": {
+        "maximum": 0.8246560900095479,
+        "median": 0.026652410095800567,
+        "minimum": 0.00732293899338564,
+        "p01": 0.008249811608658892,
+        "p05": 0.008868834265419172,
+        "p95": 0.6664227702039885
+      },
+      "volume_m3": {
+        "maximum": 1.466409768956388e-10,
+        "median": 4.539776916748518e-11,
+        "minimum": 1.0017221658934697e-13,
+        "p01": 1.505872343435254e-13,
+        "p05": 1.8711748068277263e-13,
+        "p95": 1.0442941827251789e-10
+      }
+    },
+    "touching_feed_mouth": {
+      "aspect_ratio": {
+        "maximum": 46.238644270896636,
+        "median": 7.326827326862215,
+        "minimum": 1.9569435323207287,
+        "p01": 2.4131510414145327,
+        "p05": 2.4813692822350717,
+        "p95": 37.81884584491033
+      },
+      "cell_count": 1924,
+      "minDetJac": {
+        "maximum": 5.107966396191776e-10,
+        "median": 1.2112788081454359e-12,
+        "minimum": 1.0021188257518255e-13,
+        "p01": 1.3373480567650837e-13,
+        "p05": 1.5116202576953057e-13,
+        "p95": 1.267266426907262e-10
+      },
+      "minSICN": {
+        "maximum": 0.8244951759691321,
+        "median": 0.30694147168444297,
+        "minimum": 0.04732171568082524,
+        "p01": 0.05545208177540196,
+        "p05": 0.059223217690729045,
+        "p95": 0.7248729252692653
+      },
+      "volume_m3": {
+        "maximum": 5.13734325756671e-10,
+        "median": 1.2117999271569868e-12,
+        "minimum": 1.0025277640865261e-13,
+        "p01": 1.3378966643597477e-13,
+        "p05": 1.5122346618332583e-13,
+        "p95": 1.2698408320947726e-10
+      }
+    }
+  },
+  "surface_quality": [
+    {
+      "area_m2": 0.01913874995758743,
+      "boundary": "journal_wall",
+      "face_count": 9694,
+      "face_type": "Tri3",
+      "maximum_face_area_m2": 3.986598792035911e-06,
+      "minimum_face_area_m2": 2.542310990297248e-09,
+      "physical_id": 101
+    },
+    {
+      "area_m2": 0.01914513181045937,
+      "boundary": "bushing_bore_wall",
+      "face_count": 8860,
+      "face_type": "Tri3",
+      "maximum_face_area_m2": 3.990247922807782e-06,
+      "minimum_face_area_m2": 3.1630163604558853e-09,
+      "physical_id": 102
+    },
+    {
+      "area_m2": 1.256132462781895e-05,
+      "boundary": "pressure_feed",
+      "face_count": 834,
+      "face_type": "Tri3",
+      "maximum_face_area_m2": 1.530172626640805e-07,
+      "minimum_face_area_m2": 2.5067925532970002e-09,
+      "physical_id": 106
+    },
+    {
+      "area_m2": 1.7370683648857402e-05,
+      "boundary": "axial_end_z0",
+      "face_count": 256,
+      "face_type": "Quad4",
+      "maximum_face_area_m2": 1.0855207562733204e-07,
+      "minimum_face_area_m2": 2.7171128404054035e-08,
+      "physical_id": 103
+    },
+    {
+      "area_m2": 1.404833298087389e-05,
+      "boundary": "axial_end_zL",
+      "face_count": 256,
+      "face_type": "Quad4",
+      "maximum_face_area_m2": 8.779207369933839e-08,
+      "minimum_face_area_m2": 2.197526574013519e-08,
+      "physical_id": 104
+    },
+    {
+      "area_m2": 0.00016802868197800952,
+      "boundary": "feed_tube_wall",
+      "face_count": 512,
+      "face_type": "Quad4",
+      "maximum_face_area_m2": 3.3634107022688563e-07,
+      "minimum_face_area_m2": 3.190423554947215e-07,
+      "physical_id": 105
+    }
+  ],
+  "topology": {
+    "boundary_face_counts": {
+      "axial_end_z0": 256,
+      "axial_end_zL": 256,
+      "bushing_bore_wall": 8860,
+      "feed_tube_wall": 512,
+      "journal_wall": 9694,
+      "pressure_feed": 834
+    },
+    "connected_components": 1,
+    "mouth_triangles": 834,
+    "quadrilateral_faces": {
+      "boundary": 1024,
+      "internal": 33574,
+      "unique": 34598
+    },
+    "total_boundary_faces": 20412,
+    "triangle_faces": {
+      "boundary": 19388,
+      "internal": 13030,
+      "unique": 32418
+    }
+  },
+  "validation_records": [
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_default/params.json",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.params.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/strict_default/film_unsplit.brep",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.brep.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "/home/aniketnegi/code/ankt/btp/code/eccentric-conical-bearing/out/gmsh_preflight/preflight_report.json",
+      "expected": "readable file",
+      "mandatory": true,
+      "name": "input.preflight.exists",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "PASS",
+      "expected": "PASS",
+      "mandatory": true,
+      "name": "input.preflight_overall",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "mm",
+      "expected": "mm",
+      "mandatory": true,
+      "name": "input.preflight_brep_units",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "current": "42d9053d72b3b71de6099c2a7a733841d096863630b764274669824a859f65ff",
+        "params": "42d9053d72b3b71de6099c2a7a733841d096863630b764274669824a859f65ff",
+        "preflight": {
+          "actual": "42d9053d72b3b71de6099c2a7a733841d096863630b764274669824a859f65ff",
+          "expected": "42d9053d72b3b71de6099c2a7a733841d096863630b764274669824a859f65ff",
+          "mandatory": true,
+          "name": "input.unsplit.sha256",
+          "status": "PASS",
+          "tolerance": null
+        }
+      },
+      "expected": "one identical validated native BREP hash",
+      "mandatory": true,
+      "name": "input.native_brep_sha256",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1110.8718218615193,
+      "expected": 1110.8718218616718,
+      "mandatory": true,
+      "name": "input.preflight_native_volume",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 63.402653961416924,
+      "expected": 63.402653961416924,
+      "mandatory": true,
+      "name": "input.preflight_feed_coordinate",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        -55.33980952125395,
+        -55.33980952125395,
+        -1e-07,
+        55.33980952125395,
+        63.402654061416925,
+        60.00000010000005
+      ],
+      "expected": [
+        -55.33980952125395,
+        -55.33980952125395,
+        -1e-07,
+        55.33980952125395,
+        63.402654061416925,
+        60.00000010000001
+      ],
+      "mandatory": true,
+      "name": "input.preflight_native_bbox",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": 1,
+      "expected": 1,
+      "mandatory": true,
+      "name": "brep.one_connected_solid",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "manifold": true,
+        "valid": true
+      },
+      "expected": {
+        "manifold": true,
+        "valid": true
+      },
+      "mandatory": true,
+      "name": "brep.valid_manifold",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1110.8718218615193,
+      "expected": 1110.8718218616718,
+      "mandatory": true,
+      "name": "brep.volume_vs_params",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "bbox_mm": [
+          -55.33980952125395,
+          -55.33980952125395,
+          -1e-07,
+          55.33980952125395,
+          63.402654061416925,
+          60.00000010000001
+        ],
+        "maximum_params_error_mm": 0.0,
+        "maximum_preflight_error_mm": 4.263256414560601e-14
+      },
+      "expected": [
+        -55.33980952125395,
+        -55.33980952125395,
+        -1e-07,
+        55.33980952125395,
+        63.402654061416925,
+        60.00000010000005
+      ],
+      "mandatory": true,
+      "name": "brep.bbox_vs_preflight",
+      "status": "PASS",
+      "tolerance": 1e-06
+    },
+    {
+      "actual": 2,
+      "expected": 2,
+      "mandatory": true,
+      "name": "master.element_type.Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "mandatory": true,
+      "name": "master.ring_A.only_Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1.1676442507912979,
+      "expected": "> 1e-14 mm2",
+      "mandatory": true,
+      "name": "master.ring_A.nondegenerate",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3292,
+      "expected": "> 0",
+      "mandatory": true,
+      "name": "master.ring_A.nonempty",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "mandatory": true,
+      "name": "master.hole_band.only_Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.006225336901649203,
+      "expected": "> 1e-14 mm2",
+      "mandatory": true,
+      "name": "master.hole_band.nondegenerate",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 2294,
+      "expected": "> 0",
+      "mandatory": true,
+      "name": "master.hole_band.nonempty",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "mandatory": true,
+      "name": "master.ring_B.only_Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.8289371455888382,
+      "expected": "> 1e-14 mm2",
+      "mandatory": true,
+      "name": "master.ring_B.nondegenerate",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3274,
+      "expected": "> 0",
+      "mandatory": true,
+      "name": "master.ring_B.nonempty",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [],
+      "expected": [],
+      "mandatory": true,
+      "name": "master.feed_disk.only_Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.005036287431761873,
+      "expected": "> 1e-14 mm2",
+      "mandatory": true,
+      "name": "master.feed_disk.nondegenerate",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 834,
+      "expected": "> 0",
+      "mandatory": true,
+      "name": "master.feed_disk.nonempty",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 5,
+      "expected": 5,
+      "mandatory": true,
+      "name": "master.periodic.band_0.master_curve",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 12,
+      "expected": ">=2 matching nodes",
+      "mandatory": true,
+      "name": "master.periodic.band_0.node_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 6,
+      "expected": 6,
+      "mandatory": true,
+      "name": "master.periodic.band_1.master_curve",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 4,
+      "expected": ">=2 matching nodes",
+      "mandatory": true,
+      "name": "master.periodic.band_1.node_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 7,
+      "expected": 7,
+      "mandatory": true,
+      "name": "master.periodic.band_2.master_curve",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 11,
+      "expected": ">=2 matching nodes",
+      "mandatory": true,
+      "name": "master.periodic.band_2.node_count",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          9,
+          10
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_0.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          10,
+          11
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_1.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          11,
+          12
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_2.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          12,
+          13
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_3.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          13,
+          14
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_4.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          14,
+          15
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_5.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          15,
+          16
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_6.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          16,
+          17
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_7.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          17,
+          18
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_8.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          18,
+          19
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_9.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          19,
+          20
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_10.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          20,
+          21
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_11.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          21,
+          22
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_12.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          22,
+          23
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_13.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          23,
+          24
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_14.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          24,
+          25
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_15.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          25,
+          26
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_16.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          26,
+          27
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_17.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          27,
+          28
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_18.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          28,
+          29
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_19.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          29,
+          30
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_20.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          30,
+          31
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_21.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          31,
+          32
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_22.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          32,
+          33
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_23.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          33,
+          34
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_24.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          34,
+          35
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_25.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          35,
+          36
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_26.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          36,
+          37
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_27.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          37,
+          38
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_28.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          38,
+          39
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_29.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          39,
+          40
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_30.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          40,
+          41
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_31.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          41,
+          42
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_32.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          42,
+          43
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_33.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          43,
+          44
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_34.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          44,
+          45
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_35.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          45,
+          46
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_36.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          46,
+          47
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_37.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          47,
+          48
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_38.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          48,
+          49
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_39.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          49,
+          50
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_40.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          50,
+          51
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_41.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          51,
+          52
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_42.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          52,
+          53
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_43.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          53,
+          54
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_44.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          54,
+          55
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_45.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          55,
+          56
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_46.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          56,
+          57
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_47.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          57,
+          58
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_48.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          58,
+          59
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_49.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          59,
+          60
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_50.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          60,
+          61
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_51.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          61,
+          62
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_52.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          62,
+          63
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_53.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          63,
+          64
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_54.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          64,
+          65
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_55.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          65,
+          66
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_56.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          66,
+          67
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_57.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          67,
+          68
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_58.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          68,
+          69
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_59.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          69,
+          70
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_60.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          70,
+          71
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_61.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          71,
+          72
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_62.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          72,
+          73
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_63.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          73,
+          74
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_64.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          74,
+          75
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_65.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          75,
+          76
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_66.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          76,
+          77
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_67.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          77,
+          78
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_68.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          78,
+          79
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_69.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          79,
+          80
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_70.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          80,
+          81
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_71.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          81,
+          82
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_72.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          82,
+          83
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_73.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          83,
+          84
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_74.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          84,
+          85
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_75.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          85,
+          86
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_76.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          86,
+          87
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_77.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          87,
+          88
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_78.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          88,
+          89
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_79.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          89,
+          90
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_80.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          90,
+          91
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_81.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          91,
+          92
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_82.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          92,
+          93
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_83.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          93,
+          94
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_84.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          94,
+          95
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_85.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          95,
+          96
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_86.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          96,
+          97
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_87.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          97,
+          98
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_88.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          98,
+          99
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_89.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          99,
+          100
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_90.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          100,
+          101
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_91.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          101,
+          102
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_92.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          102,
+          103
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_93.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          103,
+          104
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_94.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          104,
+          105
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_95.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          105,
+          106
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_96.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          106,
+          107
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_97.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          107,
+          108
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_98.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          108,
+          109
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_99.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          109,
+          110
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_100.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          110,
+          111
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_101.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          111,
+          112
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_102.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          112,
+          113
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_103.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          113,
+          114
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_104.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          114,
+          115
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_105.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          115,
+          116
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_106.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          116,
+          117
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_107.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          117,
+          118
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_108.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          118,
+          119
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_109.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          119,
+          120
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_110.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          120,
+          121
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_111.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          121,
+          122
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_112.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          122,
+          123
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_113.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          123,
+          124
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_114.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          124,
+          125
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_115.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          125,
+          126
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_116.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          126,
+          127
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_117.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          127,
+          128
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_118.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          128,
+          129
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_119.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          129,
+          130
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_120.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          130,
+          131
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_121.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          131,
+          132
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_122.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          132,
+          133
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_123.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          133,
+          134
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_124.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          134,
+          135
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_125.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          135,
+          136
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_126.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          136,
+          9
+        ]
+      ],
+      "expected": "one Line2 with intended endpoints",
+      "mandatory": true,
+      "name": "master.rim_curve_127.endpoints_only",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum": 2,
+        "minimum": 1
+      },
+      "expected": "1 or 2",
+      "mandatory": true,
+      "name": "master.edge_owners_one_or_two",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "expected": "all 2 owners",
+      "mandatory": true,
+      "name": "master.rim_shared",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "edge_count": 24,
+        "owners": [
+          2
+        ]
+      },
+      "expected": "nonempty and all 2 owners",
+      "mandatory": true,
+      "name": "master.periodic_seam_internal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 128,
+      "expected": "nonempty and all 2 owners",
+      "mandatory": true,
+      "name": "master.z1_partition_internal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 128,
+      "expected": "nonempty and all 2 owners",
+      "mandatory": true,
+      "name": "master.z2_partition_internal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 256,
+      "expected": 256,
+      "mandatory": true,
+      "name": "master.only_axial_external_edges",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 7.105427357601002e-15,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "master.rim_analytic_residual_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 132,
+      "expected": "embedded disk node",
+      "mandatory": true,
+      "name": "master.disk_contains_feed_centre",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.0006023626075915001,
+      "expected": "<=0.001 mm",
+      "mandatory": true,
+      "name": "master.rim_sagitta",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.0004015468503208683,
+      "expected": 0.0005,
+      "mandatory": true,
+      "name": "master.polygon_circle_area_error",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "quadrilateral": [
+          1,
+          2
+        ],
+        "triangle": [
+          1,
+          2
+        ]
+      },
+      "expected": [
+        1,
+        2
+      ],
+      "mandatory": true,
+      "name": "topology.face_owner_counts",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "patches": {
+          "axial_end_z0": 256,
+          "axial_end_zL": 256,
+          "bushing_bore_wall": 8860,
+          "feed_tube_wall": 512,
+          "journal_wall": 9694,
+          "pressure_feed": 834
+        },
+        "total": 20412
+      },
+      "expected": {
+        "census_total": 20412,
+        "patches": [
+          "axial_end_z0",
+          "axial_end_zL",
+          "bushing_bore_wall",
+          "feed_tube_wall",
+          "journal_wall",
+          "pressure_feed"
+        ]
+      },
+      "mandatory": true,
+      "name": "topology.exact_patch_face_counts",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "quad_owner_counts": [
+          1
+        ],
+        "triangle_owner_counts": [
+          1
+        ]
+      },
+      "expected": [
+        1
+      ],
+      "mandatory": true,
+      "name": "topology.declared_boundaries_one_owner",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "quads": 1024,
+        "triangles": 19388
+      },
+      "expected": "all unique within their face arity",
+      "mandatory": true,
+      "name": "topology.boundary_groups_disjoint",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "census_quads": 1024,
+        "census_triangles": 19388,
+        "declared_quads": 1024,
+        "declared_triangles": 19388
+      },
+      "expected": "exact one-owner face union",
+      "mandatory": true,
+      "name": "topology.boundary_union_complete",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "incident_cell_counts": [
+          2
+        ],
+        "mouth_triangles": 834,
+        "region_pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "incident_cells": 2,
+        "regions": [
+          0,
+          1
+        ]
+      },
+      "mandatory": true,
+      "name": "topology.mouth_two_incident_cells_film_and_feed",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0,
+      "expected": 0,
+      "mandatory": true,
+      "name": "topology.mouth_not_boundary",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "points": 16853,
+        "unique": 16853
+      },
+      "expected": 16853,
+      "mandatory": true,
+      "name": "topology.no_duplicate_or_coincident_nodes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1,
+      "expected": 1,
+      "mandatory": true,
+      "name": "topology.one_connected_volume",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "pressure_owner_regions": [
+          1
+        ]
+      },
+      "expected": "feed owners in the same component as film",
+      "mandatory": true,
+      "name": "topology.pressure_to_film_path",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 9694,
+      "expected": 9694,
+      "mandatory": true,
+      "name": "topology.journal_continuous_complete",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 8860,
+      "expected": 8860,
+      "mandatory": true,
+      "name": "topology.bushing_excludes_only_feed_disk",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "connected": 128,
+        "degrees": [
+          2
+        ],
+        "vertices": 128
+      },
+      "expected": {
+        "connected": 128,
+        "degrees": [
+          2
+        ],
+        "vertices": 128
+      },
+      "mandatory": true,
+      "name": "topology.rim_one_closed_degree_two_loop",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "mandatory": true,
+      "name": "topology.theta_seam_internal_conformal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "mandatory": true,
+      "name": "topology.z1_partition_internal_conformal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "mandatory": true,
+      "name": "topology.z2_partition_internal_conformal",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "quad_arities": [
+          4
+        ],
+        "triangle_arities": [
+          3
+        ],
+        "volume_arity": 6
+      },
+      "expected": {
+        "boundary": [
+          "Tri3",
+          "Quad4"
+        ],
+        "volume": "Prism6"
+      },
+      "mandatory": true,
+      "name": "topology.only_Prism6_Tri3_Quad4",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": true,
+      "expected": true,
+      "mandatory": true,
+      "name": "geometry.finite_coordinates_metrics",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "achieved_centre_to_wall_ratio": 1.0,
+        "layer_fractions": [
+          0.5,
+          0.5
+        ]
+      },
+      "expected": {
+        "centre_to_wall_ratio": 1.0,
+        "positive_symmetric_fractions_sum": 1.0
+      },
+      "mandatory": true,
+      "name": "geometry.symmetric_gap_inflation",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1.4210854715202004e-14,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "geometry.journal_cone_nodes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1.4210854715202004e-14,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "geometry.bore_cone_nodes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3.1308289294429414e-14,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "geometry.feed_wall_cylinder_nodes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 4.529709940470639e-14,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "geometry.extracted_rim_vertices_exact",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.0,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "geometry.inlet_plane",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        5.445159166001563e-15,
+        63.40265396141689,
+        29.999999999999954
+      ],
+      "expected": [
+        0.0,
+        63.402653961416924,
+        30.0
+      ],
+      "mandatory": true,
+      "name": "geometry.inlet_centroid",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "name": "geometry.inlet_outward_normal",
+      "status": "PASS",
+      "tolerance": 1e-12
+    },
+    {
+      "actual": {
+        "area_mm2": 12.56132462781895,
+        "relative_error": 4.949516967447692e-15
+      },
+      "expected": 12.561324627819012,
+      "mandatory": true,
+      "name": "geometry.inlet_area_vs_analytic_polygon",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "area_relative_error": 0.00040154685032539193,
+        "centroid_max_error_mm": 4.618527782440651e-14
+      },
+      "expected": {
+        "area_relative_error": "<=5e-4 when rim_segments>=128; diagnostic otherwise",
+        "centroid_max_error_mm": 1e-10
+      },
+      "mandatory": true,
+      "name": "geometry.inlet_vs_CAD_record",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.00040154685032581586,
+      "expected": 0.0005,
+      "mandatory": true,
+      "name": "geometry.inlet_polygon_vs_circle",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0.01999999999999602,
+      "expected": 0.020000000000000004,
+      "mandatory": true,
+      "name": "geometry.minimum_radial_gap",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": 0.0799999999999983,
+      "expected": 0.08,
+      "mandatory": true,
+      "name": "geometry.maximum_radial_gap",
+      "status": "PASS",
+      "tolerance": 1e-10
+    },
+    {
+      "actual": {
+        "end_mm": [
+          6.129357229732502e-15,
+          63.402653961416924,
+          30.0
+        ],
+        "minimum_y_increment_mm": 0.03999999999999915,
+        "node_count": 7,
+        "start_mm": [
+          6.119560055339324e-15,
+          49.97,
+          30.0
+        ]
+      },
+      "expected": "continuous journal-to-inlet line with strictly increasing y",
+      "mandatory": true,
+      "name": "geometry.feed_centreline_continuous_inside",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "centreline_node_tags": [
+          133,
+          5108,
+          10083,
+          15054,
+          15536,
+          16018,
+          16500
+        ],
+        "coordinate_unit": "m",
+        "disk_node_count": 482,
+        "distorted_geometry": false,
+        "feed_mouth_is_internal": true,
+        "film_point_count": 14925,
+        "full_360_degrees": true,
+        "gap_inflation_ratio_achieved": 1.0,
+        "gap_inflation_ratio_target": 5.0,
+        "gap_layer_coordinates": [
+          0.0,
+          0.5,
+          1.0
+        ],
+        "gap_layer_fractions": [
+          0.5,
+          0.5
+        ],
+        "master_node_count": 4975,
+        "maximum_tube_layer_mm": 3.426326980708467,
+        "minimum_tube_layer_mm": 3.25,
+        "n_gap": 2,
+        "scale_to_m_applied_once": 0.001,
+        "solve_eligible": true,
+        "source_unit": "mm",
+        "tube_grading_exponent": 1.0,
+        "tube_layers": 4
+      },
+      "expected": "mm*0.001 exactly once",
+      "mandatory": true,
+      "name": "geometry.SI_scale_once",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 9694,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 4.92000209204751e-06
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.journal_wall",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 8860,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 4.920003378506904e-06
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.bushing_bore_wall",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 834,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 0.0016256169202821594
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.pressure_feed",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 256,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 0.0004306169563058585
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.axial_end_z0",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 256,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 0.00047329455036121404
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.axial_end_zL",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "face_count": 512,
+        "locally_reversed": 0,
+        "minimum_outward_projection_m": 2.1128305665478285e-05
+      },
+      "expected": "every face has one incident cell and a strictly outward stored normal",
+      "mandatory": true,
+      "name": "geometry.external_face_orientation.feed_tube_wall",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "minimum_minDetJac": 1.0014865401486929e-13,
+        "minimum_volume_m3": 1.0017221658934326e-13
+      },
+      "expected": "> 0 and finite",
+      "mandatory": true,
+      "name": "quality.custom_positive_Jacobians_volumes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "boundary_volume_m3": 1.1105235883720522e-06,
+        "relative_error": 2.211925593258506e-14
+      },
+      "expected": 1.1105235883720768e-06,
+      "mandatory": true,
+      "name": "geometry.cell_sum_vs_oriented_boundary_volume",
+      "status": "PASS",
+      "tolerance": 1e-09
+    },
+    {
+      "actual": {
+        "mesh_volume_mm3": 1110.5235883720768,
+        "relative_error": 0.0003134776512842311
+      },
+      "expected": 1110.8718218616718,
+      "mandatory": true,
+      "name": "geometry.linear_mesh_vs_native_BREP_volume",
+      "status": "PASS",
+      "tolerance": 0.0005
+    },
+    {
+      "actual": 2,
+      "expected": 2,
+      "mandatory": true,
+      "name": "gmsh.element_type.Tri3",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "mandatory": true,
+      "name": "gmsh.element_type.Quad4",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 6,
+      "expected": 6,
+      "mandatory": true,
+      "name": "gmsh.element_type.Prism6",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 101,
+      "expected": 101,
+      "mandatory": true,
+      "name": "physical.journal_wall.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 102,
+      "expected": 102,
+      "mandatory": true,
+      "name": "physical.bushing_bore_wall.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 103,
+      "expected": 103,
+      "mandatory": true,
+      "name": "physical.axial_end_z0.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 104,
+      "expected": 104,
+      "mandatory": true,
+      "name": "physical.axial_end_zL.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 105,
+      "expected": 105,
+      "mandatory": true,
+      "name": "physical.feed_tube_wall.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 106,
+      "expected": 106,
+      "mandatory": true,
+      "name": "physical.pressure_feed.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 201,
+      "expected": 201,
+      "mandatory": true,
+      "name": "physical.fluid.id",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "expected": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "mandatory": true,
+      "name": "gmsh_model.physical_groups_exact",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "axial_end_z0",
+        "axial_end_zL",
+        "bushing_bore_wall",
+        "feed_tube_wall",
+        "fluid",
+        "journal_wall",
+        "pressure_feed"
+      ],
+      "expected": "none of ['defaultFaces', 'feed_mouth', 'internal_feed', 'mouth_cap']",
+      "mandatory": true,
+      "name": "gmsh_model.no_forbidden_solver_patches",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "minimum_minDetJac": 1.0013132276629125e-13,
+        "minimum_minSICN": 0.00732293899338564,
+        "minimum_volume_m3": 1.0017221658934697e-13
+      },
+      "expected": "finite and strictly positive",
+      "mandatory": true,
+      "name": "gmsh.quality.Prism6_positive",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 4.7670810199536765e-15,
+      "expected": 1e-10,
+      "mandatory": true,
+      "name": "gmsh.quality.volume_vs_custom_Gauss",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "expected": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "mandatory": true,
+      "name": "round_trip.msh41.physical_groups_exact",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "axial_end_z0",
+        "axial_end_zL",
+        "bushing_bore_wall",
+        "feed_tube_wall",
+        "fluid",
+        "journal_wall",
+        "pressure_feed"
+      ],
+      "expected": "none of ['defaultFaces', 'feed_mouth', 'internal_feed', 'mouth_cap']",
+      "mandatory": true,
+      "name": "round_trip.msh41.no_forbidden_solver_patches",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "count": 16853,
+        "maximum_error_m": 0.0
+      },
+      "expected": {
+        "count": 16853,
+        "maximum_error_m": 1e-14
+      },
+      "mandatory": true,
+      "name": "round_trip.msh41.coordinates",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 22724,
+      "expected": 22724,
+      "mandatory": true,
+      "name": "round_trip.msh41.Prism6_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 9694,
+      "expected": 9694,
+      "mandatory": true,
+      "name": "round_trip.msh41.journal_wall_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 8860,
+      "expected": 8860,
+      "mandatory": true,
+      "name": "round_trip.msh41.bushing_bore_wall_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 834,
+      "expected": 834,
+      "mandatory": true,
+      "name": "round_trip.msh41.pressure_feed_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 256,
+      "expected": 256,
+      "mandatory": true,
+      "name": "round_trip.msh41.axial_end_z0_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 256,
+      "expected": 256,
+      "mandatory": true,
+      "name": "round_trip.msh41.axial_end_zL_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 512,
+      "expected": 512,
+      "mandatory": true,
+      "name": "round_trip.msh41.feed_tube_wall_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "2": 19388,
+        "3": 1024,
+        "6": 22724
+      },
+      "expected": {
+        "2": 19388,
+        "3": 1024,
+        "6": 22724
+      },
+      "mandatory": true,
+      "name": "round_trip.msh41.no_unexpected_elements",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0,
+      "expected": "ElementData region_id",
+      "mandatory": true,
+      "name": "round_trip.msh41.region_id_view_present",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "components": 1,
+        "count": 22724,
+        "type": "ElementData"
+      },
+      "expected": {
+        "components": 1,
+        "count": 22724,
+        "type": "ElementData"
+      },
+      "mandatory": true,
+      "name": "round_trip.msh41.region_id_round_trip",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "mandatory": true,
+      "name": "round_trip.msh41.mouth_ownership_reconstructed",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "minimum_minDetJac": 1.0013132276629125e-13,
+        "minimum_volume_m3": 1.0017221658934697e-13
+      },
+      "expected": "finite and >0",
+      "mandatory": true,
+      "name": "round_trip.msh41.positive_quality",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "expected": {
+        "2:101": {
+          "entities": [
+            21
+          ],
+          "name": "journal_wall"
+        },
+        "2:102": {
+          "entities": [
+            22
+          ],
+          "name": "bushing_bore_wall"
+        },
+        "2:103": {
+          "entities": [
+            23
+          ],
+          "name": "axial_end_z0"
+        },
+        "2:104": {
+          "entities": [
+            24
+          ],
+          "name": "axial_end_zL"
+        },
+        "2:105": {
+          "entities": [
+            25
+          ],
+          "name": "feed_tube_wall"
+        },
+        "2:106": {
+          "entities": [
+            26
+          ],
+          "name": "pressure_feed"
+        },
+        "3:201": {
+          "entities": [
+            31
+          ],
+          "name": "fluid"
+        }
+      },
+      "mandatory": true,
+      "name": "round_trip.msh22.physical_groups_exact",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        "axial_end_z0",
+        "axial_end_zL",
+        "bushing_bore_wall",
+        "feed_tube_wall",
+        "fluid",
+        "journal_wall",
+        "pressure_feed"
+      ],
+      "expected": "none of ['defaultFaces', 'feed_mouth', 'internal_feed', 'mouth_cap']",
+      "mandatory": true,
+      "name": "round_trip.msh22.no_forbidden_solver_patches",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "count": 16853,
+        "maximum_error_m": 6.938893903907228e-18
+      },
+      "expected": {
+        "count": 16853,
+        "maximum_error_m": 1e-14
+      },
+      "mandatory": true,
+      "name": "round_trip.msh22.coordinates",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 22724,
+      "expected": 22724,
+      "mandatory": true,
+      "name": "round_trip.msh22.Prism6_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 9694,
+      "expected": 9694,
+      "mandatory": true,
+      "name": "round_trip.msh22.journal_wall_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 8860,
+      "expected": 8860,
+      "mandatory": true,
+      "name": "round_trip.msh22.bushing_bore_wall_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 834,
+      "expected": 834,
+      "mandatory": true,
+      "name": "round_trip.msh22.pressure_feed_Tri3_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 256,
+      "expected": 256,
+      "mandatory": true,
+      "name": "round_trip.msh22.axial_end_z0_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 256,
+      "expected": 256,
+      "mandatory": true,
+      "name": "round_trip.msh22.axial_end_zL_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 512,
+      "expected": 512,
+      "mandatory": true,
+      "name": "round_trip.msh22.feed_tube_wall_Quad4_connectivity",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "2": 19388,
+        "3": 1024,
+        "6": 22724
+      },
+      "expected": {
+        "2": 19388,
+        "3": 1024,
+        "6": 22724
+      },
+      "mandatory": true,
+      "name": "round_trip.msh22.no_unexpected_elements",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 0,
+      "expected": "ElementData region_id",
+      "mandatory": true,
+      "name": "round_trip.msh22.region_id_view_present",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "components": 1,
+        "count": 22724,
+        "type": "ElementData"
+      },
+      "expected": {
+        "components": 1,
+        "count": 22724,
+        "type": "ElementData"
+      },
+      "mandatory": true,
+      "name": "round_trip.msh22.region_id_round_trip",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "mandatory": true,
+      "name": "round_trip.msh22.mouth_ownership_reconstructed",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "minimum_minDetJac": 1.0013132276627362e-13,
+        "minimum_volume_m3": 1.0017221658934894e-13
+      },
+      "expected": "finite and >0",
+      "mandatory": true,
+      "name": "round_trip.msh22.positive_quality",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "expected": {
+        "Geometry.OCCAutoFix": 0.0,
+        "Geometry.OCCBooleanGlue": 0.0,
+        "Geometry.OCCBooleanNonDestructive": 0.0,
+        "Geometry.OCCBooleanSimplify": 0.0,
+        "Geometry.OCCFixDegenerated": 0.0,
+        "Geometry.OCCFixSmallEdges": 0.0,
+        "Geometry.OCCFixSmallFaces": 0.0,
+        "Geometry.OCCMakeSolids": 0.0,
+        "Geometry.OCCScaling": 1.0,
+        "Geometry.OCCSewFaces": 0.0,
+        "Geometry.ToleranceBoolean": 0.0
+      },
+      "mandatory": true,
+      "name": "brep_probe.strict_occ_options",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 1,
+      "expected": 1,
+      "mandatory": true,
+      "name": "brep_probe.one_volume",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "axial_end_z0": 1,
+        "axial_end_zL": 4,
+        "bushing_bore_wall": 2,
+        "feed_tube_wall": 5,
+        "journal_wall": 3,
+        "pressure_feed": 6
+      },
+      "expected": [
+        "axial_end_z0",
+        "axial_end_zL",
+        "bushing_bore_wall",
+        "feed_tube_wall",
+        "journal_wall",
+        "pressure_feed"
+      ],
+      "mandatory": true,
+      "name": "brep_probe.six_surfaces_classified",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 1.0512446157408443e-13,
+        "sample_count": 512
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.journal_wall.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 9.352480803022575e-14,
+        "sample_count": 512
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.bushing_bore_wall.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 0.0,
+        "sample_count": 384
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.axial_end_z0.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 0.0,
+        "sample_count": 384
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.axial_end_zL.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 3.095352763737108e-14,
+        "sample_count": 512
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.feed_tube_wall.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "maximum_mm": 0.0,
+        "sample_count": 482
+      },
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.pressure_feed.node_distance_mm",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": 8.651423159652382e-14,
+      "expected": 1e-06,
+      "mandatory": true,
+      "name": "brep_probe.mouth_rim_on_bore_nodes",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "count": 16853,
+        "dtype": "float64"
+      },
+      "expected": {
+        "count": 16853,
+        "dtype": "float64"
+      },
+      "mandatory": true,
+      "name": "round_trip.VTU.volume_coordinates",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": [
+        [
+          "wedge",
+          22724
+        ]
+      ],
+      "expected": [
+        [
+          "wedge",
+          22724
+        ]
+      ],
+      "mandatory": true,
+      "name": "round_trip.VTU.only_Prism6",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "aspect_ratio": true,
+        "axial_zone_id": true,
+        "distorted_geometry": true,
+        "gap_layer_index": true,
+        "gap_um": true,
+        "minDetJac": true,
+        "minSICN": true,
+        "region_id": true,
+        "solve_eligible": true,
+        "theta_deg": true,
+        "volume_m3": true
+      },
+      "expected": "all exact",
+      "mandatory": true,
+      "name": "round_trip.VTU.cell_fields",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "patch_ids": [
+          101,
+          102,
+          103,
+          104,
+          105,
+          106
+        ],
+        "quads": 1024,
+        "triangles": 19388
+      },
+      "expected": {
+        "patch_ids": [
+          101,
+          102,
+          103,
+          104,
+          105,
+          106
+        ],
+        "quads": 1024,
+        "triangles": 19388
+      },
+      "mandatory": true,
+      "name": "round_trip.VTU.boundary_faces_patch_ids",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "boundary_quad_axial_end_z0": true,
+        "boundary_quad_axial_end_zL": true,
+        "boundary_quad_feed_tube_wall": true,
+        "boundary_tri_bushing_bore_wall": true,
+        "boundary_tri_journal_wall": true,
+        "boundary_tri_pressure_feed": true,
+        "cell_centres_m": true,
+        "cell_tags": true,
+        "field_aspect_ratio": true,
+        "field_axial_zone_id": true,
+        "field_distorted_geometry": true,
+        "field_gap_layer_index": true,
+        "field_gap_um": true,
+        "field_minDetJac": true,
+        "field_minSICN": true,
+        "field_region_id": true,
+        "field_solve_eligible": true,
+        "field_theta_deg": true,
+        "field_volume_m3": true,
+        "metadata": true,
+        "mouth_triangles": true,
+        "node_tags": true,
+        "points_m": true,
+        "prisms": true
+      },
+      "expected": "all exact",
+      "mandatory": true,
+      "name": "round_trip.NPZ.exact_arrays",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Prism6": 20172,
+        "solve_eligible_count": 20172,
+        "solve_eligible_values": [
+          0.0
+        ]
+      },
+      "expected": {
+        "Prism6": 20172,
+        "solve_eligible": [
+          0.0
+        ]
+      },
+      "mandatory": true,
+      "name": "visualization.cutaway_MSH_reopens",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": {
+        "Prism6": 0,
+        "Quad4": 512,
+        "Tri3": 834
+      },
+      "expected": {
+        "Prism6": 0,
+        "Quad4": 512,
+        "Tri3": 834
+      },
+      "mandatory": true,
+      "name": "visualization.feed_boundary_MSH_reopens",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "actual": "disabled by --openfoam skip",
+      "expected": "optional audited Prism6 conversion",
+      "mandatory": false,
+      "name": "openfoam.audit",
+      "status": "SKIPPED",
+      "tolerance": null
+    }
+  ],
+  "visualization": {
+    "coordinates_unchanged": true,
+    "cutaway": {
+      "cell_count": 20172,
+      "coordinates_unchanged": true,
+      "omitted_cell_count": 2552,
+      "solve_eligible": false,
+      "wedge_removed_around_theta_deg": [
+        -30.0,
+        30.0
+      ]
+    },
+    "distorted_geometry": false,
+    "gmsh_round_trip": {
+      "cutaway_prisms": 20172,
+      "feed_boundary_quads": 512,
+      "feed_boundary_triangles": 834
+    },
+    "mouth_interface": {
+      "default_representation": "wireframe",
+      "diagnostic_only": true,
+      "solve_eligible": false,
+      "triangle_count": 834
+    },
+    "paraview": {
+      "pvpython": "/usr/bin/pvpython",
+      "reason": null,
+      "status": "AVAILABLE"
+    },
+    "solve_eligible": false,
+    "x0_section": {
+      "point_count": 496,
+      "solve_eligible": false,
+      "triangle_count": 720
+    }
+  },
+  "vtu_round_trip": {
+    "boundary_quads": 1024,
+    "boundary_sha256": "2a49e585b1728e235eff77b5274bc0ee39e0d576f2d3a3bd96a946641c03d983",
+    "boundary_triangles": 19388,
+    "points": 16853,
+    "prisms": 22724,
+    "volume_sha256": "0914f60b05821df6aad38c87a1c9000b8b1425d9bbdf87304d0da52939d1b421"
+  }
+}

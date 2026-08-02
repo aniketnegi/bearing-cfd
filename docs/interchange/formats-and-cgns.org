@@ -4,7 +4,7 @@
 
 * Three outputs, one discrete model
 
-[[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def write_clean_meshes][write_clean_meshes]]
 writes all three files before clearing the model:
 
 | File | Representation | Intended use |
@@ -45,7 +45,7 @@ For the Prism6 full-passage branch, the first Fluent-native file remains
 passes.  See [[file:fluent-import-audit.org][Fluent import-only audit]].
 
 The reduced surface-inlet Hex8 branch has a narrower direct route:
-[[file:../../interchange/fluent_legacy_msh.py][fluent_legacy_msh.py]] writes
+[[file:../../bearing_cfd/interchange/fluent_legacy.py][fluent_legacy.py]] writes
 Fluent legacy ASCII directly from the validated canonical arrays.  It does not
 convert a Gmsh file.  It reconstructs every Quad4 face from Hex8 connectivity,
 assigns owner/neighbour cells, requires complete and disjoint external boundary
@@ -82,7 +82,7 @@ exporter refuses CGNS output if that capability is absent and calls
 Gmsh 4.15.2 writes BC ranges over =TRI_3=/=QUAD_4= sections with
 =GridLocation=CellCenter=.  That describes volume-cell centres, not the
 referenced surface elements, and =cgnscheck= reports those ranges as having
-invalid dimension.  [[file:../../interchange/cgns_compat.py][cgns_compat.py]]
+invalid dimension.  [[file:../../bearing_cfd/interchange/cgns.py][cgns.py]]
 therefore performs one narrow post-write correction: only those discovered
 surface-BC location datasets are changed to =FaceCenter=.  CGNS defines
 =FaceCenter= for boundary faces in
@@ -122,19 +122,16 @@ If names or memberships are lost, the run fails with
 =GEOMETRY_ONLY_NOT_FLUENT_READY=.  It does not publish a sidecar claiming that
 the missing definitions “should” have been present.
 
-* Observed Fluent 26.1 CGNS failure
+* Fluent routes
 
-Correcting the surface ranges to =GridLocation=FaceCenter= is a standards
-conformance fix, not proof that a proprietary reader will accept the file.
-Fluent 26.1 Student was tested with both corrected HDF5-backed and ADF-backed
-CGNS variants.  Both processes terminated in =CeetronSAM.dll= before Fluent
-reached =Mesh Check=.
+Correcting surface ranges to =GridLocation=FaceCenter= establishes standards
+conformance, not acceptance by Fluent.  The central-feed CGNS export therefore
+remains static evidence until the live audit passes.
 
-Because changing the CGNS storage backend did not change the failure, the
-surface-inlet handoff no longer uses CGNS as its critical path.  Read
-=bearing_surface_inlet_hex_fluent.msh= with *File → Read → Mesh*.  This invokes
-Fluent's native mesh reader rather than *File → Import → CGNS → Mesh* and its
-Ceetron/VKI dependency.
+The surface-inlet Hex8 mesh uses the native Fluent ASCII file
+=bearing_surface_inlet_hex_fluent.msh=.  Read it with *File → Read → Mesh*;
+the file is generated directly from the canonical arrays and does not depend
+on the CGNS import path.
 
 * Coordinates and units
 

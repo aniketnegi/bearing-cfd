@@ -27,7 +27,7 @@ Reynolds-equation convention is
 
 Signs and numerical factors depend on coordinate and wall-velocity conventions.
 The 3-D mesh pipeline does not solve this equation.  The later
-[[file:../handoff/14-native-jfo-candidate.org][native midsurface application]]
+[[file:../studies/conical-journal/reynolds-jfo-validation.org][native midsurface application]]
 does solve its conservative conical Reynolds counterpart.
 
 * Reynolds equation versus JFO

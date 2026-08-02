@@ -20,17 +20,17 @@ The default =phi=-90 deg= gives =e_x approximately 0= and =e_y=-e=.  Thus
 points along =+Y=.  This geometric line is not automatically the external load
 line; load direction requires the later flow solution.
 
-See [[file:../../bearing_film.py::class InputParams][InputParams]] and
-[[file:../../bearing_film.py::def resolve_params][resolve_params()]].
+See [[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class GeometryInputs][=GeometryInputs=]] and
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::def resolve_geometry][=resolve_geometry()=]].
 
 * Independent inputs
 
-[[file:../../bearing_film.py::class InputParams][InputParams]] is frozen so the
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class GeometryInputs][=GeometryInputs=]] is frozen so the
 requested case cannot change after parsing.  Each field has a command-line
 counterpart.
 
 | Name | Default | Meaning |
-|-
+|---+---+---|
 | =length= | 60 mm | Axial length =L= |
 | =mean_radius= | 50 mm | Journal radius at =z=L/2= |
 | =semicone_angle_deg= | 10 deg | Cone half-angle =gamma=; large end at =z=0= |
@@ -47,7 +47,7 @@ counterpart.
 
 =export_debug_half=, =preview=, and =outdir= control diagnostics and publication,
 not the production fluid dimensions.  The actual parser is
-[[file:../../bearing_film.py::def _parse_args][_parse_args()]].
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py::def _parse_args][_parse_args()]].
 
 * Radius laws
 
@@ -63,10 +63,8 @@ R_b(z)=R_j(z)+c,
 R_o(z)=R_b(z)+t_w.
 \]
 
-They are implemented once in
-[[file:../../bearing_film.py::def journal_radius][journal_radius()]],
-[[file:../../bearing_film.py::def bore_radius][bore_radius()]], and
-[[file:../../bearing_film.py::def outer_radius][outer_radius()]].  The large end
+They are implemented by the radius methods on
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class ResolvedGeometry][=ResolvedGeometry=]].  The large end
 is at =z=0= for non-negative =gamma=.
 
 * Resolved feed placement
@@ -89,14 +87,14 @@ This is why the inlet coordinate must be resolved from the current geometry;
 using the wall radius only at =z_h= would not prove that the entire disk clears
 the conical wall.  The split locations are =z_1=z_h-w= and =z_2=z_h+w=.
 
-[[file:../../bearing_film.py::class ResolvedParams][ResolvedParams]] stores
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::class ResolvedGeometry][=ResolvedGeometry=]] stores
 these values, the two gap definitions, analytic base volume, and diagnostics.
 It is a second frozen dataclass, keeping user inputs separate from derived
 state.
 
 * Pre-construction guards
 
-[[file:../../bearing_film.py::def validate_params][validate_params()]] rejects
+[[file:../../bearing_cfd/bearings/conical_journal/geometry/model.py::def validate_geometry_inputs][=validate_geometry_inputs()=]] rejects
 bad cases before OCCT sees them.  Important guards include:
 
 - positive length, radii, clearance, hole size, wall, extension, and cutter overrun;
@@ -108,7 +106,7 @@ bad cases before OCCT sees them.  Important guards include:
 - a remote feed endpoint outside the context bushing.
 
 The validator accumulates all detected parameter errors and raises one
-=ParameterValidationError=, so a case is corrected from a complete diagnostic
+=GeometryParameterError=, so a case is corrected from a complete diagnostic
 rather than one failing scalar at a time.
 
 The start-disk proof uses a conservative maximum transverse distance

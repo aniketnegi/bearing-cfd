@@ -4,9 +4,9 @@
 
 * Reconstruction is not remeshing
 
-[[file:../../interchange/export_solver_neutral.py::def write_clean_meshes][write_clean_meshes]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def write_clean_meshes][write_clean_meshes]]
 creates a new Gmsh model container but does not generate a node or cell.  It
-reuses [[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]],
+reuses [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]],
 which registers completed arrays on discrete entities.
 
 The distinction is important:

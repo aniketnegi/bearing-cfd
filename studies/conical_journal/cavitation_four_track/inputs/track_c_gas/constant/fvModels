@@ -1,0 +1,9 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvModels;
+}
+
+// No oil-air phase-change source: this is non-condensable pseudo-cavitation.

@@ -4,7 +4,7 @@
 
 * Audit order
 
-[[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_canonical][audit_canonical]]
 runs before any writer is trusted.  Its checks are ordered from cheap schema
 failures to connectivity and numerical geometry:
 
@@ -32,7 +32,7 @@ len(np.unique(cell_keys)) == len(mesh.prisms)
 
 This test is topological.  Positive signed volume and positive sampled
 Jacobian determinants are separate geometric tests performed by
-[[file:../../meshing/layered_prism_central_feed.py::def _prism_metrics][_prism_metrics]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _prism_metrics][_prism_metrics]].
 Neither can replace the other: two duplicate valid cells still overlap, and a
 unique cell can still be inverted.
 
@@ -42,7 +42,7 @@ For every Prism6, two triangular and three quadrilateral local faces are
 extracted using the canonical local-face tables.  Faces are sorted only for
 identity; their stored order remains available for normal checks.
 
-[[file:../../meshing/layered_prism_central_feed.py::def _face_census][_face_census]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _face_census][_face_census]]
 returns each unique face, its incidence count, and the first/second incident
 cell indices.
 
@@ -83,14 +83,14 @@ prove an internal owner-neighbour face, not a boundary condition or zone.
 
 Implementation and focused regression:
 
-- [[file:../../interchange/export_solver_neutral.py::def audit_canonical][audit_canonical]]
-- [[file:../../tests/test_solver_neutral_interchange.py::def test_mouth_has_two_incident_cells_and_pressure_paths_exist][mouth/path test]]
-- [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][generator mouth test]]
+- [[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_canonical][audit_canonical]]
+- [[file:../../tests/interchange/test_central_feed_export.py::def test_mouth_has_two_incident_cells_and_pressure_paths_exist][mouth/path test]]
+- [[file:../../tests/conical_journal/test_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][generator mouth test]]
 
 * Cell-graph connectivity and feed paths
 
 Every two-incident-cell face contributes an undirected cell-graph edge.
-[[file:../../meshing/layered_prism_central_feed.py::def _component_count][_component_count]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _component_count][_component_count]]
 uses union-find to require one connected 3-D region.
 
 One component alone is necessary but the audit also checks the intended local
@@ -107,10 +107,8 @@ axial exits.”
 
 * Local boundary orientation
 
-The generator originally checked the pressure inlet explicitly and compared
-total cell volume with the signed exterior-boundary volume.  The hardened
-contract now checks every external Tri3 and Quad4 independently in
-[[file:../../meshing/layered_prism_central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]].
+The contract checks every external Tri3 and Quad4 independently in
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]].
 
 For face =f= and its sole incident cell =c=:
 
@@ -127,7 +125,7 @@ cannot be hidden by cancellation elsewhere on the closed surface.
 
 The audit records the minimum positive projection and minimum face area per
 patch.  Reversing one journal triangle is a mandatory failure in
-[[file:../../tests/test_solver_neutral_interchange.py::def test_reversed_face_and_negative_cell_are_rejected][the negative/reversed regression]].
+[[file:../../tests/interchange/test_central_feed_export.py::def test_reversed_face_and_negative_cell_are_rejected][the negative/reversed regression]].
 
 * Scale, bounding box, and volume
 

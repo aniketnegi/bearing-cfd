@@ -1,0 +1,14 @@
+; Import-only Fluent journal. Run from an interchange output directory.
+; Start Fluent from an interchange output directory as:
+; fluent 3ddp -g -i /absolute/path/to/fluent/import_check.jou
+; This journal never initializes or iterates and deliberately does not save a mesh.
+
+/file/import/cgns/mesh "bearing_prism.cgns"
+/mesh/check-verbosity 2
+/mesh/check
+/report/mesh-size
+
+; Inspect the transcript and compare every count/zone/extent/volume with
+; interchange_report.json. Save bearing_prism_imported.msh.h5 manually only
+; after all checks pass, or rerun the bearing-cfd export with --fluent required.
+/exit yes

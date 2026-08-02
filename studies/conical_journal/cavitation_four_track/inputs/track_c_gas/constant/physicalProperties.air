@@ -1,0 +1,37 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.air;
+}
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        // Derived from the paper's rho=1.185 kg/m3 at 298.15 K, 101325 Pa.
+        molWeight   28.991503381;
+    }
+    thermodynamics
+    {
+        Cp          1004.4;
+        hf          0;
+    }
+    transport
+    {
+        mu          1.83e-05;
+        Pr          0.704234482759;
+    }
+}

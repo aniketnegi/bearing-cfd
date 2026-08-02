@@ -1,0 +1,25 @@
+// Controlled wall-speed variants for the 10 -> 15 rpm diagnosis.
+// Times are pseudo-times, not a physical acceleration schedule.
+
+directJump15
+{
+    type        constant;
+    value       1.5707963267948966;
+}
+
+accepted14To15
+{
+    type        constant;
+    value       1.5707963267948966;
+}
+
+nativeRamp10To15
+{
+    type        table;
+    values
+    (
+        (225 1.0471975511965976)
+        (250 1.5707963267948966)
+        (1000 1.5707963267948966)
+    );
+}

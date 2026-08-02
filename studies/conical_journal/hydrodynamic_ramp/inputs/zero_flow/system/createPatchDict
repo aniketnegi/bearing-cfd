@@ -1,0 +1,30 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      createPatchDict;
+}
+
+patches
+{
+    journal_wall
+    {
+        patchInfo
+        {
+            type wall;
+        }
+        constructFrom patches;
+        patches (journal_wall);
+    }
+
+    stationary_wall
+    {
+        patchInfo
+        {
+            type wall;
+        }
+        constructFrom patches;
+        patches (stationary_wall);
+    }
+}

@@ -1,336 +1,120 @@
 #+TITLE: Visualization
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+STARTUP: content
 
-Visualization is an inspection layer; solver eligibility comes from
-=manifest.json= and =mesh_report.json=.
+Visualization is an inspection aid.  Geometry, topology, scale, and quality
+acceptance come from the numerical reports and round-trip checks.
 
-* CAD and native BREP
+* Preview OCCT geometry
 
-Native OCCT files for the strict default case:
-
-- =out/strict_default/film_unsplit.brep= :: one connected full fluid solid;
-- =out/strict_default/film_zones.brep= :: three coincident axial bodies.
-
-The journal and bushing are context solids in non-strict/legacy STEP exports,
-not part of the CFD fluid.  Close surfaces can produce z-fighting stripes in a
-viewer; hide context bodies before diagnosing grooves or discontinuities.
-
-The optional browser preview is provided by
-[[file:../../bearing_film.py::def _parse_args][=bearing_film.py --preview=]]:
+Start an =ocp_vscode= viewer on port 3939, then run:
 
 #+begin_src sh
-uv run python -m ocp_vscode
-uv run python bearing_film.py --outdir out/preview --preview
+uv run bearing-cfd conical-journal geometry --preview
 #+end_src
 
-The strict STEP audit can still make the CAD command exit nonzero after the
-preview is shown.  That is an exchange-format result, not a viewer failure.
+The preview shows the connected fluid volume with separate journal and bushing
+context.  The journal and bushing are not additional fluid regions.
 
-The thickness map uses bearing-frame angle on the horizontal axis, axial
-coordinate =z= on the vertical axis, and exact same-=z= radial thickness as
-colour.  For the default case the eccentricity/minimum-gap meridian is 270
-degrees and the =+Y= feed/maximum-gap direction is 90 degrees.  Slight axial
-variation away from those extrema comes from the changing conical journal
-radius in the exact square-root intersection expression; the map is not a
-pressure or CFD result.
+* Open native BREP in FreeCAD
 
-** Artix Fontconfig diagnostics
-
-The OCP wheel can load an older bundled Fontconfig library against newer Artix
-XML configuration, producing =xsi:nil= and generic-family warnings.  These are
-cosmetic when B-rep construction, in-memory validation, and native round trips
-pass.  They are not grounds for modifying =/etc/fonts=; a compatible OCP/
-Fontconfig build is the appropriate eventual fix.
-
-* Gmsh geometry and surface smoke
-
-Fragmented millimetre BREP after preflight:
+Generate the geometry first, then inspect the accepted native files:
 
 #+begin_src sh
-uv run python meshing/gmsh_brep_preflight.py --gui
+freecad out/conical_journal/geometry/default/film_unsplit.brep
+freecad out/conical_journal/geometry/default/film_zones.brep
 #+end_src
 
-Validated surface-only mesh:
+=film_unsplit.brep= contains one solid.  =film_zones.brep= contains three
+coincident axial solids.  The minimum radial gap is 20 micrometres in the
+default case and is not reliably judged by eye.
+
+* Inspect Gmsh OCC preflight
 
 #+begin_src sh
-uv run gmsh out/gmsh_surface_smoke/surface_mesh.msh
+uv run bearing-cfd conical-journal mesh brep-preflight --gui
 #+end_src
 
-The surface-smoke file contains Tri3 boundary elements and no 3-D volume
-elements.  It is not a solver volume mesh.
+The GUI opens only after the OCC checks pass.  Surface and volume identities
+come from =surfaces.csv=, =volumes.csv=, and =preflight_report.json= rather than
+entity numbers shown in the GUI.
 
-* No-port Hex8 visualization
+* Inspect mesh families in Gmsh
 
-Exact full mesh and exact cutaway:
+Generate a mesh with =--no-gui= for repeatable batch output, then open its MSH
+file explicitly:
 
 #+begin_src sh
-uv run gmsh out/structured_no_port_default/nGap_08/structured_hex.msh
-uv run gmsh out/structured_no_port_default/nGap_08/viz/cutaway_exact.msh
+gmsh out/conical_journal/meshing/no-port/nGap_08/structured_hex.msh
+gmsh out/conical_journal/meshing/surface-inlet/nGap_08/structured_hex.msh
+gmsh out/conical_journal/meshing/central-feed/nGap_08/ported_prism.msh
 #+end_src
 
-Quality view:
+Use the Mesh visibility panel to isolate physical groups.  For the
+central-feed mesh, verify that =pressure_feed= is at the remote tube end and
+that no =feed_mouth= boundary exists.
+
+The mesh commands also provide focused GUI modes:
 
 #+begin_src sh
-uv run gmsh \
-  out/structured_no_port_default/nGap_08/viz/cutaway_minSICN.pos
+uv run bearing-cfd conical-journal mesh no-port \
+  --gui --gui-mode quality --quality-view minSICN
+
+uv run bearing-cfd conical-journal mesh surface-inlet \
+  --gui --gui-mode inlet
+
+uv run bearing-cfd conical-journal mesh central-feed \
+  --gui --gui-mode mouth
 #+end_src
 
-The =.pos= file embeds the exact cutaway cells together with the =minSICN=
-view, so it does not need the =.msh= as a second positional argument.  This is
-the reliable inspection command when loading both files together produces an
-empty Gmsh window.
+GUI launch occurs after publication.  Closing the window or a display-server
+failure does not change the accepted mesh files.
 
-Gap-exaggerated files under =viz/= are permanently marked
-=VISUALIZATION_ONLY_DO_NOT_SOLVE=.  They are distorted geometry and must never
-be converted to OpenFOAM:
+* Inspect volume fields in ParaView
+
+Open the VTU volume file:
 
 #+begin_src sh
-uv run gmsh \
-  out/structured_no_port_default/nGap_08/viz/gap_x100_VISUALIZATION_ONLY_DO_NOT_SOLVE.msh
+paraview out/conical_journal/meshing/body-fitted-inlet/volume_hex.vtu
 #+end_src
 
-The generator-side GUI modes are =exact=, =cutaway=, =quality=, and
-=exaggerated=; see [[file:../../meshing/structured_hex_no_port.py::def open_gui][=open_gui=]].
+Use *Color By* to inspect =fluent_orthogonal_quality=, signed volume, gap, or
+layer index.  Apply *Threshold* to locate cells near a quality limit and
+*Slice* or *Clip* to inspect the film thickness.
 
-* Surface-inlet Hex8 visualization
+The selected full-mesh quality figure is versioned at
+[[file:../../evidence/conical_journal/oq90_3d/full_3d_fluent_oq_overview.png][=full_3d_fluent_oq_overview.png=]].
+Its unwrapped panel projects the minimum through all 12 physical gap cells; it
+is not a separate two-dimensional quality calculation.
 
-The inlet footprint alone is the fastest Gmsh check:
+* Inspect Reynolds--JFO results
+
+The Python solver writes a PNG and VTU for each speed:
 
 #+begin_src sh
-uv run gmsh \
-  -setnumber Mesh.SurfaceFaces 1 \
-  -setnumber Mesh.SurfaceEdges 1 \
-  out/structured_surface_inlet_default/nGap_08/viz/pressure_feed_only.msh
+paraview out/conical_journal/simulation/reynolds-jfo/20rpm/jfo_surface.vtu
 #+end_src
 
-The exact-coordinate volume cutaway shows the 5:1 gap layers without the feed
-column:
+Available cell fields are absolute pressure, gauge pressure, fill fraction,
+film thickness, and feed mask.  The PNG uses an unwrapped circumferential axis
+with 0 degrees at the minimum gap and 180 degrees at the feed.
 
-#+begin_src sh
-uv run gmsh \
-  -setnumber Mesh.VolumeFaces 1 \
-  -setnumber Mesh.VolumeEdges 1 \
-  out/structured_surface_inlet_default/nGap_08/viz/cutaway_exact.msh
-#+end_src
+Selected animations and figures are under
+[[file:../../evidence/conical_journal/][=evidence/conical_journal/=]].  MP4
+files are convenient for GitHub downloads; GIF files render directly in more
+browsers.
 
-ParaView is generally more responsive for the same cutaway:
+* Exact and exaggerated views
 
-#+begin_src sh
-QT_QPA_PLATFORM=xcb paraview \
-  out/structured_surface_inlet_default/nGap_08/viz/cutaway_exact.vtu
-#+end_src
+Files below =viz/= may be one of two kinds:
 
-The inlet is visible as boundary faces because a finite-volume pressure
-opening must still close the cell-volume topology.  Its =pressure_feed= tag,
-not deletion of those faces, makes it an inlet.  The mesh has no cells outside
-the bore and no cells between the inlet patch and journal.
+- exact-coordinate subsets used to expose boundaries or cutaways;
+- gap-exaggerated copies used only to make a micrometre-scale film visible.
 
-For patch membership in ParaView, open =boundary_quads.vtu=, select *Surface
-With Edges*, and color by =patch_id=.  Physical ID 106 is =pressure_feed=.
-The footprint PNG compares the whole-face approximation with the nominal
-4 mm projected circle.  For a patch-only view that fills the camera, open
-=viz/pressure_feed_only.vtu=; it contains a compact point set.
+The visualization manifest identifies the type.  Never use an exaggerated
+file for mesh conversion, volume measurement, or quality reporting.  Solver
+inputs are the full MSH/CGNS/Fluent files named in
+[[file:outputs-and-reports.org][Outputs and reports]].
 
-The visibly denser theta/z edges around the inlet are intentional cubic
-clustering in the exact mesh coordinates.  They are neither duplicated cells
-nor gap exaggeration.  The logical mesh remains one conforming periodic Hex8
-block.
-
-** Body-fitted circular O-grid and full 3-D OQ
-
-The final Fluent candidate is generated by the existing body-fitted pipeline:
-
-#+begin_src sh
-uv run gmsh \
-  out/paper_exact_current_circular_ogrid_3d_oq90/structured_hex.msh
-
-QT_QPA_PLATFORM=xcb paraview \
-  out/paper_exact_current_circular_ogrid_3d_oq90/volume_hex.vtu
-#+end_src
-
-In Gmsh, enable volume faces and edges to inspect the true 12-layer Hex8
-topology and the local circular O-grid.  In ParaView:
-
-1. choose *Surface With Edges*;
-2. color by =fluent_orthogonal_quality=;
-3. set the color range to 0.9--1.0;
-4. use *Threshold* with an upper bound near the minimum to isolate weak cells;
-5. use *Clip* or *Slice* to expose the 12 through-film cells.
-
-For a responsive whole-bearing view, open
-=viz/master_surface.vtu= and color by
-=fluent_orthogonal_quality_min_through_gap=.  The associated
-=fluent_orthogonal_quality_worst_gap_index= field identifies which real
-thickness layer supplied each minimum.  This is a conservative projection of
-the full-volume OQ field, not a 2-D mesh-quality calculation.
-
-The pre-rendered overview is
-[[file:../handoff/media/oq90_3d/full_3d_fluent_oq_overview.png][full_3d_fluent_oq_overview.png]].
-
-** Interpreting the apparently hollow full mesh
-
-Gmsh and ParaView normally draw a volume mesh through its exterior skin.  For
-this model the skin is annular, so the central void is expected: it is the
-space occupied by journal metal in the assembled bearing, not a missing part
-of the lubricant mesh.  Volumetric status is established by the =fluid=
-Hex8 element count and connectivity in =validation_report.json= and
-=manifest.json=, not by opaque screen filling.
-
-The physical groups identify what is visible:
-
-| Group | Visible role |
-|-------+--------------|
-| =journal_wall= | inner annular fluid boundary against the moving journal |
-| =stationary_wall= | outer annular fluid boundary against the bushing bore |
-| =pressure_feed= | small near-circular subset of the stationary bore |
-| =axial_end_z0=, =axial_end_zL= | annular end boundaries |
-| =fluid= | Hex8 cells between the inner and outer skins |
-
-Viewer colours are not part of the mesh contract and may change between
-imports.  Use the physical-group names or =patch_id= rather than identifying a
-boundary by colour.
-
-The metal journal and bushing belong in a separate context STEP.  Viewing that
-STEP answers an assembly question; viewing the CGNS/MSH/VTU answers a fluid
-mesh question.  Do not combine the context solids with the solver's =fluid=
-zone merely to make the viewport look filled.
-
-For the current default Ansys handoff, the two views are:
-
-#+begin_src sh
-uv run gmsh \
-  out/ansys_surface_inlet_default/bearing_surface_inlet_hex.cgns
-
-freecad \
-  out/ansys_surface_inlet_default/VISUAL_CONTEXT_ONLY_context_assembly.step
-#+end_src
-
-* Ported Prism6 visualization
-
-Canonical solver-eligible mesh:
-
-#+begin_src sh
-uv run gmsh out/ported_prism_default/nGap_08/ported_prism.msh
-#+end_src
-
-Exact-coordinate feed subsets:
-
-#+begin_src sh
-uv run gmsh out/ported_prism_default/nGap_08/viz/feed_cutaway_exact.msh
-uv run gmsh out/ported_prism_default/nGap_08/viz/feed_boundary_only.msh
-#+end_src
-
-The cutaway must show all gap layers, continuous film below the feed, the open
-tube-to-film connection, and the pressure-inlet disk.  Its cells retain their
-true coordinates but it is a subset, so =solve_eligible= is false.
-
-For the default 5:1 film inflation, color the cutaway by =gap_layer_index= and
-use =Surface With Edges=.  The =nGap_08= normalized cell-thickness fractions
-increase from =0.047019= at either wall to =0.235095= at the two central cells,
-then mirror exactly.  The authoritative coordinates and fractions are stored
-under =film_inflation= in that case's =manifest.json=.
-
-The internal mouth can be inspected in:
-
-=out/ported_prism_default/nGap_08/viz/mouth_interface_DIAGNOSTIC_ONLY.vtu=
-
-It records =solve_eligible=0= and =diagnostic_only=1= and is displayed as a
-translucent red wireframe by default.  The canonical solver boundary model does
-not contain a mouth patch or cap.  Visualization creation is implemented in
-[[file:../../meshing/layered_prism_central_feed.py::def write_visualizations][=write_visualizations=]].
-
-** Gmsh responsiveness and the apparently missing hole
-
-Use =nGap_04= for interactive inspection:
-
-#+begin_src sh
-# Fast orientation check: external feed tube, rim, and inlet only.
-uv run gmsh \
-  out/ported_prism_default/nGap_04/viz/feed_boundary_only.msh
-
-# Exact cell cutaway; suppress dense edge drawing for the first view.
-uv run gmsh \
-  -setnumber Mesh.SurfaceFaces 1 \
-  -setnumber Mesh.SurfaceEdges 0 \
-  -setnumber Mesh.VolumeFaces 1 \
-  -setnumber Mesh.VolumeEdges 0 \
-  out/ported_prism_default/nGap_04/viz/feed_cutaway_exact.msh
-#+end_src
-
-At the recorded production resolution, the default =nGap_04= cutaway is about
-90 MB and contains more than half a million prisms; =nGap_12= is roughly 237 MB
-with about 1.49 million prisms.  A blank or unresponsive Gmsh window while the
-larger file is parsed/rendered is therefore not evidence of missing geometry.
-Use =nGap_04= for interactive topology study and the higher levels for
-convergence/quality evidence.
-
-Quality =.pos= views multiply render load.  Establish a responsive plain-mesh
-view first, then enable one post-processing field at a time.
-
-The film-to-tube mouth is also *not an exterior hole edge*.  In the connected
-fluid mesh it is an internal shared surface with two incident cells.  A skin-only
-renderer correctly omits it; drawing an exposed circular cap there would
-represent the wrong topology.  To see the open passage, use the exact cutaway
-and rotate toward the feed, or use the much lighter =x=0 ParaView section below.
-The red mouth diagnostic shows the internal shared triangles, not a wall patch.
-
-* ParaView on Artix Linux and Wayland
-
-Use XCB to avoid ParaView's Wayland/OpenGL warnings:
-
-#+begin_src sh
-QT_QPA_PLATFORM=xcb paraview \
-  out/ported_prism_default/nGap_08/volume_prism.vtu
-#+end_src
-
-The generated launcher is equivalent and relocatable:
-
-#+begin_src sh
-out/ported_prism_default/nGap_08/viz/launch_paraview_xcb.sh
-#+end_src
-
-Inspect with *Surface With Edges*; color by =region_id=, =gap_layer_index=,
-=gap_um=, or =minSICN=.  An =x=0= Clip exposes the feed-axis section;
-*Crinkle Clip* preserves whole cells, and *Shrink* separates individual prisms.
-
-Useful direct views:
-
-#+begin_src sh
-QT_QPA_PLATFORM=xcb paraview \
-  out/ported_prism_default/nGap_08/viz/feed_cutaway_exact.vtu
-QT_QPA_PLATFORM=xcb paraview \
-  out/ported_prism_default/nGap_08/viz/x0_section.vtu
-#+end_src
-
-If =pvpython= is installed, the generated helper loads the full mesh, colors
-by region, and creates the =x=0= clip using paths relative to itself:
-
-#+begin_src sh
-pvpython out/ported_prism_default/nGap_08/viz/open_in_paraview.py
-#+end_src
-
-Absence of =pvpython= is a recorded visualization skip, not a mesh failure.
-
-* Solver-neutral and Fluent inspection
-
-The clean interchange MSH has no ElementData views and is useful when the task
-is to inspect only the transferred mesh/entity model:
-
-#+begin_src sh
-uv run gmsh out/interchange_default/nGap_04/bearing_prism_gmsh41.msh
-#+end_src
-
-When Fluent is available, the required visual evidence is not a generic
-isometric screenshot.  It must isolate the complete volume, feed inlet/tube,
-bore opening, =x=0= connection, and a clipped junction while also recording the
-boundary-zone list.  The exact display set and its relationship to the count
-audit are in [[file:../interchange/fluent-import-audit.org::Manual visual proof][the Fluent visual-proof contract]].
-
-* Validation boundary
-
-A screenshot cannot resolve a 20 micrometre minimum gap or prove conformal
-ownership.  Those claims come from analytic residuals, the generic Prism6 face
-census, positive Jacobians, format round trips, and the native-BREP checks in
-[[file:../../meshing/layered_prism_central_feed.py::def validate_topology][=validate_topology=]] and
-[[file:../../meshing/layered_prism_central_feed.py::def validate_geometry][=validate_geometry=]].
+[[file:index.org][How-to guides]] | [[file:../index.org][Documentation index]]

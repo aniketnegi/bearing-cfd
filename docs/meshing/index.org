@@ -1,22 +1,20 @@
-#+TITLE: Meshing Manual — Eccentric Conical Bearing
+#+TITLE: Conical-Journal Mesh Families
 #+STARTUP: content
 #+OPTIONS: toc:2 num:nil
 #+PROPERTY: header-args :eval never
 
-* Purpose
+* Scope
 
-This directory explains the meshing stages that sit between the validated CAD
-fluid volume and any later CFD case.  The stages deliberately answer different
+The meshing stages between accepted CAD and a CFD case answer separate
 questions:
 
-1. Does Gmsh/OpenCASCADE import the native BREP without changing its geometry?
-2. Can Gmsh create a sound first-order boundary triangulation on that BREP?
-3. Can the no-port film be represented by an analytic, periodic Hex8 mesh?
-4. Can the feed be reduced to a pressure patch while retaining the Hex8 film?
-5. Can that surface patch use a local circular O-grid and still clear the
-   full-3D Fluent OQ gate?
-6. Can the real central feed be represented by one conformal, connected Prism6
-   mesh with an open film/tube junction?
+- whether Gmsh/OpenCASCADE imports the native BREP without changing it;
+- whether Gmsh can triangulate the imported boundary;
+- whether the no-port film forms a periodic Hex8 reference;
+- whether a bore-pressure inlet can use either mesh-aligned or conforming
+  circular Hex8 topology;
+- whether the resolved central feed forms one connected Prism6 volume with an
+  open film/tube junction.
 
 No file in this directory defines viscosity, rotation speed, cavitation,
 turbulence, pressure boundary values, or a CFD solver.
@@ -29,11 +27,11 @@ turbulence, pressure boundary values, or a CFD solver.
 | [[file:surface-smoke.org][Surface smoke]] | fragmented millimetre BREP | 2D Tri3 boundary mesh | classification and audits | boundary-mesh feasibility, no volume cells |
 | [[file:structured-hex-no-port.org][Structured Hex8]] | =params.json= | no generated mesh | all nodes, Hex8 and Quad4 connectivity | all-Hex no-feed regression baseline |
 | [[file:structured-hex-surface-inlet.org][Surface-inlet Hex8]] | =params.json= | no generated mesh | inflated Hex8 film and pressure-patch partition | all-Hex reduced-domain hydrodynamic mesh |
-| [[file:structured-hex-surface-inlet.org][Circular O-grid Hex8]] | =params.json= | stores complete discrete mesh | body-fitted surface plus physical 3-D sweep | statically validated native-Fluent import candidate with full-volume OQ gate |
+| [[file:body-fitted-inlet.org][Circular O-grid Hex8]] | =params.json= | stores complete discrete mesh | body-fitted surface plus physical 3-D sweep | conforming feed and full-volume OQ gate |
 | [[file:layered-prism-central-feed.org][Layered Prism6]] | =params.json= plus native unsplit BREP | 2D unwrapped Tri3 master only | all 3D nodes, Prism6 and boundary connectivity | full ported fluid mesh |
 
 The distinction between “Gmsh stores a mesh” and “Gmsh generates a mesh” is
-important.  The two 3D pipelines register already-complete NumPy arrays as
+important.  The volume-mesh pipelines register already-complete NumPy arrays as
 Gmsh discrete entities.  Neither calls =gmsh.model.mesh.generate(3)=.
 
 * Invariants shared by the pipelines
@@ -52,8 +50,8 @@ Gmsh discrete entities.  Neither calls =gmsh.model.mesh.generate(3)=.
   final circumferential cell connects directly to index zero; no duplicate
   =2*pi= node or seam boundary is retained.
 
-See [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]]
-and [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]].
+See [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def generate_mesh][generate_mesh]]
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_prism_mesh][build_prism_mesh]].
 
 ** Trust and provenance
 
@@ -64,13 +62,14 @@ and [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][bu
   and faces.
 - Validation failures raise and publish a failure report.  They do not relax
   OCC tolerances or silently substitute approximate geometry.
-- Solver-eligible artifacts are staged and atomically replace the old output
-  directory only after all mandatory checks pass.
+- Solver-eligible artifacts are staged and atomically replace the existing
+  output directory only after all mandatory checks pass.
 
-The common implementation is in
-[[file:../../meshing/gmsh_brep_preflight.py::def require][require]],
-[[file:../../meshing/gmsh_brep_preflight.py::def make_staging_directory][make_staging_directory]],
-and [[file:../../meshing/gmsh_brep_preflight.py::def atomic_replace_directory][atomic_replace_directory]].
+Stage-specific checks use
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def require][require]].
+Shared staging and publication are implemented by
+[[file:../../bearing_cfd/artifacts.py::def make_staging_directory][make_staging_directory]]
+and [[file:../../bearing_cfd/artifacts.py::def publish_generation][publish_generation]].
 
 * Master data models
 
@@ -85,16 +84,16 @@ and [[file:../../meshing/gmsh_brep_preflight.py::def atomic_replace_directory][a
 
 Source links:
 
-- [[file:../../meshing/gmsh_brep_preflight.py::class CadReference][CadReference]]
-- [[file:../../meshing/gmsh_brep_preflight.py::class SurfaceRecord][SurfaceRecord]]
-- [[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]]
-- [[file:../../meshing/structured_hex_body_fitted_inlet.py::class MasterMesh][Body-fitted MasterMesh]]
-- [[file:../../meshing/structured_hex_body_fitted_inlet.py::class BodyFittedMesh][BodyFittedMesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
-- [[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::class CadReference][CadReference]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::class SurfaceRecord][SurfaceRecord]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::class MeshData][MeshData]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py::class MasterMesh][Body-fitted MasterMesh]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py::class BodyFittedMesh][BodyFittedMesh]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::class MasterMesh][MasterMesh]]
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::class PrismMesh][PrismMesh]]
 
-Arrays in the two production mesh data models are made read-only.  Canonical
-connectivity is one-based because the same arrays are registered with Gmsh;
+Canonical mesh arrays are made read-only.  Their connectivity is one-based
+because the same arrays are registered with Gmsh;
 VTU writers subtract one when handing connectivity to =meshio=.
 
 * Choosing the mesh
@@ -109,8 +108,9 @@ a mesh-aligned Quad4 patch rather than a resolved cylindrical drilling.  It
 retains structured periodic connectivity but uses locally clustered,
 nonuniform theta/z coordinates around that patch.
 
-For the Fluent comparison, use the body-fitted circular O-grid variant in the
-same chapter.  It keeps the surface-pressure-inlet model boundary but replaces
+For the Fluent comparison, use the
+[[file:body-fitted-inlet.org][body-fitted circular O-grid mesh]].  It keeps
+the surface-pressure-inlet model boundary but replaces
 the staircase rim locally, sweeps 12 physical thickness layers, and applies
 the requested standard Fluent-equivalent OQ 0.9 gate to the complete 3-D
 volume before publication.
@@ -130,9 +130,9 @@ the mesh-generation choice itself.
 
 | Pipeline | Function chain | Regression |
 |----------+----------------+------------|
-| BREP preflight | [[file:../../meshing/gmsh_brep_preflight.py::def load_reference][load_reference]] → [[file:../../meshing/gmsh_brep_preflight.py::def _run_occ_checks][_run_occ_checks]] | [[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][native BREP test]] |
-| Surface smoke | [[file:../../meshing/gmsh_surface_smoke.py::def _run_mesh][_run_mesh]] → [[file:../../meshing/gmsh_surface_smoke.py::def validate_mesh][validate_mesh]] | [[file:../../tests/test_gmsh_brep_preflight.py::def test_native_brep_preflight][surface-smoke integration]] |
-| No-port Hex8 | [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]] → [[file:../../meshing/structured_hex_no_port.py::def validate_analytic_mesh][validate_analytic_mesh]] → [[file:../../meshing/structured_hex_no_port.py::def add_discrete_model][add_discrete_model]] | [[file:../../tests/test_structured_hex_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][analytic/topology test]] |
-| Surface-inlet Hex8 | [[file:../../meshing/structured_hex_surface_inlet.py::def build_surface_inlet_mesh][build_surface_inlet_mesh]] → [[file:../../meshing/structured_hex_surface_inlet.py::def validate_surface_inlet_mesh][validate_surface_inlet_mesh]] → [[file:../../meshing/structured_hex_surface_inlet.py::def add_discrete_model][add_discrete_model]] | [[file:../../tests/test_structured_hex_surface_inlet.py][surface-inlet regression]] |
-| Circular O-grid Hex8 | [[file:../../meshing/structured_hex_body_fitted_inlet.py::def build_ogrid_master][build_ogrid_master]] → [[file:../../meshing/structured_hex_body_fitted_inlet.py::def sweep_master_mesh][sweep_master_mesh]] → [[file:../../meshing/structured_hex_body_fitted_inlet.py::def export_body_fitted_case][export_body_fitted_case]] | [[file:../../tests/test_structured_hex_body_fitted_inlet.py][body-fitted export regression]] |
-| Ported Prism6 | [[file:../../meshing/layered_prism_central_feed.py::def rim_coordinates][rim_coordinates]] → [[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]] → [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]] → [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]] | [[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][mouth/topology test]] |
+| BREP preflight | [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def load_reference][load_reference]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py::def _run_occ_checks][_run_occ_checks]] | [[file:../../tests/conical_journal/test_brep_preflight.py::def test_native_brep_preflight][native BREP test]] |
+| Surface smoke | [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def _run_mesh][_run_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_smoke.py::def validate_mesh][validate_mesh]] | [[file:../../tests/conical_journal/test_brep_preflight.py::def test_native_brep_preflight][surface-smoke integration]] |
+| No-port Hex8 | [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def generate_mesh][generate_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_analytic_mesh][validate_analytic_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def add_discrete_model][add_discrete_model]] | [[file:../../tests/conical_journal/test_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][analytic/topology test]] |
+| Surface-inlet Hex8 | [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_inlet.py::def build_surface_inlet_mesh][build_surface_inlet_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_inlet.py::def validate_surface_inlet_mesh][validate_surface_inlet_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/surface_inlet.py::def add_discrete_model][add_discrete_model]] | [[file:../../tests/conical_journal/test_surface_inlet.py][surface-inlet regression]] |
+| Circular O-grid Hex8 | [[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py::def build_ogrid_master][build_ogrid_master]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py::def sweep_master_mesh][sweep_master_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py::def export_body_fitted_case][export_body_fitted_case]] | [[file:../../tests/conical_journal/test_body_fitted_inlet.py][body-fitted export regression]] |
+| Ported Prism6 | [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def rim_coordinates][rim_coordinates]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_master_mesh][build_master_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_prism_mesh][build_prism_mesh]] → [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][validate_topology]] | [[file:../../tests/conical_journal/test_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][mouth/topology test]] |

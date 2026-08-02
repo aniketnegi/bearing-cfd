@@ -1,0 +1,13 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      phaseProperties;
+}
+
+phases          (oil air);
+
+// The source paper's homogeneous VOF equations contain no surface-tension
+// term and do not report an oil-air surface tension.
+sigma           0;

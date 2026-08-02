@@ -8,7 +8,7 @@ MSH and CGNS readers may renumber nodes, elements, elementary entities, and
 physical IDs while preserving the same mesh.  A correct audit must tolerate
 renumbering without tolerating changed geometry or membership.
 
-[[file:../../interchange/export_solver_neutral.py::def audit_round_trip][audit_round_trip]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def audit_round_trip][audit_round_trip]]
 therefore reconstructs canonical signatures in three steps:
 
 1. map imported nodes to canonical nodes by coordinates;
@@ -17,7 +17,7 @@ therefore reconstructs canonical signatures in three steps:
 
 * Coordinate mapping
 
-[[file:../../interchange/export_solver_neutral.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def _canonicalize_coordinates][_canonicalize_coordinates]]
 lexicographically sorts imported and source =(x,y,z)= arrays.  The source audit
 has already rejected coincident duplicate coordinates, so corresponding sorted
 rows define an unambiguous node map.
@@ -32,7 +32,7 @@ tags.  All later connectivity comparisons operate in the canonical tag space.
 
 * Connectivity signatures
 
-[[file:../../interchange/export_solver_neutral.py::def _signature_mapping][_signature_mapping]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def _signature_mapping][_signature_mapping]]
 sorts node tags within each cell or face only to establish identity.  It
 requires equal array shape, every expected signature exactly once, and no
 missing or duplicate mapped member.
@@ -62,7 +62,7 @@ pressure_feed
 canonical patch signatures exactly.  A correct total boundary count with one
 merged or renamed patch is a failure.
 
-[[file:../../interchange/export_solver_neutral.py::def validate_group_names][validate_group_names]]
+[[file:../../bearing_cfd/bearings/conical_journal/interchange.py::def validate_group_names][validate_group_names]]
 also rejects all forbidden mouth/default names.  In the CGNS path its error is
 annotated =GEOMETRY_ONLY_NOT_FLUENT_READY= to make clear that surviving
 coordinates without BC membership are insufficient.
@@ -101,21 +101,13 @@ this exercises the corresponding MSH reader.  For CGNS it exercises Gmsh's
 CGNS reader, including the zone/BC structures emitted by its writer.  This is
 an independent serialization round trip but still not a Fluent import.
 
-The production results recorded on 2026-07-16 were:
-
-| Format | nGap_04 max coordinate error | nGap_08 max coordinate error |
-|--------+------------------------------+------------------------------|
-| Gmsh 4.1 binary | 0 | 0 |
-| Gmsh 2.2 ASCII | approximately =6.94e-18 m= | approximately =6.94e-18 m= |
-| CGNS | 0 | 0 |
-
-Current values belong in =interchange_report.json=; this table records the
-acceptance run, not a permanent promise about future writers.
+Exact errors for a generated case belong in its =interchange_report.json=.
+The test contract requires all formats to stay within the configured
+coordinate tolerance rather than encoding one run's values in documentation.
 
 * Regression links
 
-- [[file:../../tests/test_solver_neutral_interchange.py::def test_all_three_round_trips_retain_counts_units_and_connectivity][three-format count/unit/connectivity test]]
-- [[file:../../tests/test_solver_neutral_interchange.py::def test_physical_groups_are_exact_and_mouth_is_not_a_boundary][exact physical-group test]]
-- [[file:../../tests/test_solver_neutral_interchange.py::def test_every_exported_boundary_face_is_outward][exported orientation test]]
-- [[file:../../tests/test_solver_neutral_interchange.py::def test_cgns_boundary_name_loss_is_rejected][CGNS name-loss rejection]]
-
+- [[file:../../tests/interchange/test_central_feed_export.py::def test_all_three_round_trips_retain_counts_units_and_connectivity][three-format count/unit/connectivity test]]
+- [[file:../../tests/interchange/test_central_feed_export.py::def test_physical_groups_are_exact_and_mouth_is_not_a_boundary][exact physical-group test]]
+- [[file:../../tests/interchange/test_central_feed_export.py::def test_every_exported_boundary_face_is_outward][exported orientation test]]
+- [[file:../../tests/interchange/test_central_feed_export.py::def test_cgns_boundary_name_loss_is_rejected][CGNS name-loss rejection]]

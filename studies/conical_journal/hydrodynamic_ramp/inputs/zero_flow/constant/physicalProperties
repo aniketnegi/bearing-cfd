@@ -1,0 +1,11 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties;
+}
+
+// Tutorial value only; viscosity has no effect on the exact zero-flow solution.
+viscosityModel  constant;
+nu              1e-05;

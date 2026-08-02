@@ -1,0 +1,93 @@
+#+TITLE: Body-Fitted Circular Surface Inlet
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+[[file:structured-hex-surface-inlet.org][Mesh-aligned surface inlet]] ·
+[[file:topology-and-quality.org][Topology and quality]] ·
+[[file:../operations/running-and-testing.org][Running and testing]]
+
+* Model boundary
+
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/body_fitted_inlet.py][=body_fitted_inlet.py=]]
+constructs the full conical lubricant film with a conforming circular pressure
+patch on the stationary bore.  The mesh contains no feed-tube cells, recess,
+or hydrostatic feed column.  It represents the same reduced-domain boundary
+condition as the mesh-aligned
+[[file:structured-hex-surface-inlet.org][surface-inlet mesh]].
+
+The journal remains a continuous moving wall.  The outer film faces are
+partitioned into =stationary_wall= and =pressure_feed=; no face is deleted from
+the fluid boundary.
+
+* Circular O-grid topology
+
+The local master surface uses a central square, inner ring, analytic circular
+rim, and outer transition rings joined to the background grid.  Rim nodes lie
+on the drilling-cylinder/conical-bore intersection.  The connecting Quad4
+edges are first-order chords, so the aperture is a conforming polygon rather
+than a curved high-order circle.
+
+The master surface is swept between the analytic journal and bore to create
+physical Hex8 cells through the 20--80 micrometre radial film.  Periodic
+circumferential connectivity closes directly without a seam patch.  The five
+external groups are:
+
+- =journal_wall=;
+- =stationary_wall=;
+- =pressure_feed=;
+- =axial_end_z0=;
+- =axial_end_zL=.
+
+* Validation
+
+The generator checks the master topology, circular-rim geometry, one connected
+Hex8 region, complete and disjoint boundaries, positive cell volumes and
+Jacobians, analytic clearance, round trips, and full-volume Fluent-equivalent
+Orthogonal Quality.
+
+Orthogonal Quality is evaluated on every physical three-dimensional Hex8 cell.
+A value from an unwrapped pseudo-thickness surface mesh is not accepted as a
+proxy.  Changing the through-film cell count also changes this metric, so
+gap-layer convergence remains separate from the quality threshold.
+
+The versioned =576 by 180 by 12= result contains 1,252,800 Hex8 cells and
+1,364,688 nodes.  Its 396-face inlet uses a 72-segment rim.  The minimum and
+mean Fluent-equivalent Orthogonal Quality are 0.922660127056 and
+0.970117052983; no cell falls below the 0.9 gate.
+
+The summary and overview are in
+[[file:../../evidence/conical_journal/oq90_3d/][=evidence/conical_journal/oq90_3d/=]].
+Their status is =STATICALLY_VALIDATED_NOT_IMPORTED=.  A live Fluent mesh check
+and quality report are separate requirements.
+
+* Outputs
+
+The case directory contains canonical arrays, Gmsh 4.1 and 2.2 files, a
+full-volume VTU, boundary and cutaway VTUs, the surface-quality CSV, CGNS and
+native Fluent files when requested, =manifest.json=, =validation_report.json=,
+and =run.json=.
+
+In ParaView, color =volume_hex.vtu= by
+=fluent_orthogonal_quality=.  The lighter =viz/master_surface.vtu= contains the
+minimum across the physical gap cells in each surface column; it is a
+projection of the three-dimensional result, not an independent quality
+calculation.
+
+* Generate a mesh
+
+Generate the default body-fitted case from the default geometry:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal geometry
+uv run bearing-cfd conical-journal mesh body-fitted-inlet \
+  --openfoam skip --ansys skip
+#+end_src
+
+The result is =out/conical_journal/meshing/body-fitted-inlet/=.  The
+=576 by 180 by 12= quality case is substantially larger.  Its exact command
+is recorded in
+[[file:../../studies/conical_journal/body_fitted_mesh/study.json][=body_fitted_mesh/study.json=]],
+and its resolved inputs are stored in the generated =validation_report.json=.
+
+[[file:index.org][Meshing index]] | [[file:../index.org][Documentation index]]

@@ -27,28 +27,25 @@ repository.  The cited paper solves a developed-surface Reynolds-equation FEM
 model; it does not resolve the three-dimensional feed passage.
 
 The implementation is
-[[file:../../meshing/layered_prism_central_feed.py][layered_prism_central_feed.py]].
-[[file:../../meshing/layered_prism_central_feed.py::def run_ported][run_ported]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py][central_feed.py]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def run_ported][run_ported]]
 is the top-level driver.
 
 * Input and BREP contracts
 
-[[file:../../meshing/layered_prism_central_feed.py::def load_contract][load_contract]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def load_contract][load_contract]]
 reads resolved geometry from =params.json=, including the actual
 =y_feed_end=.  It requires a PASS preflight report, millimetre BREP units, and
 one SHA shared by the current BREP, CAD record, and preflight record.  Native
 volume, bounding box, and inlet placement must agree.
 
-[[file:../../meshing/layered_prism_central_feed.py::def validate_native_brep][validate_native_brep]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_native_brep][validate_native_brep]]
 independently imports the unsplit BREP with build123d and requires one valid,
 manifold solid with the recorded volume and six-coordinate bounding box.
 
-The parameter contract accepts either =hole_radius= or =hole_diameter=.  The
-radius branch is tested separately because =dict.get(key, expression)= evaluates
-the default expression eagerly in Python; using it here previously accessed a
-missing =hole_diameter= even when =hole_radius= existed.  The implementation now
-branches on key presence before reading either value.  See
-[[file:../../tests/test_layered_prism_central_feed.py::def test_contract_accepts_radius_only_or_diameter_only_parameter_records][the radius/diameter contract regression]].
+The parameter contract accepts either =hole_radius= or =hole_diameter= and
+branches on key presence before reading the selected value.  See
+[[file:../../tests/conical_journal/test_central_feed.py::def test_contract_accepts_radius_only_or_diameter_only_parameter_records][the radius/diameter contract regression]].
 
 The current BREP surface classifier explicitly rejects
 =eccentricity_ratio=0=.  In a concentric case both cones share an axis, so the
@@ -71,21 +68,21 @@ rho_b    = Rb(z)
 P(theta,z,xi) = J(theta,z) + xi [B(theta,z)-J(theta,z)]
 #+end_example
 
-[[file:../../meshing/layered_prism_central_feed.py::class PortedParams][PortedParams]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::class PortedParams][PortedParams]]
 implements =Rj=, =Rb=, and the ray/journal intersection.  Layer interpolation
 is the same-=z= radial clearance convention used by the CAD and no-port mesh.
 It is not shortest surface-normal clearance.
 
 Construction is conceptually millimetric.  The complete point array is
 multiplied by =0.001= once in
-[[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_prism_mesh][build_prism_mesh]].
 All solver exports and cell volumes are therefore SI.
 
 * The unwrapped Tri3 master
 
 ** Domain and axial partitions
 
-[[file:../../meshing/layered_prism_central_feed.py::def build_master_mesh][build_master_mesh]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_master_mesh][build_master_mesh]]
 creates a Gmsh geometric model in the plane
 
 #+begin_example
@@ -100,7 +97,7 @@ film/tube interface.
 
 ** Exact rim nodes and linear faceting
 
-[[file:../../meshing/layered_prism_central_feed.py::def rim_coordinates][rim_coordinates]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def rim_coordinates][rim_coordinates]]
 places each rim vertex on both analytic supports:
 
 #+begin_example
@@ -133,7 +130,7 @@ compacts the node array, and maps =u= back into =[0,2*pi*Rm)=.
 
 This is the only mesh generation Gmsh performs in the ported pipeline: it
 creates the 2D first-order Tri3 master.  The extracted
-[[file:../../meshing/layered_prism_central_feed.py::class MasterMesh][MasterMesh]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::class MasterMesh][MasterMesh]]
 stores points, consistently oriented triangles, disk mask, axial-zone field,
 rim loop, periodic seam edges, split edges, axial-end edges, and metadata.
 
@@ -159,7 +156,7 @@ master triangulation.
 Triangle orientation is made consistent in the =(u,z)= master before any
 volume cell is constructed; volume cells are not “repaired” later with
 arbitrary per-cell node swaps.  The coordinate construction is in
-[[file:../../meshing/layered_prism_central_feed.py::def symmetric_gap_coordinates][symmetric_gap_coordinates()]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/gap_grading.py::def symmetric_gap_coordinates][symmetric_gap_coordinates()]].
 
 At =xi=0=, reversing the master triangle produces the outward
 =journal_wall=.  Because the disk was not removed, the journal contains one
@@ -180,7 +177,7 @@ For every feed-disk node, the tube retains =x= and =z=.  Its bore coordinate is
 =s(eta)=eta^tube_grading=; endpoints, strict monotonicity, and positive layer
 lengths are checked and the minimum/maximum sizes are reported.
 
-At =eta=0=, [[file:../../meshing/layered_prism_central_feed.py::def build_prism_mesh][build_prism_mesh]]
+At =eta=0=, [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def build_prism_mesh][build_prism_mesh]]
 returns the already-existing outer-film disk tags.  It does not create and
 merge coincident nodes.  Higher =eta= layers add new nodes.  Sweeping disk
 Tri3s creates feed Prism6s; sweeping rim edges creates =feed_tube_wall=; and
@@ -191,16 +188,16 @@ the final disk creates =pressure_feed= with outward =+Y= orientation.
 Every mouth key has exactly two incident cells—one film Prism6 and one feed
 Prism6—using identical node tags, and appears in no external boundary group.
 It is a shared feed-film interface and an internal owner-neighbour face, not a
-cap.  [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]]
+cap.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][validate_topology]]
 also requires one connected cell graph and a path from =pressure_feed= into the
 film.
 
 The focused regression is
-[[file:../../tests/test_layered_prism_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][test_mouth_nodes_faces_and_continuous_journal]].
+[[file:../../tests/conical_journal/test_central_feed.py::def test_mouth_nodes_faces_and_continuous_journal][test_mouth_nodes_faces_and_continuous_journal]].
 
 * Canonical PrismMesh and fields
 
-[[file:../../meshing/layered_prism_central_feed.py::class PrismMesh][PrismMesh]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::class PrismMesh][PrismMesh]]
 holds immutable:
 
 - SI =float64= points and one-based =uint64= Prism6 connectivity;
@@ -237,7 +234,7 @@ There is no solver patch named =feed_mouth=, =mouth_cap=, =internal_feed=, or
 
 * Discrete Gmsh model and validation
 
-[[file:../../meshing/layered_prism_central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def add_discrete_prism_model][add_discrete_prism_model]]
 creates six discrete surfaces and one discrete volume, bulk-adds all nodes,
 then adds Tri3, Quad4, and Prism6 elements.  It verifies Gmsh types 2, 3, and 6
 and creates the stable physical groups.  It never calls =generate(3)=.
@@ -245,20 +242,20 @@ and creates the stable physical groups.  It never calls =generate(3)=.
 The validation stack includes:
 
 - analytic cone, bore, cylinder, inlet, gap, and SI checks in
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_geometry][validate_geometry]];
+  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_geometry][validate_geometry]];
 - incidence/graph/boundary/seam/split checks in
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_topology][validate_topology]];
+  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_topology][validate_topology]];
 - exact face counts for all six patches and equality of their sum with the
   complete external-face census;
 - local outward winding for every external Tri3 and Quad4 in
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]];
+  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_external_face_orientation][validate_external_face_orientation]];
 - positive custom integration-point Jacobians and volumes;
 - independent Gmsh =minSICN=, =minDetJac=, and volume from
-  [[file:../../meshing/layered_prism_central_feed.py::def add_gmsh_quality][add_gmsh_quality]];
+  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def add_gmsh_quality][add_gmsh_quality]];
 - oriented exterior-boundary volume versus cell-sum volume;
 - linear mesh volume versus native BREP;
 - closest-point nodal probes against all six native BREP surfaces in
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_nodes_against_brep][validate_nodes_against_brep]].
+  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_nodes_against_brep][validate_nodes_against_brep]].
 
 The closest-point check measures nodal placement.  It does not erase or hide
 the separate chord/sagitta error between first-order rim nodes.
@@ -268,60 +265,53 @@ the separate chord/sagitta error between first-order rim nodes.
 Each gap level writes Gmsh 4.1 binary, Gmsh 2.2 ASCII, VTU volume/boundary
 files, canonical NPZ arrays, physical-group metadata, quality CSV, and reports.
 Round trips are implemented in
-[[file:../../meshing/layered_prism_central_feed.py::def validate_gmsh_round_trip][validate_gmsh_round_trip]],
-[[file:../../meshing/layered_prism_central_feed.py::def validate_vtu_round_trip][validate_vtu_round_trip]],
-and [[file:../../meshing/layered_prism_central_feed.py::def validate_npz_round_trip][validate_npz_round_trip]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_gmsh_round_trip][validate_gmsh_round_trip]],
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_vtu_round_trip][validate_vtu_round_trip]],
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_npz_round_trip][validate_npz_round_trip]].
 
-[[file:../../meshing/layered_prism_central_feed.py::def write_visualizations][write_visualizations]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def write_visualizations][write_visualizations]]
 creates exact-coordinate diagnostic subsets marked =solve_eligible=0=.  The
 shared mouth diagnostic defaults to translucent wireframe so it cannot be
 mistaken for a cap.  Diagnostic MSH files are reopened and checked by
-[[file:../../meshing/layered_prism_central_feed.py::def validate_visualization_msh][validate_visualization_msh]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def validate_visualization_msh][validate_visualization_msh]].
 
 All gap levels are built under one staging directory.  Only a complete family
 with invariant volume is atomically published.  On failure,
-[[file:../../meshing/layered_prism_central_feed.py::def _publish_failure][_publish_failure]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def _publish_failure][_publish_failure]]
 replaces stale solver artifacts with =failure_report.json= and preserves logs
 by relative gap-level path.
 
 Optional GUI launch occurs after the atomic replacement and outside the
-canonical failure/publication scope.  [[file:../../meshing/layered_prism_central_feed.py::def open_optional_gui][open_optional_gui]]
+canonical failure/publication scope.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py::def open_optional_gui][open_optional_gui]]
 turns FLTK/Wayland errors into warnings; a display failure cannot downgrade or
 delete an already validated mesh family.
 
 The solver-neutral continuation from =mesh_arrays.npz= is documented in
 [[file:../interchange/index.org][Solver-neutral interchange]].
 
-* Extension boundary
-
-A future quad-dominant branch could recombine suitable master triangles into a
-Hex8/Prism6 hybrid.  It must preserve the same mouth node identity, two-incident
-cell interface proof, connected cell graph, and external physical boundaries;
-it is not required by the current robust Prism6 pipeline.
-
 * Regression links
 
 - Analytic rim and closed loop:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_analytic_mouth_rim_and_closed_degree_two_loop][test_analytic_mouth_rim_and_closed_degree_two_loop]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_analytic_mouth_rim_and_closed_degree_two_loop][test_analytic_mouth_rim_and_closed_degree_two_loop]]
 - Symmetric film inflation:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_symmetric_through_gap_inflation][test_symmetric_through_gap_inflation]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_symmetric_through_gap_inflation][test_symmetric_through_gap_inflation]]
 - Periodic seam and split conformity:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_periodic_seam_and_axial_partitions_are_internal][test_periodic_seam_and_axial_partitions_are_internal]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_periodic_seam_and_axial_partitions_are_internal][test_periodic_seam_and_axial_partitions_are_internal]]
 - One region and complete boundaries:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_one_component_and_complete_disjoint_boundaries][test_one_component_and_complete_disjoint_boundaries]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_one_component_and_complete_disjoint_boundaries][test_one_component_and_complete_disjoint_boundaries]]
 - Jacobians and Gmsh quality:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_positive_prism_jacobians_and_gmsh_quality][test_positive_prism_jacobians_and_gmsh_quality]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_positive_prism_jacobians_and_gmsh_quality][test_positive_prism_jacobians_and_gmsh_quality]]
 - Geometry and volume:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][test_inlet_geometry_radial_gaps_and_volume_agreement]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_inlet_geometry_radial_gaps_and_volume_agreement][test_inlet_geometry_radial_gaps_and_volume_agreement]]
 - Both strict cases and all main formats:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_all_round_trips_and_both_strict_cases][test_all_round_trips_and_both_strict_cases]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_all_round_trips_and_both_strict_cases][test_all_round_trips_and_both_strict_cases]]
 - Diagnostic Gmsh files:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_diagnostic_msh_files_open_in_gmsh][test_diagnostic_msh_files_open_in_gmsh]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_diagnostic_msh_files_open_in_gmsh][test_diagnostic_msh_files_open_in_gmsh]]
 - Atomic failure cleanup:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][test_failure_atomically_removes_staged_solver_outputs]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][test_failure_atomically_removes_staged_solver_outputs]]
 - Every external face locally outward and reversed-face rejection:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_every_external_face_is_locally_outward_and_reversal_is_rejected][orientation regression]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_every_external_face_is_locally_outward_and_reversal_is_rejected][orientation regression]]
 - Concentric-case guard:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_concentric_case_is_rejected_explicitly][concentric rejection regression]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_concentric_case_is_rejected_explicitly][concentric rejection regression]]
 - Post-publication GUI isolation:
-  [[file:../../tests/test_layered_prism_central_feed.py::def test_gui_failure_after_publication_is_warning_only][GUI warning-only regression]]
+  [[file:../../tests/conical_journal/test_central_feed.py::def test_gui_failure_after_publication_is_warning_only][GUI warning-only regression]]

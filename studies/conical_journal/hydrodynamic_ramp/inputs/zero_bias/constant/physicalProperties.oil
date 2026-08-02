@@ -1,0 +1,13 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.oil;
+}
+
+viscosityModel  constant;
+
+nu              3.22093023256e-05;
+
+rho             860;

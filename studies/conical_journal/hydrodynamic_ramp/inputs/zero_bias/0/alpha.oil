@@ -1,0 +1,45 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      alpha.oil;
+}
+
+dimensions      [];
+
+internalField   uniform 1;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            zeroGradient;
+    }
+
+    stationary_wall
+    {
+        type            zeroGradient;
+    }
+
+    axial_end_z0
+    {
+        type            inletOutlet;
+        inletValue      uniform 1;
+        value           uniform 1;
+    }
+
+    axial_end_zL
+    {
+        type            inletOutlet;
+        inletValue      uniform 1;
+        value           uniform 1;
+    }
+
+    pressure_feed
+    {
+        type            inletOutlet;
+        inletValue      uniform 1;
+        value           uniform 1;
+    }
+}

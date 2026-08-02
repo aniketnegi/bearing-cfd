@@ -1,0 +1,43 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      p_rgh;
+}
+
+dimensions      [pressure];
+
+// Gravity is zero, so p_rgh is absolute static pressure.
+internalField   uniform 101325;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            fixedFluxPressure;
+    }
+
+    stationary_wall
+    {
+        type            fixedFluxPressure;
+    }
+
+    axial_end_z0
+    {
+        type            fixedValue;
+        value           uniform 101325;
+    }
+
+    axial_end_zL
+    {
+        type            fixedValue;
+        value           uniform 101325;
+    }
+
+    pressure_feed
+    {
+        type            fixedValue;
+        value           uniform 101325;
+    }
+}

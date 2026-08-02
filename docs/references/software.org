@@ -1,110 +1,103 @@
-#+TITLE: Software References
+#+TITLE: Software and Runtime Requirements
+#+UPDATED_AT: [2026-08-02 Sun]
 #+OPTIONS: toc:2 num:nil
 #+STARTUP: content
 
-* Reproducible Python environment
+* Python environment
 
-The authoritative dependency declarations are
-[[file:../../pyproject.toml][=pyproject.toml=]], [[file:../../uv.lock][=uv.lock=]], and
-[[file:../../requirements.txt][=requirements.txt=]]; the environment is managed
-with [[https://docs.astral.sh/uv/][uv]].
+[[file:../../pyproject.toml][=pyproject.toml=]] declares direct dependencies and
+[[file:../../uv.lock][=uv.lock=]] pins the complete environment.  Install it
+with:
 
-| Component | Declared version | Role | Official reference |
-|-----------+------------------+------+--------------------|
-| Python | =>=3.10,<3.14=; local selection 3.12 | Runtime | [[https://docs.python.org/3/][Python documentation]] |
-| build123d | 0.11.1 | Parametric OCCT BREP CAD, booleans, BREP/STEP import and export | [[https://build123d.readthedocs.io/en/stable/][build123d 0.11.1 documentation]] |
-| Gmsh | 4.15.2 | OCC preflight, 2-D master/smoke meshing, discrete mesh registration, quality, MSH and CGNS I/O | [[https://gmsh.info/doc/texinfo/][Gmsh 4.15.2 reference manual]] |
-| Matplotlib | 3.10.7 | Static geometry and quality diagnostics | [[https://matplotlib.org/stable/][Matplotlib documentation]] |
-| meshio | 5.3.5 | Float64 VTU export and round-trip import | [[https://github.com/nschloe/meshio][meshio repository]] |
-| ocp-vscode | 4.0.0 | Optional browser CAD preview | [[https://github.com/bernhard-42/vscode-ocp-cad-viewer][OCP CAD Viewer repository]] |
-| pytest | 9.1.1 | Development regression tests | [[https://docs.pytest.org/][pytest documentation]] |
+#+begin_src sh
+uv sync --locked
+#+end_src
 
-NumPy is imported directly by both volume-mesh implementations but is currently
-resolved transitively rather than declared as a top-level dependency.
+| Component | Version constraint | Role |
+|---+---+---|
+| Python | =>=3.10,<3.14= | package and command-line runtime |
+| build123d | =0.11.1= | OCCT BREP construction and BREP/STEP exchange |
+| Gmsh | =4.15.2= | OCC preflight, master-surface meshing, quality, MSH, and CGNS |
+| NumPy | Python-specific pins in =pyproject.toml= | mesh arrays and numerical kernels |
+| SciPy | Python-specific pins in =pyproject.toml= | sparse Reynolds--JFO solve |
+| h5py | =3.16.0= | CGNS hierarchy audit and constrained location correction |
+| Matplotlib | =3.10.7= | geometry and field plots |
+| meshio | =5.3.5= | VTU export and round-trip checks |
+| ocp-vscode | =4.0.0= | optional interactive CAD preview |
+| pytest | =9.1.1=, development group | tests |
+| Ruff | =0.14.8=, development group | static checks |
 
-* CAD and geometry kernel
+Official documentation:
 
-build123d provides Python access to Open Cascade Technology (OCCT).  The
-production geometry is exact BREP; STL, tessellated offsets, and mesh-derived
-CAD are not used.  The CAD uses documented shape validity/manifold properties
-and writes native BREP as the trusted open-source interchange.
+- [[https://docs.astral.sh/uv/][uv]]
+- [[https://docs.python.org/3/][Python]]
+- [[https://build123d.readthedocs.io/en/stable/][build123d]]
+- [[https://gmsh.info/doc/texinfo/][Gmsh]]
+- [[https://numpy.org/doc/stable/][NumPy]]
+- [[https://docs.scipy.org/doc/scipy/][SciPy]]
+- [[https://docs.pytest.org/][pytest]]
+- [[https://docs.astral.sh/ruff/][Ruff]]
 
-Relevant local code:
+* CAD and meshing tools
 
-- [[file:../../bearing_film.py::def export_all][BREP/STEP export]];
-- [[file:../../meshing/gmsh_brep_preflight.py::def run_preflight][Gmsh OCC import and preflight]];
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_native_brep][independent ported-mesh BREP check]].
+The accepted CAD path uses native OCCT BREP.  STEP is an independently audited
+exchange format and is not substituted for a rejected native artifact.  The
+relevant implementations are:
 
-FreeCAD is an external manual viewer for BREP/STEP inspection.  It is not a
-runtime dependency or an automated acceptance oracle in this repository.
-Official site: [[https://www.freecad.org/][FreeCAD]].
+- [[file:../../bearing_cfd/bearings/conical_journal/geometry/cad.py][CAD construction and exchange]];
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/brep_preflight.py][Gmsh OCC preflight]];
+- [[file:../../bearing_cfd/bearings/conical_journal/meshing/central_feed.py][central-feed geometry audit]].
 
-* Gmsh contracts
+FreeCAD is useful for manual BREP/STEP inspection but is neither a package
+dependency nor an acceptance oracle.  See the
+[[https://www.freecad.org/][FreeCAD project site]].
 
-The project pins Gmsh 4.15.2.  The official 4.15.2 manual documents the Python
-API, OpenCASCADE kernel, physical groups, discrete entities, periodic curves,
-quality queries, and MSH formats used here:
+Gmsh generates the Tri3 boundary smoke mesh and the two-dimensional master
+surface for the Prism6 central-feed mesh.  The structured Hex8 and swept
+Prism6 volume connectivity is assembled in NumPy; these paths do not call
+Gmsh's three-dimensional mesh generator.
 
-- HTML manual: [[https://gmsh.info/doc/texinfo/][https://gmsh.info/doc/texinfo/]]
-- PDF manual: [[https://gmsh.info/doc/texinfo/gmsh.pdf][https://gmsh.info/doc/texinfo/gmsh.pdf]]
+CGNS export requires =Cgns= in Gmsh's =General.BuildInfo=.  The export is
+reopened and checked against the canonical arrays and physical groups.  The
+CGNS structures used here are defined by the
+[[https://cgns.org/standard/SIDS/hierarchy.html][CGNS hierarchy]] and
+[[https://cgns.org/standard/SIDS/grid.html][grid and element]] specifications.
 
-Gmsh generates 2-D triangles for the smoke and ported master-surface stages.
-The no-port Hex8 and ported Prism6 volume connectivity are calculated in NumPy
-and registered as complete discrete meshes; neither pipeline calls Gmsh's 3-D
-mesh generator.
+* Optional external runtimes
 
-The solver-neutral exporter additionally requires =Cgns= in Gmsh's compiled
-=General.BuildInfo=.  It uses =gmsh.write= and =gmsh.open= for the CGNS
-round trip and checks exact physical names/memberships after reopening.  See
-[[file:../interchange/formats-and-cgns.org][Formats and CGNS]].
+** Fluent
 
-* CGNS and Fluent
+PyFluent and Ansys Fluent are intentionally absent from =pyproject.toml=.
+Static MSH, CGNS, and Fluent-ASCII checks run without proprietary software.
+Only a licensed Fluent launch, import, mesh check, count/scale audit, and
+native save can produce =FLUENT_IMPORT_PASS=.
 
-CGNS is the neutral unstructured-mesh representation used for the optional
-Fluent handoff.  The relevant standard structures are documented by the CGNS
-SIDS:
+Relevant vendor references:
 
-- [[https://cgns.org/standard/SIDS/hierarchy.html][zone and hierarchy structures]];
-- [[https://cgns.org/standard/SIDS/grid.html][coordinates and element sections]].
+- [[https://fluent.docs.pyansys.com/version/stable/user_guide/session/launching_ansys_fluent.html][PyFluent launch guide]];
+- [[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_ug/flu_ug_FileImport.html][Fluent mesh import guide]].
 
-PyFluent is intentionally optional and is not added to =pyproject.toml=.  A
-machine without Ansys should still export and statically validate all neutral
-files without installing proprietary tooling.  When installed externally, the
-audit uses official APIs for:
+** OpenFOAM
 
-- [[https://fluent.docs.pyansys.com/version/stable/user_guide/session/launching_ansys_fluent.html][3-D/double-precision launch]];
-- [[https://fluent.docs.pyansys.com/version/stable/api/meshing/tui/file/import_/import__contents.html][CGNS volume-mesh import]];
-- [[https://fluent.docs.pyansys.com/version/stable/api/meshing/tui/mesh/mesh_contents.html][mesh and quality checks]].
+OpenFOAM is not a Python dependency.  The repository contains the native
+solver in [[file:../../openfoam/solvers/jfoBearingFoam/][=openfoam/solvers/jfoBearingFoam/=]],
+compact reference cases under
+[[file:../../cases/conical_journal/openfoam/][=cases/conical_journal/openfoam/=]], and a
+build/smoke check:
 
-Ansys's Fluent user guide documents the GUI route as
-*File > Import > CGNS > Mesh* and recommends verifying cell and boundary zones
-after third-party import:
-[[https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/flu_ug/flu_ug_FileImport.html][Fluent file import]].
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
 
-CGNS import may require the Ansys/VKI license.  Package detection is therefore
-not equivalent to a usable runtime; only a successful live launch and import
-can produce =FLUENT_IMPORT_PASS=.
+Mesh generators treat =gmshToFoam= and =checkMesh= as optional capabilities.
+Absence is =SKIPPED= in =auto= mode and fatal in =required= mode.  Reports
+record the executable path and detected version because OpenFOAM distributions
+and utility behaviour differ.
 
 * Visualization
 
-Gmsh opens =.msh= and =.pos= files.  ParaView opens the float64 =.vtu= files;
-official documentation is at [[https://docs.paraview.org/][docs.paraview.org]].  On Artix Linux/Wayland the
-project uses =QT_QPA_PLATFORM=xcb= to avoid known display-path issues.  PyVista
-is not required.
+Gmsh opens =.msh= and =.pos= files.  ParaView opens the generated =.vtu=
+files.  Neither viewer determines acceptance; the JSON reports and canonical
+arrays do.  See [[file:../operations/visualization.org][Visualization]].
 
-* OpenFOAM
-
-OpenFOAM is not a Python dependency.  The mesh-generation scripts discover
-=gmshToFoam= and =checkMesh= only for the optional conversion audit.  The
-downstream S100 study used a local OpenFOAM 14 source build; exact source and
-ThirdParty revisions, environment setup, and build evidence are recorded in
-[[file:../handoff/01-openfoam-build.org][the OpenFOAM build handoff]].
-
-The OpenFOAM Foundation source guide describes =gmshToFoam= as reading Gmsh
-=.msh= files:
-
-- [[https://cpp.openfoam.org/v13/dir_70ca48d6efc076aae6c126917cb7ccc1.html][OpenFOAM Foundation =gmshToFoam= directory reference]]
-
-Because distributions and utility capabilities vary, reports record executable
-paths and runtime version/help output.  Absence is =SKIPPED= in =auto= mode and
-fatal in =required= mode.
+[[file:index.org][References]] | [[file:../index.org][Documentation index]]

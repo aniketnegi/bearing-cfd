@@ -1,0 +1,41 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.oil;
+}
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState rhoConst;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        // Numerically inactive with rhoConst; not an oil molecular-weight claim.
+        molWeight   1;
+    }
+    equationOfState
+    {
+        rho         837.1;
+    }
+    thermodynamics
+    {
+        Cp          2140.2;
+        hf          0;
+    }
+    transport
+    {
+        mu          0.0236624469428;
+        Pr          377.928126471;
+    }
+}

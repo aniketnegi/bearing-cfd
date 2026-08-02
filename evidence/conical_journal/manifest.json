@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "bearing": "conical_journal",
+  "hash_kind": "sha256-tree-v1",
+  "collections": [
+    {
+      "path": "evidence/conical_journal/cavitation_four_track",
+      "sha256": "595150caf2cd0e20f5329e1d52ab324ad828e5b5aa9b56de838f6c72483aa5f6",
+      "source_manifest": "studies/conical_journal/cavitation_four_track/study.json",
+      "status": "TRACK_A_ACCEPTED_TRACKS_B_C_UNSETTLED_TRACK_D_REJECTED"
+    },
+    {
+      "path": "evidence/conical_journal/jfo_candidate",
+      "sha256": "486ea617d3e23dbbadc7b8f250dd56c88a6f8cc6b8b29b573b5b9d303046d292",
+      "source_manifest": "studies/conical_journal/jfo_checkpoint_evidence/study.json",
+      "status": "ACCEPTED_NUMERICAL_EVIDENCE_PHYSICAL_VALIDATION_PENDING"
+    },
+    {
+      "path": "evidence/conical_journal/jfo_sae10w40",
+      "sha256": "775fcd0fca443f708ec3d9fc54bcefe2efdb048e574aa3a5dd2063476f8debfe",
+      "source_manifest": "studies/conical_journal/cavitation_four_track/study.json",
+      "status": "ACCEPTED_NUMERICAL_SENSITIVITY_PHYSICAL_VALIDATION_PENDING"
+    },
+    {
+      "path": "evidence/conical_journal/oq90_3d",
+      "sha256": "54fa107184488d7e4b98d6d7af1a0d15800729a52876931ef8c3b4728414a07e",
+      "source_manifest": "studies/conical_journal/body_fitted_mesh/study.json",
+      "status": "STATIC_PASS_FLUENT_NOT_RUN"
+    }
+  ]
+}

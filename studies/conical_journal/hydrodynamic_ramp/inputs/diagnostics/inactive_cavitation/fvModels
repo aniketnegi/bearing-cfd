@@ -1,0 +1,23 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvModels;
+}
+
+VoFCavitation
+{
+    type        VoFCavitation;
+    model       SchnerrSauer;
+
+    SchnerrSauer
+    {
+        pSat    -1e9;
+        liquid  oil;
+        n       1.6e13;
+        dNuc    2e-6;
+        Cc      1;
+        Cv      1;
+    }
+}

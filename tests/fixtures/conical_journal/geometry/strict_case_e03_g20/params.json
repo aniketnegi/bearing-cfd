@@ -1,0 +1,1967 @@
+{
+  "available_shape_diagnostics": {
+    "base_film": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.96910702798607,
+          60.96910702798607,
+          60.00000000000001
+        ],
+        "min": [
+          -60.96910702798607,
+          -60.96910702798607,
+          0.0
+        ],
+        "size": [
+          121.93821405597214,
+          121.93821405597214,
+          60.00000000000001
+        ]
+      },
+      "face_count": 4,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        942.9490349748085
+      ],
+      "volume_mm3": 942.9490349748085
+    },
+    "bore_blank": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.96910702798607,
+          60.96910702798607,
+          60.00000000000001
+        ],
+        "min": [
+          -60.96910702798607,
+          -60.96910702798607,
+          0.0
+        ],
+        "size": [
+          121.93821405597214,
+          121.93821405597214,
+          60.00000000000001
+        ]
+      },
+      "face_count": 3,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        479673.09402892005
+      ],
+      "volume_mm3": 479673.09402892005
+    },
+    "bushing_context": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          70.96910712798606,
+          70.96910712798606,
+          60.00000010000001
+        ],
+        "min": [
+          -70.96910712798606,
+          -70.96910712798606,
+          -1e-07
+        ],
+        "size": [
+          141.93821425597213,
+          141.93821425597213,
+          60.00000020000001
+        ]
+      },
+      "face_count": 5,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        207407.93620475306
+      ],
+      "volume_mm3": 207407.93620475306
+    },
+    "feed_cylinder": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          2.0,
+          63.7779404685324,
+          32.0
+        ],
+        "min": [
+          -2.0,
+          0.0,
+          28.0
+        ],
+        "size": [
+          4.0,
+          63.7779404685324,
+          4.0
+        ]
+      },
+      "face_count": 3,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        801.4572369481143
+      ],
+      "volume_mm3": 801.4572369481143
+    },
+    "film": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.96910712798607,
+          63.7779405685324,
+          60.00000010000001
+        ],
+        "min": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1e-07
+        ],
+        "size": [
+          121.93821425597214,
+          124.74704769651848,
+          60.00000020000001
+        ]
+      },
+      "face_count": 6,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        1115.589567959105
+      ],
+      "volume_mm3": 1115.589567959105
+    },
+    "hole_band": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          51.5058810370648,
+          63.7779405685324,
+          34.00000010000001
+        ],
+        "min": [
+          -51.5058810370648,
+          -51.5058810370648,
+          25.9999999
+        ],
+        "size": [
+          103.0117620741296,
+          115.28382160559721,
+          8.00000020000001
+        ]
+      },
+      "face_count": 6,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        298.3670709809072
+      ],
+      "volume_mm3": 298.3670709809072
+    },
+    "journal_context": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.91910702798607,
+          60.90410702798607,
+          60.00000000000001
+        ],
+        "min": [
+          -60.91910702798607,
+          -60.93410702798607,
+          0.0
+        ],
+        "size": [
+          121.83821405597214,
+          121.83821405597214,
+          60.00000000000001
+        ]
+      },
+      "face_count": 3,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        478730.14499394514
+      ],
+      "volume_mm3": 478730.14499394514
+    },
+    "journal_cutter": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          61.28307726225227,
+          61.26807726225227,
+          61.00000000000001
+        ],
+        "min": [
+          -61.28307726225227,
+          -61.29807726225227,
+          -1.0
+        ],
+        "size": [
+          122.56615452450454,
+          122.56615452450454,
+          62.00000000000001
+        ]
+      },
+      "face_count": 3,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        495212.48123421764
+      ],
+      "volume_mm3": 495212.48123421764
+    },
+    "ring_A": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.96910702798607,
+          60.96910702798607,
+          26.000000000000004
+        ],
+        "min": [
+          -60.96910702798607,
+          -60.96910702798607,
+          0.0
+        ],
+        "size": [
+          121.93821405597214,
+          121.93821405597214,
+          26.000000000000004
+        ]
+      },
+      "face_count": 4,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        459.151571152157
+      ],
+      "volume_mm3": 459.151571152157
+    },
+    "ring_B": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          48.594119062935185,
+          48.594119062935185,
+          60.00000000000001
+        ],
+        "min": [
+          -48.594119062935185,
+          -48.594119062935185,
+          34.0
+        ],
+        "size": [
+          97.18823812587037,
+          97.18823812587037,
+          26.000000000000007
+        ]
+      },
+      "face_count": 4,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        358.07092582607584
+      ],
+      "volume_mm3": 358.07092582607584
+    },
+    "wet": {
+      "all_solids_manifold": true,
+      "all_solids_valid": true,
+      "bounding_box_mm": {
+        "max": [
+          60.96910712798607,
+          63.7779405685324,
+          60.00000010000001
+        ],
+        "min": [
+          -60.96910712798607,
+          -60.96910712798607,
+          -1e-07
+        ],
+        "size": [
+          121.93821425597214,
+          124.74704769651848,
+          60.00000020000001
+        ]
+      },
+      "face_count": 5,
+      "is_manifold": true,
+      "is_valid": true,
+      "solid_count": 1,
+      "solid_validity": [
+        {
+          "is_manifold": true,
+          "is_valid": true
+        }
+      ],
+      "solid_volumes_mm3": [
+        479845.73449545936
+      ],
+      "volume_mm3": 479845.73449545936
+    }
+  },
+  "dependency_versions": {
+    "build123d": "0.11.1",
+    "cadquery-ocp-novtk": "7.9.3.1.1",
+    "matplotlib": "3.10.7",
+    "ocp-vscode": "4.0.0",
+    "python": "3.12.12"
+  },
+  "error": {
+    "message": "mandatory CAD round-trip validation failed: film_unsplit.step: STEP round-trip error 5.962e-05 exceeds 1.000e-06; hole_band.step: STEP round-trip error 2.229e-04 exceeds 1.000e-06; film_zones.step: STEP round-trip error 5.962e-05 exceeds 1.000e-06",
+    "type": "RoundTripValidationError"
+  },
+  "inputs": {
+    "axial_cutter_extension": 1.0,
+    "bushing_wall_thickness": 10.0,
+    "eccentricity_angle_deg": -90.0,
+    "eccentricity_ratio": 0.3,
+    "export_debug_half": false,
+    "hole_axial_pos": null,
+    "hole_diameter": 4.0,
+    "inlet_extension": 3.0,
+    "length": 60.0,
+    "max_face_count": 100,
+    "mean_radius": 50.0,
+    "outdir": "out/strict_case_e03_g20",
+    "preview": false,
+    "radial_clearance": 0.05,
+    "semicone_angle_deg": 20.0,
+    "split_halfwidth": 4.0
+  },
+  "measurements": {
+    "brep_round_trip": {
+      "film_unsplit.brep": {
+        "absolute_volume_error_mm3": 7.321432349272072e-11,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 1115.589567959105,
+        "format": "BREP",
+        "labels": [],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 6.56283687079123e-14,
+        "solid_count": 1,
+        "step_precision_mode": null,
+        "total_volume_mm3": 1115.589567959178
+      },
+      "film_zones.brep": {
+        "absolute_volume_error_mm3": 1.0982148523908108e-10,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 3,
+        "expected_volume_mm3": 1115.58956795914,
+        "format": "BREP",
+        "labels": [],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 9.844255306186536e-14,
+        "solid_count": 3,
+        "step_precision_mode": null,
+        "total_volume_mm3": 1115.5895679592497
+      }
+    },
+    "feed_start_disk_proof_margin_mm": 47.27200328225859,
+    "final_bounding_box_mm": {
+      "max": [
+        60.96910712798607,
+        63.7779405685324,
+        60.00000010000001
+      ],
+      "min": [
+        -60.96910712798607,
+        -60.96910712798607,
+        -1e-07
+      ],
+      "size": [
+        121.93821425597214,
+        124.74704769651848,
+        60.00000020000001
+      ]
+    },
+    "inlet_face": {
+      "area_mm2": 12.566370614359167,
+      "centre_mm": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "edge_count": 1,
+      "edge_geometry": [
+        "CIRCLE"
+      ],
+      "normal": [
+        -0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "published_brep_fallback": [
+      "film_unsplit.brep",
+      "film_zones.brep",
+      "film_thickness_map.png",
+      "requirements.txt"
+    ],
+    "same_z_radial_clearance_mm": {
+      "stations": [
+        {
+          "radial_max_mm": 0.06499999999999773,
+          "radial_min_mm": 0.03499999999999659,
+          "z_mm": 10.0
+        },
+        {
+          "radial_max_mm": 0.06499999999999773,
+          "radial_min_mm": 0.03499999999999659,
+          "z_mm": 20.0
+        },
+        {
+          "radial_max_mm": 0.06499999999999062,
+          "radial_min_mm": 0.034999999999989484,
+          "z_mm": 30.0
+        },
+        {
+          "radial_max_mm": 0.06499999999999773,
+          "radial_min_mm": 0.03499999999999659,
+          "z_mm": 40.0
+        },
+        {
+          "radial_max_mm": 0.06499999999999062,
+          "radial_min_mm": 0.034999999999989484,
+          "z_mm": 50.0
+        }
+      ],
+      "target_max": 0.065,
+      "target_min": 0.035
+    },
+    "shortest_surface_normal_clearance_mm": {
+      "closest_points": {
+        "bore_mm": [
+          -1.119984326530433e-14,
+          -60.96910702798607,
+          0.0
+        ],
+        "journal_mm": [
+          -1.1190492025636541e-14,
+          -60.93820125023149,
+          -0.01124878316951472
+        ]
+      },
+      "occt_minimum": 0.032889241727496674,
+      "target_max": 0.06108002035108405,
+      "target_min": 0.0328892417275068
+    },
+    "step_round_trip": {
+      "context_assembly.step": {
+        "absolute_volume_error_mm3": 0.08422991132829338,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 2,
+        "expected_volume_mm3": 686138.0811986981,
+        "format": "STEP",
+        "labels": [
+          "bearing_context",
+          "journal_context",
+          "bushing_context"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 1.2275941772702937e-07,
+        "solid_count": 2,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 686137.9969687868
+      },
+      "film_unsplit.step": {
+        "absolute_volume_error_mm3": 0.06650821826974607,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 1115.589567959105,
+        "format": "STEP",
+        "labels": [
+          "film_unsplit"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 5.961710308157356e-05,
+        "solid_count": 1,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 1115.5230597408352
+      },
+      "film_zones.step": {
+        "absolute_volume_error_mm3": 0.06650823151107943,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 3,
+        "expected_volume_mm3": 1115.58956795914,
+        "format": "STEP",
+        "labels": [
+          "film_zones",
+          "ring_A",
+          "hole_band",
+          "ring_B"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 5.9617114950930944e-05,
+        "solid_count": 3,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 1115.5230597276288
+      },
+      "hole_band.step": {
+        "absolute_volume_error_mm3": 0.06650823519282767,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 298.3670709809072,
+        "format": "STEP",
+        "labels": [
+          "hole_band"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 0.00022290742398005305,
+        "solid_count": 1,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 298.3005627457144
+      },
+      "ring_A.step": {
+        "absolute_volume_error_mm3": 2.08092387765646e-09,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 459.151571152157,
+        "format": "STEP",
+        "labels": [
+          "ring_A"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 4.532106625345442e-12,
+        "solid_count": 1,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 459.1515711542379
+      },
+      "ring_B.step": {
+        "absolute_volume_error_mm3": 1.6007106751203537e-09,
+        "all_manifold": true,
+        "all_valid": true,
+        "expected_solid_count": 1,
+        "expected_volume_mm3": 358.07092582607584,
+        "format": "STEP",
+        "labels": [
+          "ring_B"
+        ],
+        "missing_expected_labels_warning": [],
+        "relative_volume_error": 4.470373212869731e-12,
+        "solid_count": 1,
+        "step_precision_mode": "GREATEST",
+        "total_volume_mm3": 358.07092582767655
+      }
+    },
+    "topology": {
+      "base_film": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.96910702798607,
+            60.96910702798607,
+            60.00000000000001
+          ],
+          "min": [
+            -60.96910702798607,
+            -60.96910702798607,
+            0.0
+          ],
+          "size": [
+            121.93821405597214,
+            121.93821405597214,
+            60.00000000000001
+          ]
+        },
+        "face_count": 4,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          942.9490349748085
+        ],
+        "volume_mm3": 942.9490349748085
+      },
+      "bore_blank": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.96910702798607,
+            60.96910702798607,
+            60.00000000000001
+          ],
+          "min": [
+            -60.96910702798607,
+            -60.96910702798607,
+            0.0
+          ],
+          "size": [
+            121.93821405597214,
+            121.93821405597214,
+            60.00000000000001
+          ]
+        },
+        "face_count": 3,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          479673.09402892005
+        ],
+        "volume_mm3": 479673.09402892005
+      },
+      "bushing_context": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            70.96910712798606,
+            70.96910712798606,
+            60.00000010000001
+          ],
+          "min": [
+            -70.96910712798606,
+            -70.96910712798606,
+            -1e-07
+          ],
+          "size": [
+            141.93821425597213,
+            141.93821425597213,
+            60.00000020000001
+          ]
+        },
+        "face_count": 5,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          207407.93620475306
+        ],
+        "volume_mm3": 207407.93620475306
+      },
+      "feed_cylinder": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            2.0,
+            63.7779404685324,
+            32.0
+          ],
+          "min": [
+            -2.0,
+            0.0,
+            28.0
+          ],
+          "size": [
+            4.0,
+            63.7779404685324,
+            4.0
+          ]
+        },
+        "face_count": 3,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          801.4572369481143
+        ],
+        "volume_mm3": 801.4572369481143
+      },
+      "film": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.96910712798607,
+            63.7779405685324,
+            60.00000010000001
+          ],
+          "min": [
+            -60.96910712798607,
+            -60.96910712798607,
+            -1e-07
+          ],
+          "size": [
+            121.93821425597214,
+            124.74704769651848,
+            60.00000020000001
+          ]
+        },
+        "face_count": 6,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          1115.589567959105
+        ],
+        "volume_mm3": 1115.589567959105
+      },
+      "hole_band": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            51.5058810370648,
+            63.7779405685324,
+            34.00000010000001
+          ],
+          "min": [
+            -51.5058810370648,
+            -51.5058810370648,
+            25.9999999
+          ],
+          "size": [
+            103.0117620741296,
+            115.28382160559721,
+            8.00000020000001
+          ]
+        },
+        "face_count": 6,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          298.3670709809072
+        ],
+        "volume_mm3": 298.3670709809072
+      },
+      "journal_context": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.91910702798607,
+            60.90410702798607,
+            60.00000000000001
+          ],
+          "min": [
+            -60.91910702798607,
+            -60.93410702798607,
+            0.0
+          ],
+          "size": [
+            121.83821405597214,
+            121.83821405597214,
+            60.00000000000001
+          ]
+        },
+        "face_count": 3,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          478730.14499394514
+        ],
+        "volume_mm3": 478730.14499394514
+      },
+      "journal_cutter": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            61.28307726225227,
+            61.26807726225227,
+            61.00000000000001
+          ],
+          "min": [
+            -61.28307726225227,
+            -61.29807726225227,
+            -1.0
+          ],
+          "size": [
+            122.56615452450454,
+            122.56615452450454,
+            62.00000000000001
+          ]
+        },
+        "face_count": 3,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          495212.48123421764
+        ],
+        "volume_mm3": 495212.48123421764
+      },
+      "ring_A": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.96910702798607,
+            60.96910702798607,
+            26.000000000000004
+          ],
+          "min": [
+            -60.96910702798607,
+            -60.96910702798607,
+            0.0
+          ],
+          "size": [
+            121.93821405597214,
+            121.93821405597214,
+            26.000000000000004
+          ]
+        },
+        "face_count": 4,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          459.151571152157
+        ],
+        "volume_mm3": 459.151571152157
+      },
+      "ring_B": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            48.594119062935185,
+            48.594119062935185,
+            60.00000000000001
+          ],
+          "min": [
+            -48.594119062935185,
+            -48.594119062935185,
+            34.0
+          ],
+          "size": [
+            97.18823812587037,
+            97.18823812587037,
+            26.000000000000007
+          ]
+        },
+        "face_count": 4,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          358.07092582607584
+        ],
+        "volume_mm3": 358.07092582607584
+      },
+      "wet": {
+        "all_solids_manifold": true,
+        "all_solids_valid": true,
+        "bounding_box_mm": {
+          "max": [
+            60.96910712798607,
+            63.7779405685324,
+            60.00000010000001
+          ],
+          "min": [
+            -60.96910712798607,
+            -60.96910712798607,
+            -1e-07
+          ],
+          "size": [
+            121.93821425597214,
+            124.74704769651848,
+            60.00000020000001
+          ]
+        },
+        "face_count": 5,
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1,
+        "solid_validity": [
+          {
+            "is_manifold": true,
+            "is_valid": true
+          }
+        ],
+        "solid_volumes_mm3": [
+          479845.73449545936
+        ],
+        "volume_mm3": 479845.73449545936
+      }
+    },
+    "volumes_mm3": {
+      "base_boolean": 942.9490349748085,
+      "base_exact": 942.9490349749764,
+      "feed_added": 172.64053298429644,
+      "feed_added_boolean": 172.63605110526208,
+      "feed_scale_estimate": 163.36281798666926,
+      "split_relative_error": 3.138748068639284e-14,
+      "total": 1115.589567959105,
+      "zones": {
+        "hole_band": 298.3670709809072,
+        "ring_A": 459.151571152157,
+        "ring_B": 358.07092582607584
+      }
+    }
+  },
+  "overall": "FAIL",
+  "resolved_parameters": {
+    "axial_cutter_extension": 1.0,
+    "base_volume_exact": 942.9490349749764,
+    "bushing_wall_thickness": 10.0,
+    "cone_slope": 0.36397023426620234,
+    "eccentricity": 0.015,
+    "eccentricity_angle_deg": -90.0,
+    "eccentricity_ratio": 0.3,
+    "ex": 9.184850993605148e-19,
+    "export_debug_half": false,
+    "ey": -0.015,
+    "feed_scale_estimate": 163.36281798666926,
+    "feed_start_disk_margin": 47.27200328225859,
+    "gamma_rad": 0.3490658503988659,
+    "h_normal_max": 0.06108002035108405,
+    "h_normal_min": 0.0328892417275068,
+    "h_radial_max": 0.065,
+    "h_radial_min": 0.035,
+    "hole_axial_pos": 30.0,
+    "hole_diameter": 4.0,
+    "hole_radius": 2.0,
+    "inlet_extension": 3.0,
+    "length": 60.0,
+    "max_face_count": 100,
+    "mean_radius": 50.0,
+    "outdir": "out/strict_case_e03_g20",
+    "phi_rad": -1.5707963267948966,
+    "preview": false,
+    "radial_clearance": 0.05,
+    "semicone_angle_deg": 20.0,
+    "split_halfwidth": 4.0,
+    "y_feed_end": 63.7779404685324,
+    "z1": 26.0,
+    "z2": 34.0,
+    "z_hole_max": 32.0,
+    "z_hole_min": 28.0
+  },
+  "sha256": {
+    "film_thickness_map.png": "6dbafe4281b502230721b9f9c093f0e0ace80dd0e0fecafc29e5dc617fe442d0",
+    "film_unsplit.brep": "585b1cf17eb48144410cd7fd3b199c5e1e6eb3e297c44ae0794f5c032b3357a2",
+    "film_zones.brep": "43cb4123e6ca8e8b9b7ebe0544bf1a46c16bffc30bd71b40a305bcbff2ac41a0",
+    "requirements.txt": "dc36c2dd66e4eb54014561f59a2cf00fd96556e6176051750964ff602ebd7957"
+  },
+  "validation_records": [
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "topology.full_film_one_solid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "topology.full_film_valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "topology.full_film_manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": "1..100",
+      "mandatory": true,
+      "measured": 6,
+      "name": "topology.full_film_face_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "topology.wet_connected",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "topology.wet_valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "topology.wet_manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": [],
+      "mandatory": true,
+      "measured": [],
+      "name": "topology.all_solids_valid_manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "name": "topology.ring_A",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "name": "topology.hole_band",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "name": "topology.ring_B",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "name": "topology.journal_context",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "is_manifold": true,
+        "is_valid": true,
+        "solid_count": 1
+      },
+      "name": "topology.bushing_context",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": 942.9490349749764,
+      "mandatory": true,
+      "measured": {
+        "relative_error": 1.7807479841079953e-13,
+        "volume_mm3": 942.9490349748085
+      },
+      "name": "volume.base_film_exact",
+      "status": "PASS",
+      "tolerance": "relative <= 1e-8"
+    },
+    {
+      "detail": "",
+      "expected": "> 0",
+      "mandatory": true,
+      "measured": 172.64053298429644,
+      "name": "volume.feed_added_positive",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": {
+        "feed_added_mm3": "> 0",
+        "film_solid_count": 1
+      },
+      "mandatory": true,
+      "measured": {
+        "feed_added_mm3": 172.64053298429644,
+        "film_solid_count": 1
+      },
+      "name": "topology.feed_connected_to_film",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "Default OCCT Boolean tolerances perturb the shared bore/feed intersection by a few micrometres cubed; no fuzzy tolerance or healing is used.",
+      "expected": "equal",
+      "mandatory": true,
+      "measured": {
+        "feed_minus_bore_mm3": 172.63605110526208,
+        "film_minus_base_mm3": 172.64053298429644,
+        "relative_error": 2.5961431610976883e-05
+      },
+      "name": "volume.feed_boolean_identity",
+      "status": "PASS",
+      "tolerance": "relative <= 5e-5"
+    },
+    {
+      "detail": "Cone slope and finite hole radius make this estimate non-binding.",
+      "expected": "diagnostic only",
+      "mandatory": false,
+      "measured": {
+        "added_mm3": 172.64053298429644,
+        "estimate_mm3": 163.36281798666926,
+        "relative_difference": 0.05679208471039148
+      },
+      "name": "volume.feed_scale_estimate_diagnostic",
+      "status": "PASS",
+      "tolerance": null
+    },
+    {
+      "detail": "",
+      "expected": 0.035,
+      "mandatory": true,
+      "measured": 0.03499999999999659,
+      "name": "clearance.same_z_radial_min_z1",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.065,
+      "mandatory": true,
+      "measured": 0.06499999999999773,
+      "name": "clearance.same_z_radial_max_z1",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.035,
+      "mandatory": true,
+      "measured": 0.03499999999999659,
+      "name": "clearance.same_z_radial_min_z2",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.065,
+      "mandatory": true,
+      "measured": 0.06499999999999773,
+      "name": "clearance.same_z_radial_max_z2",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.035,
+      "mandatory": true,
+      "measured": 0.034999999999989484,
+      "name": "clearance.same_z_radial_min_z3",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.065,
+      "mandatory": true,
+      "measured": 0.06499999999999062,
+      "name": "clearance.same_z_radial_max_z3",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.035,
+      "mandatory": true,
+      "measured": 0.03499999999999659,
+      "name": "clearance.same_z_radial_min_z4",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.065,
+      "mandatory": true,
+      "measured": 0.06499999999999773,
+      "name": "clearance.same_z_radial_max_z4",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.035,
+      "mandatory": true,
+      "measured": 0.034999999999989484,
+      "name": "clearance.same_z_radial_min_z5",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 0.065,
+      "mandatory": true,
+      "measured": 0.06499999999999062,
+      "name": "clearance.same_z_radial_max_z5",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "Compared with (c-e)*cos(gamma), not the same-z radial clearance c-e.",
+      "expected": 0.0328892417275068,
+      "mandatory": true,
+      "measured": {
+        "closest_points": {
+          "bore_mm": [
+            -1.119984326530433e-14,
+            -60.96910702798607,
+            0.0
+          ],
+          "journal_mm": [
+            -1.1190492025636541e-14,
+            -60.93820125023149,
+            -0.01124878316951472
+          ]
+        },
+        "distance_mm": 0.032889241727496674
+      },
+      "name": "clearance.shortest_surface_normal_min",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.0005 mm"
+    },
+    {
+      "detail": "",
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "measured": {
+        "relative_error": 3.138748068639284e-14,
+        "zone_sum_mm3": 1115.58956795914
+      },
+      "name": "volume.axial_split_conservation",
+      "status": "PASS",
+      "tolerance": "relative <= 1e-8"
+    },
+    {
+      "detail": "This proves the +Y feed does not alter the x-min, x-max, or y-min radial envelope.",
+      "expected": "< 49.2720595314676",
+      "mandatory": true,
+      "measured": 2.0,
+      "name": "bounding_box.feed_radius_below_local_journal_radius",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": 0.0,
+      "mandatory": true,
+      "measured": -1e-07,
+      "name": "bounding_box.z_min",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": 60.0,
+      "mandatory": true,
+      "measured": 60.00000010000001,
+      "name": "bounding_box.z_max",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": -60.96910702798607,
+      "mandatory": true,
+      "measured": -60.96910712798607,
+      "name": "bounding_box.x_min",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": 60.96910702798607,
+      "mandatory": true,
+      "measured": 60.96910712798607,
+      "name": "bounding_box.x_max",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": -60.96910702798607,
+      "mandatory": true,
+      "measured": -60.96910712798607,
+      "name": "bounding_box.y_min",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": 63.7779404685324,
+      "mandatory": true,
+      "measured": 63.7779405685324,
+      "name": "bounding_box.y_max",
+      "status": "PASS",
+      "tolerance": "absolute <= 0.001 mm"
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "inlet.identity_unique",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": 12.566370614359172,
+      "mandatory": true,
+      "measured": 12.566370614359167,
+      "name": "inlet.area",
+      "status": "PASS",
+      "tolerance": "max(1e-7 mm2, relative 1e-8)"
+    },
+    {
+      "detail": "",
+      "expected": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "mandatory": true,
+      "measured": [
+        0.0,
+        63.7779404685324,
+        30.0
+      ],
+      "name": "inlet.centre",
+      "status": "PASS",
+      "tolerance": "distance <= 1e-6 mm"
+    },
+    {
+      "detail": "",
+      "expected": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "mandatory": true,
+      "measured": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "name": "inlet.outward_normal_plus_y",
+      "status": "PASS",
+      "tolerance": "dot >= 1-1e-10"
+    },
+    {
+      "detail": "",
+      "expected": [
+        "CIRCLE"
+      ],
+      "mandatory": true,
+      "measured": [
+        "CIRCLE"
+      ],
+      "name": "inlet.circular_boundary",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "brep_round_trip.film_unsplit.brep.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "brep_round_trip.film_unsplit.brep.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "brep_round_trip.film_unsplit.brep.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 7.321432349272072e-11,
+        "relative_error": 6.56283687079123e-14,
+        "volume_mm3": 1115.589567959178
+      },
+      "name": "brep_round_trip.film_unsplit.brep.volume",
+      "status": "PASS",
+      "tolerance": "relative <= 1.0e-12"
+    },
+    {
+      "detail": "",
+      "expected": 3,
+      "mandatory": true,
+      "measured": 3,
+      "name": "brep_round_trip.film_zones.brep.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "brep_round_trip.film_zones.brep.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "brep_round_trip.film_zones.brep.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 1115.58956795914,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 1.0982148523908108e-10,
+        "relative_error": 9.844255306186536e-14,
+        "volume_mm3": 1115.5895679592497
+      },
+      "name": "brep_round_trip.film_zones.brep.volume",
+      "status": "PASS",
+      "tolerance": "relative <= 1.0e-12"
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "step_round_trip.film_unsplit.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.film_unsplit.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.film_unsplit.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 1115.589567959105,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 0.06650821826974607,
+        "relative_error": 5.961710308157356e-05,
+        "volume_mm3": 1115.5230597408352
+      },
+      "name": "step_round_trip.film_unsplit.step.volume",
+      "status": "FAIL",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "film_unsplit"
+      ],
+      "mandatory": false,
+      "measured": [
+        "film_unsplit"
+      ],
+      "name": "step_round_trip.film_unsplit.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "step_round_trip.ring_A.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.ring_A.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.ring_A.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 459.151571152157,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 2.08092387765646e-09,
+        "relative_error": 4.532106625345442e-12,
+        "volume_mm3": 459.1515711542379
+      },
+      "name": "step_round_trip.ring_A.step.volume",
+      "status": "PASS",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "ring_A"
+      ],
+      "mandatory": false,
+      "measured": [
+        "ring_A"
+      ],
+      "name": "step_round_trip.ring_A.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "step_round_trip.hole_band.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.hole_band.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.hole_band.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 298.3670709809072,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 0.06650823519282767,
+        "relative_error": 0.00022290742398005305,
+        "volume_mm3": 298.3005627457144
+      },
+      "name": "step_round_trip.hole_band.step.volume",
+      "status": "FAIL",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "hole_band"
+      ],
+      "mandatory": false,
+      "measured": [
+        "hole_band"
+      ],
+      "name": "step_round_trip.hole_band.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    },
+    {
+      "detail": "",
+      "expected": 1,
+      "mandatory": true,
+      "measured": 1,
+      "name": "step_round_trip.ring_B.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.ring_B.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.ring_B.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 358.07092582607584,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 1.6007106751203537e-09,
+        "relative_error": 4.470373212869731e-12,
+        "volume_mm3": 358.07092582767655
+      },
+      "name": "step_round_trip.ring_B.step.volume",
+      "status": "PASS",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "ring_B"
+      ],
+      "mandatory": false,
+      "measured": [
+        "ring_B"
+      ],
+      "name": "step_round_trip.ring_B.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    },
+    {
+      "detail": "",
+      "expected": 3,
+      "mandatory": true,
+      "measured": 3,
+      "name": "step_round_trip.film_zones.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.film_zones.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.film_zones.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 1115.58956795914,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 0.06650823151107943,
+        "relative_error": 5.9617114950930944e-05,
+        "volume_mm3": 1115.5230597276288
+      },
+      "name": "step_round_trip.film_zones.step.volume",
+      "status": "FAIL",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "ring_A",
+        "hole_band",
+        "ring_B"
+      ],
+      "mandatory": false,
+      "measured": [
+        "film_zones",
+        "ring_A",
+        "hole_band",
+        "ring_B"
+      ],
+      "name": "step_round_trip.film_zones.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    },
+    {
+      "detail": "",
+      "expected": 2,
+      "mandatory": true,
+      "measured": 2,
+      "name": "step_round_trip.context_assembly.step.solid_count",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.context_assembly.step.valid",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "",
+      "expected": true,
+      "mandatory": true,
+      "measured": true,
+      "name": "step_round_trip.context_assembly.step.manifold",
+      "status": "PASS",
+      "tolerance": 0
+    },
+    {
+      "detail": "STEP is exported with PrecisionMode.GREATEST. Native BREP is checked separately so an interchange translation cannot be mistaken for an in-memory geometry error.",
+      "expected": 686138.0811986981,
+      "mandatory": true,
+      "measured": {
+        "absolute_error_mm3": 0.08422991132829338,
+        "relative_error": 1.2275941772702937e-07,
+        "volume_mm3": 686137.9969687868
+      },
+      "name": "step_round_trip.context_assembly.step.volume",
+      "status": "PASS",
+      "tolerance": "relative <= 1.0e-06"
+    },
+    {
+      "detail": "Missing labels are non-fatal because individual fallback STEP files are mandatory.",
+      "expected": [
+        "journal_context",
+        "bushing_context"
+      ],
+      "mandatory": false,
+      "measured": [
+        "bearing_context",
+        "journal_context",
+        "bushing_context"
+      ],
+      "name": "step_round_trip.context_assembly.step.labels",
+      "status": "PASS",
+      "tolerance": "warning only"
+    }
+  ]
+}

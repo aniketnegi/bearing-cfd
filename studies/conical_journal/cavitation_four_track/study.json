@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "study": "cavitation-four-track",
+  "question": "What do the JFO, oil-vapour, released-gas, and atmospheric-ventilation mechanisms establish when their results are kept as separate physical models?",
+  "status": "TRACK_A_ACCEPTED_TRACKS_B_C_UNSETTLED_TRACK_D_REJECTED",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "commands": [
+    ["bearing-cfd", "conical-journal", "study", "cavitation-four-track"],
+    [
+      "env",
+      "PYTHONPATH=.",
+      "pvpython",
+      "studies/conical_journal/cavitation_four_track/render.py",
+      "--case",
+      "out/openfoam_oq90_vapour_sae10w40_schnerr_screen",
+      "--output",
+      "out/conical_journal/studies/cavitation-four-track/track-b-renders",
+      "--times",
+      "125,145",
+      "--field",
+      "alpha.oil",
+      "--range",
+      "0",
+      "1",
+      "--threshold",
+      "0.99",
+      "--title",
+      "Track B oil-vapour screen",
+      "--status",
+      "UNSETTLED"
+    ]
+  ],
+  "required_external_tools": ["ParaView pvpython for field renders"],
+  "source_artifacts": [
+    {
+      "path": "studies/conical_journal/cavitation_four_track/inputs",
+      "sha256": "cf3019409588aa6eed0b43aa48ba81595ce91150ed06ecdcf10ffe8f8a168351",
+      "hash_kind": "sha256-tree-v1",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "out/openfoam_oq90_vapour_sae10w40_schnerr_screen/RUN_RESULTS.md",
+      "sha256": "d6d075ec2c0c402c53ae63b11fd3818153fde02ef62d0068d6ced88c4c10cf89",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/openfoam_oq90_pseudocavitation_iso_vg32_air/RUN_RESULTS.md",
+      "sha256": "83d9ddb76599a5903cc7f3c88cc1b2a1616dedbf02e78ddcb9d50c43a04b73cf",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    },
+    {
+      "path": "out/openfoam_oq90_ventilation_vg22_air_boundary_screen/RUN_RESULTS.md",
+      "sha256": "14481612a42b373c23718bd0303173c5c45a1ba072bae8e54718cf2f01fc37d6",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    }
+  ],
+  "large_artifact_regeneration": [
+    "Copy the retained compact dictionaries into fresh case directories, regenerate or copy the central-feed polyMesh, then map the listed initial fields from their hashed accepted source states before running Tracks B-D."
+  ],
+  "large_artifacts": [
+    {"path": "out/openfoam_oq90_vapour_sae10w40_schnerr_screen/0/U", "sha256": "c1286334ad9444483e5c5aa60e89369f18d23f55b8e6d06c5c648690ae23e6ad"},
+    {"path": "out/openfoam_oq90_vapour_sae10w40_schnerr_screen/0/p", "sha256": "46c3c5c2e787e6165551445de1a7223011c25439ab24fd957f9550281861bedc"},
+    {"path": "out/openfoam_oq90_vapour_sae10w40_schnerr_screen/0/pGaugePa", "sha256": "73b801e5665932cc9106f49225f59c93dc438fe03f0f2686ddab9564dd5b2b37"},
+    {"path": "out/openfoam_oq90_vapour_sae10w40_schnerr_screen/0/p_rgh", "sha256": "457f4004e514a2ab285aea1bb6eeee9da46b6dc6d69a4ea49d682646daa029c2"},
+    {"path": "out/openfoam_oq90_pseudocavitation_iso_vg32_air/0/U", "sha256": "c1286334ad9444483e5c5aa60e89369f18d23f55b8e6d06c5c648690ae23e6ad"},
+    {"path": "out/openfoam_oq90_pseudocavitation_iso_vg32_air/0/p_rgh", "sha256": "457f4004e514a2ab285aea1bb6eeee9da46b6dc6d69a4ea49d682646daa029c2"},
+    {"path": "out/openfoam_oq90_ventilation_vg22_air_boundary_screen/0/U", "sha256": "34746067f257cda32c3bce5c5c0ddf16a0a29267141050ebaf8b08694672d4eb"},
+    {"path": "out/openfoam_oq90_ventilation_vg22_air_boundary_screen/0/p_rgh", "sha256": "457f4004e514a2ab285aea1bb6eeee9da46b6dc6d69a4ea49d682646daa029c2"}
+  ],
+  "expected_outputs": [
+    {"path": "screening_diagnostics.png", "role": "Tracks B-D diagnostic traces"},
+    {"path": "four_track_status.png", "role": "mechanism-status ledger"},
+    {"path": "paper_comparison_and_higher_rpm.png", "role": "Track A comparison"},
+    {"path": "mechanism_summary.csv", "role": "machine-readable status summary"},
+    {"path": "run.json", "role": "generation provenance"}
+  ]
+}

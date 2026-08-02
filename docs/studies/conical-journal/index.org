@@ -1,0 +1,63 @@
+#+TITLE: Conical-Journal Bearing Results
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+[[file:../../../README.org][Repository README]] | [[file:../../index.org][Documentation index]]
+
+* Studies
+
+- [[file:reynolds-jfo-validation.org][Reynolds--JFO verification and validation]]
+  describes the reduced-film model, published slider check, conical-bearing
+  sensitivity results, and remaining grid and experimental comparisons.
+- [[file:cavitation-model-comparison.org][Cavitation and film-rupture model
+  comparison]] compares the JFO, oil-vapour, non-condensable-gas, and
+  atmospheric-ventilation models on the conical bearing.
+- [[file:../../cavitation-model-discussion.pdf][Cavitation-model discussion PDF]]
+  presents the model-selection problem and result boundaries.
+
+* Result summary
+
+| Case | Highest retained state | Result |
+|---+---+---|
+| OpenFOAM JFO smoke test | zero speed | pressure, fill, and conservation checks pass |
+| Full 3-D body-fitted mesh | 1,252,800 Hex8 cells | standard =checkMesh= passes; minimum Fluent-equivalent OQ 0.922660 |
+| Pressure-fed single-phase commissioning | 0 rpm | mesh, patches, units, and stationary conservation checks pass |
+| Single-phase rotation | 496.563 and 2000 rpm | iterations converge, but negative absolute pressure invalidates the full-film result |
+| Reynolds--JFO speed sweep | 4000 rpm | numerical checks pass; grid convergence and full experimental validation remain open |
+| Oil-vapour screen | 28 rpm hold | phase onset occurs, but the phase field does not plateau |
+| Non-condensable-gas screen | zero speed | conservation error exceeds the 0.5% gate |
+| Atmospheric-ventilation screen | 3500 rpm startup | rejected after inadmissible negative absolute pressure |
+
+#+CAPTION: Status of the four film-rupture and cavitation models.
+#+ATTR_ORG: :width 1100
+[[file:../../../evidence/conical_journal/cavitation_four_track/four_track_status.png]]
+
+* Source and evidence
+
+| Material | Location |
+|---+---|
+| Python JFO solver | [[file:../../../bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py][reynolds_jfo.py]] |
+| Body-fitted surface adapter | [[file:../../../bearing_cfd/bearings/conical_journal/simulation/jfo_surface_mesh.py][jfo_surface_mesh.py]] |
+| Native JFO solver | [[file:../../../openfoam/solvers/jfoBearingFoam/jfoBearingFoam.C][jfoBearingFoam.C]] |
+| OpenFOAM reference cases | [[file:../../../cases/conical_journal/openfoam/][cases/conical_journal/openfoam/]] |
+| Guarded speed continuation | [[file:../../../studies/conical_journal/hydrodynamic_ramp/][hydrodynamic_ramp/]] |
+| Cavitation inputs and renderers | [[file:../../../studies/conical_journal/cavitation_four_track/][cavitation_four_track/]] |
+| JFO result renderer | [[file:../../../studies/conical_journal/jfo_checkpoint_evidence/][jfo_checkpoint_evidence/]] |
+| Selected result media | [[file:../../../evidence/conical_journal/][evidence/conical_journal/]] |
+
+Each executable study directory contains a =study.json= manifest with its
+question, source revision, commands, external tools, input hashes, and expected
+outputs.  Large meshes, time directories, processor partitions, and logs are
+generated under =out/= and are not versioned.
+
+* Result labels
+
+- *Pass* means the named numerical or file-format checks succeeded.
+- *Unsettled* means a stated convergence, plateau, or conservation check failed.
+- *Rejected* means the result violates a physical or numerical acceptance
+  condition and is retained only as diagnostic evidence.
+- *Unvalidated* means internal checks passed but grid convergence or comparison
+  with experimental data is incomplete.
+
+[[file:../../../README.org][Repository README]] | [[file:../../index.org][Documentation index]]

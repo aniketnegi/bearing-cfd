@@ -1,0 +1,42 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      alpha.oil;
+}
+
+dimensions      [];
+
+// Wettmarshausen et al. Eq. (14), evaluated at the 601325 Pa feed:
+// rGas = 0.0161710714832, hence alpha.oil = 1 - rGas.
+internalField   uniform 0.983828928517;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            zeroGradient;
+    }
+    stationary_wall
+    {
+        type            zeroGradient;
+    }
+    axial_end_z0
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+    axial_end_zl
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+    pressure_feed
+    {
+        type            fixedValue;
+        value           uniform 0.983828928517;
+    }
+}

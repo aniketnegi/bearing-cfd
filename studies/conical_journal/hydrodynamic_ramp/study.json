@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "study": "hydrodynamic-ramp",
+  "question": "Can a zero-pressure-bias two-phase bearing state continue from the accepted 15 rpm liquid checkpoint toward 2000 rpm without crossing the declared physical and numerical gates?",
+  "status": "CURATED_DRIVER_ACCEPTED_15RPM_SEED_NO_NEW_RUN",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "origin": {
+    "kind": "ignored-worktree-source",
+    "path": "out/openfoam_s100_pure_hydrodynamic/guarded_speed_ramp.py",
+    "sha256": "298b299802cde05cbfb9c66905289ef77ef9faad9c550b10b3eaa812e5718fe1"
+  },
+  "commands": [
+    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp", "--self-test"],
+    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp"],
+    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp", "--run"]
+  ],
+  "required_external_tools": ["OpenFOAM 14", "foamDictionary", "foamRun"],
+  "source_artifacts": [
+    {
+      "path": "studies/conical_journal/hydrodynamic_ramp/inputs",
+      "sha256": "de7b3cdc93184cc6f68b0975733956f169feb8fe3be33e2a74b83867122c998e",
+      "hash_kind": "sha256-tree-v1",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "out/openfoam_s100_pure_hydrodynamic/RUN_RESULTS.md",
+      "sha256": "f76b5ff4dd75306dd4851b8353eb3cc319d161c6f5b08f3ceac1a3bcd0c70109",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    }
+  ],
+  "large_artifact_regeneration": [
+    "Generate the zero-bias case from inputs/zero_bias and the central-feed mesh, reproduce the accepted 0 -> 1 -> 5 -> 10 -> 12 -> 14 -> 15 rpm continuation, then copy the accepted time-400 fields into checkpoints/15rpm/400."
+  ],
+  "large_artifacts": [
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/U", "sha256": "5eeeb83a7b901fc8117ffc1eb32f537450e971631cc9774513a7444ace8eab8c"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/alpha.oil", "sha256": "c4dcbd25e12210ffe10d8f96ae4b84b3f3b4fc7e185d0322b0f635e342cc4a60"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/alphaPhi.oil", "sha256": "9b9cd80876181cee331fde3a9447e5eed5e061b1dc4f1ba87e9cb01094e24d9e"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/p", "sha256": "3b381e1bd03b68885e82b131f67b1ea12e5276d1332b22f68c46780f16ae2aad"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/p_rgh", "sha256": "67d6cc5a8fb6190022e7f8cb865964512639c9de8438b4d6f8495a635d073870"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/phi", "sha256": "c3bcc6b3902de53bf99e045f2d26405db53d7010601fd0754c416bcb9b398406"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/rDeltaT", "sha256": "b65624afa46bdfb621ced60e9d4a092c8df72b0299397a67a60dcb83629b71e8"},
+    {"path": "out/openfoam_s100_pure_hydrodynamic/checkpoints/15rpm/400/rho", "sha256": "32897a49c09828112840fa7d8a532b7f587cc0414e8063743e107a066eaae0ca"}
+  ],
+  "expected_outputs": [
+    {"path": "run.json", "role": "generation provenance and acceptance status"},
+    {"path": "ramp-state.json", "role": "resumable campaign state"},
+    {"path": "ramp-results.csv", "role": "accepted and rejected hold ledger"},
+    {"path": "checkpoints", "role": "accepted continuation states"}
+  ]
+}

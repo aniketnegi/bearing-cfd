@@ -1,0 +1,54 @@
+{
+  "boundaries": {
+    "axial_end_z0": {
+      "entity_tag": 23,
+      "moving_wall": false,
+      "physical_id": 103,
+      "stationary_wall": false
+    },
+    "axial_end_zL": {
+      "entity_tag": 24,
+      "moving_wall": false,
+      "physical_id": 104,
+      "stationary_wall": false
+    },
+    "bushing_bore_wall": {
+      "entity_tag": 22,
+      "moving_wall": false,
+      "physical_id": 102,
+      "stationary_wall": true
+    },
+    "feed_tube_wall": {
+      "entity_tag": 25,
+      "moving_wall": false,
+      "physical_id": 105,
+      "stationary_wall": true
+    },
+    "journal_wall": {
+      "entity_tag": 21,
+      "moving_wall": true,
+      "physical_id": 101,
+      "stationary_wall": false
+    },
+    "pressure_feed": {
+      "entity_tag": 26,
+      "moving_wall": false,
+      "physical_id": 106,
+      "stationary_wall": false
+    }
+  },
+  "coordinate_unit": "m",
+  "forbidden_solver_patches_absent": [
+    "feed_mouth",
+    "mouth_cap",
+    "internal_feed",
+    "defaultFaces"
+  ],
+  "volume": {
+    "fluid": {
+      "entity_tag": 31,
+      "moving": false,
+      "physical_id": 201
+    }
+  }
+}

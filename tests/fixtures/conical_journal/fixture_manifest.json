@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "bearing": "conical_journal",
+  "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
+  "files": {
+    "geometry/strict_case_e03_g20/film_unsplit.brep": "585b1cf17eb48144410cd7fd3b199c5e1e6eb3e297c44ae0794f5c032b3357a2",
+    "geometry/strict_case_e03_g20/film_zones.brep": "43cb4123e6ca8e8b9b7ebe0544bf1a46c16bffc30bd71b40a305bcbff2ac41a0",
+    "geometry/strict_case_e03_g20/params.json": "f63608a7510e6909c36b3ef8612cb48530de3587116523372c2e39315dc3fd43",
+    "geometry/strict_default/film_unsplit.brep": "42d9053d72b3b71de6099c2a7a733841d096863630b764274669824a859f65ff",
+    "geometry/strict_default/film_zones.brep": "b541a112f1f14db4124879ee5790c922eea8c781bbf3b3f7657dfa06d6274eb9",
+    "geometry/strict_default/params.json": "d20094241669d66b2a61234678b8e6dd35318214eb7277148317d3711378ee07",
+    "meshing/brep_preflight/preflight_report.json": "f5afd58932abd2a901a5869d17cc82cc3fe745130ca290636b00615e8c4d55b2",
+    "meshing/brep_preflight_e03_g20/preflight_report.json": "b81430c225bb43d33ceff8dd2a0e0edbecc84ec254f284f4d39515728d6d0d08",
+    "meshing/central_feed/nGap_02/manifest.json": "b9a955a93676b328c5f2e545c1ede54335d1512176f1bbc8fac3a0e1ae8c64ce",
+    "meshing/central_feed/nGap_02/mesh_arrays.npz": "e49d1e11963edb6e4e2bf62906e62be0bcfa2bdab301ca398a481507379a8cd0",
+    "meshing/central_feed/nGap_02/mesh_report.json": "0b811e9abc93d5b54584003a1ffd199c316597a7d3e1ab789a29dedd0552da71",
+    "meshing/central_feed/nGap_02/physical_groups.json": "c40aafc65f78029cfb960230d55abab213636d97a4543c7d8cfab7d4dfa6cdd4"
+  }
+}

@@ -1,290 +1,182 @@
 #+TITLE: Outputs and Reports
+#+UPDATED_AT: [2026-08-02 Sun]
+#+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+STARTUP: content
 
-* Evidence hierarchy
+* Output root
 
-For each stage, trust evidence in this order:
+Installed commands write below =out/conical_journal/=:
 
-1. The stage's =overall= field and mandatory audit/check records.
-2. SHA-256 and unit contracts in its manifest/report.
-3. Exact array or geometry round-trip results.
-4. CSV summaries and logs.
-5. Screenshots and interactive inspection.
+#+begin_example
+out/conical_journal/
+├── geometry/
+├── meshing/
+├── interchange/
+├── simulation/
+└── studies/
+#+end_example
 
-Status is stage-local: the strict CAD STEP audit, native BREP preflight,
-surface mesh, volume meshes, neutral transfer, and proprietary import report
-independently.
+The directory is generated data and is ignored by Git.  Selected plots and
+small result tables intended for publication live under
+[[file:../../evidence/conical_journal/][=evidence/conical_journal/=]].
 
-* CAD contract: =out/strict_default/=
+* =run.json=
 
-| File | Contract |
-|------+----------|
-| =params.json= | Inputs, resolved values, measurements, hashes, validation records, and overall status. |
-| =film_unsplit.brep= | One native OCCT fluid solid, in millimetres. |
-| =film_zones.brep= | Three native OCCT solids: =ring_A=, =hole_band=, and =ring_B=. |
-| =film_thickness_map.png= | Same-z radial-clearance diagnostic; not pressure or CFD output. |
-| =requirements.txt= | Package versions recorded by the CAD run. |
+Every published generation contains =run.json= with schema version 1.
 
-The current =params.json= says =overall: FAIL= because STEP round-trip errors
-for the full film and feed-containing band exceed =1e-6=.  Its native BREP
-round trips pass at approximately numerical-noise scale.  The strict directory
-therefore publishes trusted BREP artifacts and does not present the rejected
-STEP as accepted production geometry.
-
-Inspect the distinction directly:
-
-#+begin_src sh
-jq '{overall,error,brep:.measurements.brep_round_trip,step:.measurements.step_round_trip}' \
-  out/strict_default/params.json
-sha256sum out/strict_default/film_unsplit.brep \
-  out/strict_default/film_zones.brep
-#+end_src
-
-The export and audit contract is implemented in
-[[file:../../bearing_film.py::def export_all][=export_all=]].
-
-* Native BREP preflight: =out/gmsh_preflight/=
-
-| File | Contract |
-|------+----------|
-| =preflight_report.json= | =overall: PASS=, validation records, CAD reference, OCC diagnostics, unit scaling, and output hashes. |
-| =brep_manifest.json= | Explicit coordinate unit and scale-to-SI contract for each BREP. |
-| =film_zones_fragmented.brep= | Three conformal OCC volumes in millimetres. |
-| =film_zones_SI.brep= | Independently exported and re-imported SI copy in metres. |
-| =surfaces.csv= | OCC surface inventory, areas, centres, bounds, and adjacency. |
-| =volumes.csv= | OCC volume inventory and geometric classification. |
-| =gmsh_preflight.log= | Gmsh OCC import, fragmentation, export, and re-import log. |
-
-The fragmented BREP is the canonical input to the surface-smoke stage.  The
-ported analytic mesh uses =film_unsplit.brep= as an independent validation
-reference and verifies its hash through the preflight report.
-
-* Surface smoke: =out/gmsh_surface_smoke/=
-
-| File | Contract |
-|------+----------|
-| =surface_mesh.msh= | Gmsh 4.1 binary first-order Tri3 boundary mesh. |
-| =surface_mesh_ascii.msh= | Gmsh 2.2 ASCII surface mesh. |
-| =surface_mesh.vtk= | Visualization interchange. |
-| =surface_mesh_report.json= | PASS/FAIL records, SI bounds, quality, areas, and =volume_mesh_generated: false=. |
-| =physical_groups.json= | Geometrically classified boundary and volume groups. |
-| =surface_quality.csv= | Per-boundary mesh counts, areas, and quality statistics. |
-| =gmsh_surface_mesh.log= | Gmsh 2-D meshing log. |
-
-This directory contains no valid 3-D solver volume mesh.
-
-* No-port Hex8 family
-
-Root directory =out/structured_no_port_default/=: 
-
-- =run_report.json= :: run inputs and one summary per gap level;
-- =convergence_report.json= and =convergence.csv= :: gap-level and
-  circumferential faceting convergence.
-
-Each =nGap_XX/= directory contains:
-
-| File | Contract |
-|------+----------|
-| =structured_hex.msh= | Gmsh 4.1 binary, true-scale full Hex8 mesh. |
-| =structured_hex_openfoam.msh= | Gmsh 2.2 ASCII conversion input. |
-| =volume_hex.vtu= | ParaView Hex8 volume mesh and cell fields. |
-| =boundary_quads.vtu= | External Quad4 faces and integer patch IDs. |
-| =mesh_arrays.npz= | Canonical NumPy coordinates/connectivity for exact comparison. |
-| =manifest.json= | =overall: PASS=, =solve_eligible: true=, SI unit, and exact counts. |
-| =mesh_report.json= | Analytic, topology, quality, format-round-trip, and optional OpenFOAM records. |
-| =gmsh_structured.log= | Discrete-model registration and round-trip log. |
-| =views/*.pos= | One Gmsh ElementData view per quality/geometry field. |
-| =images/*.png= | Static true-scale and clearly marked exaggerated diagnostics. |
-| =viz/*= | Exact subsets and gap-exaggerated visualization-only files. |
-
-There is deliberately no feed boundary in this baseline.
-
-* Surface-inlet Hex8 family
-
-Root directory =out/structured_surface_inlet_default/=.  Its root reports
-record invariance across =nGap=; each =nGap_XX/= contains the same canonical
-Hex8/Quad4 file set as the no-port family plus:
-
-| File | Contract |
-|------+----------|
-| =physical_groups.json= | Five external boundary groups and one fluid volume; no feed-tube group. |
-| =images/pressure_feed_footprint.png= | Intended 4 mm circle overlaid with the selected bore Quad4 faces. |
-| =viz/pressure_feed_only.msh= / =.vtu= | Lightweight boundary-only inlet inspection. |
-| =viz/cutaway_exact.msh= / =.vtu= | Exact-coordinate diagnostic subset; never a solver input. |
-
-The solver-eligible volume contains only Hex8 annular-film cells.
-=pressure_feed= is a partition of the original stationary bore boundary, not
-a cylindrical fluid passage.  =mesh_report.json= records its projected area,
-actual three-dimensional area, centroid, equivalent diameter, rim topology,
-normal direction, and resolution-dependent footprint error.  The report and
-NPZ metadata also record =theta_edge_coordinates_rad=,
-=z_node_coordinates_mm=, cluster strength/power, local spacing at the feed,
-global spacing extrema, and width ratios.  These arrays are part of the
-canonical nonuniform-grid contract, not visualization settings.
-
-** Solver mesh and visual context are separate artifacts
-
-An Ansys handoff may include both a CGNS mesh and a context STEP.  They serve
-different purposes:
-
-| Artifact | Contents | Use |
-|----------+----------+-----|
-| CGNS surface-inlet mesh | one Hex8 lubricant cell zone and its named boundary-face zones | import into Fluent |
-| =VISUAL_CONTEXT_ONLY_context_assembly.step= | journal and illustrative bushing metal solids | inspect the bearing arrangement in Workbench, SpaceClaim, or FreeCAD |
-
-The context STEP is not a second representation of the fluid and must not be
-included in the Fluent fluid cell zone.  Conversely, the apparently hollow
-centre of the CGNS mesh is correct: the journal occupies that space in the
-physical assembly.  =pressure_feed= is the inlet boundary on the bore skin;
-there is deliberately no feed-tube cell zone in this reduced model.
-
-The current default =nGap_08= Ansys handoff is
-=out/bearing_surface_inlet_hex_ANSYS_HANDOFF.zip=.  It contains:
-
-| File | Role |
-|------+------|
-| =bearing_surface_inlet_hex.cgns= | solver mesh: 223488 nodes, 196608 Hex8 cells, and 53248 external Quad4 faces |
-| =VISUAL_CONTEXT_ONLY_context_assembly.step= | separate two-solid metal context |
-| =ANSYS_IMPORT.txt= | import procedure, counts, status, and CGNS hash |
-| =zones.csv= | exact physical-zone inventory |
-| =pressure_feed_footprint.png= | nominal circle versus the 390-face inlet patch |
-
-This bundle was assembled from the validated surface-inlet case; it is not yet
-produced by a repository export entry point.  Its status is
-=STATICALLY_VALIDATED_NOT_IMPORTED=.  The Gmsh/CGNS round trip is evidence for
-static transfer, not a substitute for Fluent's *Mesh Check*.
-
-* Body-fitted circular O-grid Hex8 family
-
-The current final directory is
-=out/paper_exact_current_circular_ogrid_3d_oq90/=.  Unlike the older assembled
-handoff above, the existing
-[[file:../../meshing/structured_hex_body_fitted_inlet.py::def run_body_fitted_case][run_body_fitted_case]]
-entry point produces the whole bundle atomically.
-
-| File | Contract |
+| Field | Meaning |
 |---+---|
-| =fluent/paper_exact_current_circular_ogrid_3d_oq90.msh= | native Fluent ASCII; validated full 3-D geometry with a 72-segment chorded inlet rim and five boundary zones |
-| =fluent/fluent_native_validation.json= | strict writer round trip and hard standard OQ 0.9 gate |
-| =structured_hex.msh= / =structured_hex_openfoam.msh= | Gmsh 4.1 binary and 2.2 ASCII |
-| =bearing_body_fitted_hex.cgns= | alternate ANSYS interchange |
-| =mesh_arrays.npz= | canonical 12-layer nodes/connectivity and fields |
-| =volume_hex.vtu= | all 1,252,800 Hex8 cells with per-cell Fluent OQ |
-| =boundary_quads.vtu= | complete external boundary and patch IDs |
-| =viz/master_surface.vtu= | minimum full-3D OQ across each 12-cell surface column |
-| =viz/cutaway_exact.vtu= | exact-coordinate volume subset with Fluent OQ |
-| =viz/full_3d_fluent_oq_overview.png= / =.pdf= | static geometry, unwrapped projection, and layer statistics |
-| =manifest.json= / =validation_report.json= | exact generator inputs, counts, hashes, quality, and round trips |
+| =artifact_id= | SHA-256 identity of the generation record |
+| =bearing= | =conical_journal= |
+| =stage= and =operation= | producing pipeline operation |
+| =case_name= | destination-directory name unless set explicitly |
+| =status= | producing stage's result |
+| =argv= | command arguments as an array |
+| =resolved_inputs.values= | values used by the producer |
+| =resolved_inputs.units= | physical units for those values |
+| =producer.commit= | Git commit at generation time |
+| =producer.dirty= | whether tracked or untracked source changes existed |
+| =producer.files= | producing source paths and SHA-256 hashes |
+| =upstream_artifacts= | input artifact paths and hashes |
+| =tool_versions= | Python and relevant library/runtime versions |
+| =outputs= | generated file paths, roles, and SHA-256 hashes |
+| =acceptance_status= | Boolean or stage-specific acceptance label |
+| =superseded_artifact_id= | identity of the generation replaced at the same path |
 
-The final mesh has 12 physical thickness cells, not 11.  Its minimum standard
-Fluent-equivalent OQ is =0.922660127056= with zero cells below 0.9.  The status
-remains =STATICALLY_VALIDATED_NOT_IMPORTED= until a live Fluent Mesh Check,
-zone/count audit, and Report Quality capture pass.
+=run.json= records provenance.  The stage-specific report remains the source
+for geometry, topology, quality, convergence, or solver diagnostics.
 
-* Ported Prism6 family
+* Geometry
 
-Root directory =out/ported_prism_default/=: 
+Default directory: =out/conical_journal/geometry/default/=
 
-- =run_report.json= :: one result per =nGap=, including cell counts, minimum
-  quality, native-BREP volume error, inlet error, topology, and OpenFOAM status;
-- =convergence_report.json= and =convergence.csv= :: invariance under film-layer
-  subdivision.
+| File | Contents |
+|---+---|
+| =params.json= | raw inputs, resolved dimensions, geometry measurements, validation records, and BREP/STEP status |
+| =film_unsplit.brep= | connected lubricant volume used by the central-feed mesher |
+| =film_zones.brep= | three axial lubricant volumes used by preflight |
+| =film_thickness_map.png= | analytic same-=z= radial-clearance diagnostic |
+| =run.json= | generation provenance and output hashes |
 
-Each =nGap_XX/= directory contains:
+STEP files appear here only when their strict re-import checks pass.  Rejected
+STEP files requested with =--retain-failed-step= are written to the sibling
+=default.rejected-step/= directory with =REJECTED.json= and =run.json=.
 
-| File | Contract |
-|------+----------|
-| =ported_prism.msh= | Gmsh 4.1 binary canonical Prism6 mesh and ElementData. |
-| =ported_prism_openfoam.msh= | Gmsh 2.2 ASCII conversion input with exterior Tri3/Quad4 faces. |
-| =volume_prism.vtu= | Float64 ParaView Prism6 mesh and requested cell fields. |
-| =boundary_faces.vtu= | Six external physical boundaries and patch IDs. |
-| =mesh_arrays.npz= | Canonical nodes, Prism6 connectivity, mouth faces, fields, and metadata. |
-| =physical_groups.json= | Stable physical IDs, wall roles, and forbidden-patch list. |
-| =surface_quality.csv= | Face counts and areas by boundary. |
-| =manifest.json= | =overall: PASS=, =solve_eligible: true=, =distorted_geometry: false=, and SI units. |
-| =mesh_report.json= | Complete topology, geometry, quality, BREP, round-trip, visualization, and OpenFOAM records. |
-| =gmsh_ported.log= | Master/discrete-model and round-trip log. |
-| =viz/*= | Exact-coordinate or diagnostic subsets, all non-solver artifacts. |
+* BREP preflight
 
-Implementation links:
+Default directory: =out/conical_journal/meshing/brep-preflight/=
 
-- [[file:../../meshing/structured_hex_no_port.py::def validate_gmsh_round_trip][no-port MSH round trip]] and
-  [[file:../../meshing/structured_hex_no_port.py::def write_vtu_files][VTU export]]
-- [[file:../../meshing/layered_prism_central_feed.py::def validate_gmsh_round_trip][ported MSH round trip]],
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_vtu_round_trip][VTU round trip]], and
-  [[file:../../meshing/layered_prism_central_feed.py::def validate_npz_round_trip][NPZ round trip]]
+| File | Contents |
+|---+---|
+| =preflight_report.json= | OCC imports, classifications, fragmentation, SI scaling, and validation records |
+| =brep_manifest.json= | units, scale factor, and SHA-256 for each BREP |
+| =film_zones_fragmented.brep= | conformal three-zone OCC model in millimetres |
+| =film_zones_SI.brep= | independently re-imported copy in metres |
+| =surfaces.csv= | surface geometry and adjacency inventory |
+| =volumes.csv= | volume geometry and zone classification |
+| =gmsh_preflight.log= | Gmsh OCC transcript |
+| =run.json= | generation provenance |
+
+* Surface smoke mesh
+
+Default directory: =out/conical_journal/meshing/surface-smoke/=
+
+| File | Contents |
+|---+---|
+| =surface_mesh.msh= | Gmsh 4.1 first-order Tri3 boundary mesh |
+| =surface_mesh_ascii.msh= | Gmsh 2.2 ASCII boundary mesh |
+| =surface_mesh.vtk= | visualization copy |
+| =physical_groups.json= | boundary and volume group definitions |
+| =surface_quality.csv= | counts, areas, and quality by boundary |
+| =surface_mesh_report.json= | input hashes, classification, quality, and =volume_mesh_generated: false= |
+| =run.json= | generation provenance |
+
+No file in this directory is a three-dimensional solver mesh.
+
+* Volume meshes
+
+The no-port, surface-inlet, and central-feed generators write one subdirectory
+per through-gap resolution, for example =nGap_08/=.  Their root directory also
+contains =run_report.json=, =convergence_report.json=, and =run.json=.
+
+Common case files are:
+
+| File | Contents |
+|---+---|
+| =mesh_arrays.npz= | canonical coordinates, volume connectivity, boundary faces, and fields |
+| =manifest.json= | compact counts, units, and solve-eligibility status |
+| =mesh_report.json= | topology, geometry, quality, round-trip, and optional solver-conversion checks |
+| =*.msh= | Gmsh 4.1 visualization mesh |
+| =*_openfoam.msh= | Gmsh 2.2 ASCII conversion input |
+| =volume_*.vtu= | ParaView volume mesh and cell fields |
+| =boundary_*.vtu= | external faces and patch identifiers |
+| =physical_groups.json= | numeric IDs, names, dimensions, and expected roles |
+| =viz/= | cutaways or projected diagnostics; never solver inputs |
+
+The body-fitted generator writes one named case directly below
+=out/conical_journal/meshing/body-fitted-inlet/=.  Its
+=validation_report.json= includes the full three-dimensional
+Fluent-equivalent Orthogonal Quality calculation.  Optional =fluent/= and CGNS
+files are derived from the same canonical Hex8 arrays.
 
 * Solver-neutral interchange
 
-Root directory for the default family is =out/interchange_default/=.  Each
-=nGap_XX/= directory is derived from the corresponding validated ported NPZ,
-not from CAD or a prior MSH.
+Default directory: =out/conical_journal/interchange/central-feed/=
 
-| File | Contract |
-|------+----------|
-| =bearing_prism_gmsh41.msh= | clean MSH 4.1 binary with no ElementData views |
-| =bearing_prism_gmsh22_ascii.msh= | clean MSH 2.2 ASCII with physical names |
-| =bearing_prism.cgns= | unstructured =PENTA_6= fluid zone plus six exact boundary definitions |
-| =interchange_report.json= | source audit, three format audits, provenance, tolerances, and Fluent state |
-| =interchange_manifest.json= | concise status, zone, mouth, unit, and readiness contract |
-| =zones.csv= | exact element/face count per named zone and intended role |
-| =file_hashes.json= | SHA-256 for source contract files and exported meshes |
-| =gmsh_interchange.log= | official writer/reader transcript |
-| =README_OPEN_ME_FIRST.txt= | generated path/status handoff |
+| File | Contents |
+|---+---|
+| =bearing_prism_gmsh41.msh= | clean Gmsh 4.1 mesh |
+| =bearing_prism_gmsh22_ascii.msh= | clean Gmsh 2.2 ASCII mesh |
+| =bearing_prism.cgns= | one =PENTA_6= volume zone and named boundary conditions |
+| =zones.csv= | cell and boundary-face counts by physical name |
+| =file_hashes.json= | source and exported-file SHA-256 hashes |
+| =interchange_manifest.json= | concise format and readiness status |
+| =interchange_report.json= | canonical audit and per-format round trips |
+| =run.json= | generation provenance |
 
-Static outputs have =overall: STATIC_PASS_FLUENT_NOT_RUN= and
-=readiness: STATICALLY_VALIDATED_NOT_IMPORTED=.  A live PASS additionally
-creates =fluent_import_transcript.txt=, =fluent_import_report.json=, and
-=bearing_prism_imported.msh.h5=.
+A live Fluent pass additionally writes its transcript, audit report, and
+native =.msh.h5= file.  These files are absent from a static-only generation.
 
-Implementation and schema details:
+* Reynolds--JFO simulation
 
-- [[file:../interchange/operations-and-reports.org][Interchange commands and reports]]
-- [[file:../../interchange/export_solver_neutral.py::def run_interchange][run_interchange]]
-- [[file:../../interchange/export_solver_neutral.py::def _write_zones][_write_zones]]
+Default directory: =out/conical_journal/simulation/reynolds-jfo/=
 
-* Units and fields
+Each speed uses a directory such as =20rpm/=:
+
+| File | Contents |
+|---+---|
+| =summary.json= | convergence, pressure, fill, flow, force, torque, and acceptance checks |
+| =state.npz= | grid coordinates, film thickness, absolute pressure, fill, and feed mask |
+| =jfo_surface.vtu= | unwrapped surface fields for ParaView |
+| =fields.png= | pressure and fill overview |
+
+The root =ramp_summary.json= lists speeds in continuation order, and =run.json=
+records the complete generation.
+
+* Study outputs
+
+Study commands write to =out/conical_journal/studies/<study>/=.  Expected files
+and external inputs are defined by the corresponding
+[[file:../../studies/conical_journal/][=study.json=]] manifest.  Generated
+figures are not copied into =evidence/= automatically.
+
+* Failure directories
+
+Geometry and mesh stages may publish =<destination>.failed/= containing a
+failure report and =run.json=.  Solver-eligible mesh or exchange files are
+removed from these directories.  The previously accepted destination remains
+untouched when publication fails.
+
+* Units
 
 | Quantity | Unit |
-|----------+------|
+|---+---|
 | CAD and native BREP coordinates | mm |
-| User-facing mesh-size CLI arguments | mm |
-| Canonical volume-mesh coordinates | m |
-| Surface areas in solver reports | m^2 |
-| Cell and total mesh volumes | m^3 |
-| =gap_um= field | micrometres |
+| mesh-size command arguments | mm |
+| canonical volume-mesh coordinates | m |
+| surface area in solver reports | m2 |
+| cell and total volume | m3 |
+| =gap_um= | micrometres |
+| pressure | Pa absolute unless a field explicitly says gauge |
 
-The ported mesh exports =region_id=, =axial_zone_id=, =gap_layer_index=,
-=gap_um=, =theta_deg=, =minSICN=, =minDetJac=, =volume_m3=,
-=aspect_ratio=, =solve_eligible=, and =distorted_geometry=.
-
-* Solver eligibility and diagnostic files
-
-Only a full true-scale mesh whose manifest says =overall: PASS= and
-=solve_eligible: true= is a conversion candidate.  The following are never
-solver inputs:
-
-- any file under a =viz/= directory unless a report explicitly promotes it
-  (the current reports do not);
-- =mouth_interface_DIAGNOSTIC_ONLY.vtu=;
-- no-port =gap_x100_VISUALIZATION_ONLY_DO_NOT_SOLVE.*=;
-- surface-smoke outputs;
-- rejected STEP files.
-
-For solver-neutral output, static PASS is an import candidate but not a Fluent
-acceptance claim.  Only =FLUENT_IMPORT_PASS= may promote a native Fluent
-=.msh.h5=.
-
-* Atomic publication and failure evidence
-
-All production scripts write to staging directories and replace the target
-only after mandatory checks pass.  The mesh generators replace a failing case
-with =failure_report.json= plus diagnostics and no solver-eligible MSH, VTU, or
-NPZ.  The interchange exporter publishes nothing from a failed attempt and
-leaves an older completed destination untouched.  Tolerances are never
-weakened automatically.
-
-See [[file:../../meshing/layered_prism_central_feed.py::def _publish_failure][ported failure publication]],
-[[file:../../meshing/structured_hex_no_port.py::def _publish_failure][no-port failure publication]], and
-[[file:../../tests/test_layered_prism_central_feed.py::def test_failure_atomically_removes_staged_solver_outputs][the induced-failure regression]].
+[[file:running-and-testing.org][Running and testing]] | [[file:../index.org][Documentation index]]

@@ -10,7 +10,7 @@
 
 * Role of the baseline
 
-[[file:../../meshing/structured_hex_no_port.py][structured_hex_no_port.py]] is
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py][no_port.py]] is
 the frozen all-Hex reference for the complete eccentric conical film without a
 feed drilling.  It isolates the thin-film discretization from the branch
 topology of the port.  The ported pipeline is separate; adding a fake cap or
@@ -37,7 +37,7 @@ P        = (rho sin(theta), -rho cos(theta), z)
 
 The arrays use =theta_j= for =j=0..nTheta-1=, =z_k= for
 =k=0..nAxial=, and =xi_i= for =i=0..nGap=.  There is no duplicate
-=theta=2*pi= node.  [[file:../../meshing/structured_hex_no_port.py::def generate_mesh][generate_mesh]]
+=theta=2*pi= node.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def generate_mesh][generate_mesh]]
 builds coordinates in millimetres conceptually and multiplies by =0.001= while
 populating the canonical SI point array.
 
@@ -48,7 +48,7 @@ and =c+e=; the normal distances of parallel cones would include
 
 * Canonical MeshData and indexing
 
-[[file:../../meshing/structured_hex_no_port.py::class MeshData][MeshData]] owns:
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::class MeshData][MeshData]] owns:
 
 - =points_m: float64[N,3]=;
 - =hexes: uint64[M,8]=, one-based;
@@ -59,7 +59,7 @@ and =c+e=; the normal distances of parallel cones would include
 - immutable metadata recording units, resolution, and solve eligibility.
 
 The node tag function is
-[[file:../../meshing/structured_hex_no_port.py::def node_tag][node_tag]].  The
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def node_tag][node_tag]].  The
 last circumferential cell uses =(j+1) mod nTheta=, so its far face references
 the original index-zero nodes directly.  Periodicity is therefore connectivity,
 not a solver boundary condition.
@@ -70,13 +70,13 @@ ordered outward for journal, stationary bore, =z=0=, and =z=L=.
 
 * Analytic and topology validation
 
-[[file:../../meshing/structured_hex_no_port.py::def validate_analytic_mesh][validate_analytic_mesh]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_analytic_mesh][validate_analytic_mesh]]
 checks exact counts and canonical dtypes/shapes, finite values, no duplicate
 nodes/cells, cone residuals, ray intersection, monotone =xi= layers, cardinal
 gaps, positive signed and Gauss volumes, face-pyramid positivity, and quality
 gates.
 
-[[file:../../meshing/structured_hex_no_port.py::def validate_topology][validate_topology]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_topology][validate_topology]]
 canonicalizes all six faces of every hex and proves:
 
 - every face has one or two incident cells;
@@ -85,13 +85,13 @@ canonicalizes all six faces of every hex and proves:
 - there is one connected region;
 - last-to-first theta faces match and are absent from boundary patches.
 
-[[file:../../meshing/structured_hex_no_port.py::def validate_boundary_orientation][validate_boundary_orientation]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_boundary_orientation][validate_boundary_orientation]]
 checks each face both against its owner-cell centre and against the analytic
 journal/bore/end normal.
 
 * Metrics
 
-[[file:../../meshing/structured_hex_no_port.py::def compute_custom_metrics][compute_custom_metrics]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def compute_custom_metrics][compute_custom_metrics]]
 works in chunks and records:
 
 - signed face-pyramid volume and cell centre;
@@ -102,14 +102,14 @@ works in chunks and records:
 - minimum face-pyramid volume.
 
 Gmsh independently supplies =minSICN=, =minDetJac=, and element volume in
-[[file:../../meshing/structured_hex_no_port.py::def add_gmsh_quality_metrics][add_gmsh_quality_metrics]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def add_gmsh_quality_metrics][add_gmsh_quality_metrics]].
 Gmsh and canonical total volumes must agree.  A small positive =minSICN= is
 reported but is not by itself a rejection condition: resolving a 20–80 µm gap
 with long circumferential/axial cells is intentionally anisotropic.
 
 * Registering a completed mesh with Gmsh
 
-[[file:../../meshing/structured_hex_no_port.py::def add_discrete_model][add_discrete_model]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def add_discrete_model][add_discrete_model]]
 creates:
 
 - four closed discrete curve entities for the journal/bore rings at both axial
@@ -136,16 +136,16 @@ Every =nGap= case writes:
 - =mesh_arrays.npz=, the exact canonical provenance copy;
 - ElementData =.pos= files and reports.
 
-[[file:../../meshing/structured_hex_no_port.py::def validate_gmsh_round_trip][validate_gmsh_round_trip]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_gmsh_round_trip][validate_gmsh_round_trip]]
 reopens each MSH and compares physical IDs/entity membership, SI coordinates,
 oriented Line2/Quad4/Hex8 connectivity, type counts, bounding box, determinant,
-and volume.  [[file:../../meshing/structured_hex_no_port.py::def validate_vtu_round_trip][validate_vtu_round_trip]]
-and [[file:../../meshing/structured_hex_no_port.py::def validate_mesh_arrays_round_trip][validate_mesh_arrays_round_trip]]
+and volume.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_vtu_round_trip][validate_vtu_round_trip]]
+and [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def validate_mesh_arrays_round_trip][validate_mesh_arrays_round_trip]]
 require exact VTU/NPZ coordinates, connectivity, fields, and patch IDs.
 
 * Visualization artifacts are not solver meshes
 
-[[file:../../meshing/structured_hex_no_port.py::def write_visualization_models][write_visualization_models]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def write_visualization_models][write_visualization_models]]
 creates two deliberately separate views:
 
 - an exact-coordinate cutaway with an approximately 60-degree cell-aligned
@@ -159,27 +159,27 @@ validation always uses the canonical mesh, never the exaggerated coordinates.
 
 * Convergence and optional OpenFOAM audit
 
-[[file:../../meshing/structured_hex_no_port.py::def theta_convergence][theta_convergence]]
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def theta_convergence][theta_convergence]]
 requires monotonically decreasing faceted-volume error with circumferential
-refinement.  [[file:../../meshing/structured_hex_no_port.py::def write_convergence][write_convergence]]
+refinement.  [[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def write_convergence][write_convergence]]
 also proves that subdividing the same linear through-gap geometry does not
 change total faceted volume.
 
 If available, =gmshToFoam= and =checkMesh= are audited by
-[[file:../../meshing/structured_hex_no_port.py::def audit_openfoam][audit_openfoam]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def audit_openfoam][audit_openfoam]].
 Auto mode records a skip when they are absent; required mode fails.  This is
 only mesh conversion/inspection, not CFD execution.
 
 * Regression links
 
 - Geometry, orientation, counts, and seam:
-  [[file:../../tests/test_structured_hex_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][test_analytic_geometry_orientation_counts_and_periodic_seam]]
+  [[file:../../tests/conical_journal/test_no_port.py::def test_analytic_geometry_orientation_counts_and_periodic_seam][test_analytic_geometry_orientation_counts_and_periodic_seam]]
 - Gap subdivision and theta convergence:
-  [[file:../../tests/test_structured_hex_no_port.py::def test_gap_subdivision_invariance_and_theta_convergence][test_gap_subdivision_invariance_and_theta_convergence]]
+  [[file:../../tests/conical_journal/test_no_port.py::def test_gap_subdivision_invariance_and_theta_convergence][test_gap_subdivision_invariance_and_theta_convergence]]
 - Gmsh/VTU/NPZ and non-solver markers for both strict cases:
-  [[file:../../tests/test_structured_hex_no_port.py::def test_all_true_scale_round_trips_and_visualization_markers][test_all_true_scale_round_trips_and_visualization_markers]]
+  [[file:../../tests/conical_journal/test_no_port.py::def test_all_true_scale_round_trips_and_visualization_markers][test_all_true_scale_round_trips_and_visualization_markers]]
 - Atomic failure behavior:
-  [[file:../../tests/test_structured_hex_no_port.py::def test_failure_atomically_removes_staged_solver_outputs][test_failure_atomically_removes_staged_solver_outputs]]
+  [[file:../../tests/conical_journal/test_no_port.py::def test_failure_atomically_removes_staged_solver_outputs][test_failure_atomically_removes_staged_solver_outputs]]
 
 The top-level driver is
-[[file:../../meshing/structured_hex_no_port.py::def run_structured][run_structured]].
+[[file:../../bearing_cfd/bearings/conical_journal/meshing/no_port.py::def run_structured][run_structured]].

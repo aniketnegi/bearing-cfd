@@ -1,0 +1,33 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      functions;
+}
+
+#includeFunc patchFlowRate(name=feedFlowRate, patch=pressure_feed)
+#includeFunc patchFlowRate(name=z0FlowRate, patch=axial_end_z0)
+#includeFunc patchFlowRate(name=zLFlowRate, patch=axial_end_zL)
+
+maxU
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       maxMag;
+    fields          (U);
+}
+
+maxP
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       maxMag;
+    fields          (p);
+}
