@@ -492,7 +492,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--case",
         type=Path,
-        default=REPO_ROOT / "out/openfoam_jfo_native_256x80",
+        default=REPO_ROOT
+        / "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80",
         help="native OpenFOAM JFO case containing the stored checkpoints",
     )
     parser.add_argument(

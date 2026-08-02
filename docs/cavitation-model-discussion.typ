@@ -1280,7 +1280,8 @@ by a parameter sweep.
 #text(size: 7.5pt, fill: grey)[
   Project evidence: `docs/studies/conical-journal/cavitation-model-comparison.org`,
   `evidence/conical_journal/cavitation_four_track/`,
-  `out/openfoam_oq90_*/*RESULTS.md`, and the case-specific input ledgers.
+  `out/archive/conical_journal/simulation/openfoam/multiphase/openfoam_oq90_*/*RESULTS.md`,
+  and the case-specific input ledgers.
   Literature links above are the citable external sources; project-generated
   figures are not external validation data.
 ]

@@ -30,7 +30,7 @@
       "required": true
     },
     {
-      "path": "out/jfo_body_fitted_sim_256x80/VTK/jfo_body_fitted_sim_256x80_3098.vtk",
+      "path": "out/archive/conical_journal/simulation/openfoam/jfo/jfo_body_fitted_sim_256x80/VTK/jfo_body_fitted_sim_256x80_3098.vtk",
       "sha256": "05f0f22c69c13a686318ba626f4c930562e1718756ed7ebed0c8b386b19eecb0",
       "hash_kind": "sha256-file",
       "tracked": false,

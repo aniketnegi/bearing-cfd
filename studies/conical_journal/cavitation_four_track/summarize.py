@@ -250,17 +250,20 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--vapour-case",
         type=Path,
-        default=REPO_ROOT / "out/openfoam_oq90_vapour_sae10w40_schnerr_screen",
+        default=REPO_ROOT
+        / "out/archive/conical_journal/simulation/openfoam/multiphase/openfoam_oq90_vapour_sae10w40_schnerr_screen",
     )
     parser.add_argument(
         "--gas-case",
         type=Path,
-        default=REPO_ROOT / "out/openfoam_oq90_pseudocavitation_iso_vg32_air",
+        default=REPO_ROOT
+        / "out/archive/conical_journal/simulation/openfoam/multiphase/openfoam_oq90_pseudocavitation_iso_vg32_air",
     )
     parser.add_argument(
         "--ventilation-case",
         type=Path,
-        default=REPO_ROOT / "out/openfoam_oq90_ventilation_vg22_air_boundary_screen",
+        default=REPO_ROOT
+        / "out/archive/conical_journal/simulation/openfoam/multiphase/openfoam_oq90_ventilation_vg22_air_boundary_screen",
     )
     parser.add_argument(
         "--jfo-metrics",

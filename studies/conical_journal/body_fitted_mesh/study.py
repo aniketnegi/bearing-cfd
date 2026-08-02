@@ -129,26 +129,27 @@ CSV_FIELDS = (
 
 _UNIFORM_REFERENCES = {
     "S16": REPO_ROOT
-    / "out/professor_hex_inlet_mesh_comparison_ngap12/inlet16/mesh_report.json",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet16/mesh_report.json",
     "S100": REPO_ROOT
-    / "out/professor_hex_inlet_mesh_comparison_ngap12/inlet100/mesh_report.json",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet100/mesh_report.json",
     "S390": REPO_ROOT
-    / "out/professor_hex_inlet_mesh_comparison_ngap12/inlet390/mesh_report.json",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet390/mesh_report.json",
 }
 _INFLATION_REFERENCES = {
     "S390": REPO_ROOT
-    / "out/structured_surface_inlet_default/nGap_12/mesh_report.json"
+    / "out/archive/conical_journal/meshing/surface_inlet/structured_surface_inlet_default/nGap_12/mesh_report.json"
 }
 _UNIFORM_STAIRCASE_DIRS = {
     "S16": REPO_ROOT
-    / "out/professor_surface_inlet_variants/inlet16_uniform_ngap12/nGap_12",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_surface_inlet_variants/inlet16_uniform_ngap12/nGap_12",
     "S100": REPO_ROOT
-    / "out/professor_surface_inlet_variants/inlet100_moderate_ngap12/nGap_12",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_surface_inlet_variants/inlet100_moderate_ngap12/nGap_12",
     "S390": REPO_ROOT
-    / "out/professor_surface_inlet_variants/inlet390_fine_ngap12/nGap_12",
+    / "out/archive/conical_journal/meshing/surface_inlet/professor_surface_inlet_variants/inlet390_fine_ngap12/nGap_12",
 }
 _INFLATION_STAIRCASE_DIRS = {
-    "S390": REPO_ROOT / "out/structured_surface_inlet_default/nGap_12"
+    "S390": REPO_ROOT
+    / "out/archive/conical_journal/meshing/surface_inlet/structured_surface_inlet_default/nGap_12"
 }
 
 
@@ -443,7 +444,7 @@ def _copy_gallery_geometry(params_path: Path, outdir: Path) -> list[Path]:
     if params_path.parent.name == "strict_default":
         sources.append(
             REPO_ROOT
-            / "out/ansys_surface_inlet_default"
+            / "out/archive/conical_journal/meshing/surface_inlet/ansys_surface_inlet_default"
             / "VISUAL_CONTEXT_ONLY_context_assembly.step"
         )
     copied: list[Path] = []

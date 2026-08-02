@@ -91,42 +91,42 @@
       "required": true
     },
     {
-      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet16/mesh_report.json",
+      "path": "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet16/mesh_report.json",
       "sha256": "cff98b79258606c72ec5648fa57d09d7eae498cb13de0a5578a5fb9c5416a608",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet100/mesh_report.json",
+      "path": "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet100/mesh_report.json",
       "sha256": "3da5d88f18e60d16eae336d35e10f31882ee2d1e8aba3ff2d725e1738b5007ba",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/professor_hex_inlet_mesh_comparison_ngap12/inlet390/mesh_report.json",
+      "path": "out/archive/conical_journal/meshing/surface_inlet/professor_hex_inlet_mesh_comparison_ngap12/inlet390/mesh_report.json",
       "sha256": "88def4ac70e781155d7a82f3b20f6755dcac94e4ccc00cd6202a40b45a67e549",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/structured_surface_inlet_default/nGap_12/mesh_report.json",
+      "path": "out/archive/conical_journal/meshing/surface_inlet/structured_surface_inlet_default/nGap_12/mesh_report.json",
       "sha256": "6142aebc7d2652da94fcf122e78e0046889f10633461529783e3c7464232044e",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/paper_exact_geometry_e06/params.json",
+      "path": "out/archive/conical_journal/geometry/paper_exact_geometry_e06/params.json",
       "sha256": "399c008c00fa5bd3694a4d9f447d32e11d62bbdcb43f83ea70fe3ba9f721eb91",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/paper_exact_current_circular_ogrid_3d_oq90/validation_report.json",
+      "path": "out/archive/conical_journal/meshing/body_fitted/paper_exact_current_circular_ogrid_3d_oq90/validation_report.json",
       "sha256": "2cd14c48f7ced871cd04ef1db74f188f4f699e9f66cfe9d675ac7a663b20c819",
       "hash_kind": "sha256-file",
       "tracked": false,

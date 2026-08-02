@@ -22,7 +22,10 @@ from bearing_cfd.artifacts import record_generation
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-SOURCE_CASE = REPO_ROOT / "out/openfoam_s100_pure_hydrodynamic"
+SOURCE_CASE = (
+    REPO_ROOT
+    / "out/archive/conical_journal/simulation/openfoam/multiphase/openfoam_s100_pure_hydrodynamic"
+)
 DEFAULT_TEMPLATE = SOURCE_CASE
 DEFAULT_SEED = SOURCE_CASE / "checkpoints" / "15rpm" / "400"
 DEFAULT_WORK_CASE = Path("out/conical_journal/studies/hydrodynamic-ramp")

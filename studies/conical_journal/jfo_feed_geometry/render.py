@@ -724,7 +724,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--result-case",
         type=Path,
-        default=REPO_ROOT / "out/jfo_body_fitted_sim_256x80",
+        default=REPO_ROOT
+        / "out/archive/conical_journal/simulation/openfoam/jfo/jfo_body_fitted_sim_256x80",
         help="optional solved case; fields are omitted when its VTK directory is absent",
     )
     return parser.parse_args(argv)

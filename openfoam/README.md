@@ -11,10 +11,11 @@ Run the build-and-zero-speed acceptance check:
 bash openfoam/check_jfoBearingFoam.sh
 ```
 
-The production case is
-`out/openfoam_jfo_native_256x80`. Its latest time is the converged 2000 rpm
-field, and `VTK/openfoam_jfo_native_256x80_4932.vtk` contains pressure, fill
-fraction, film thickness, surface radius, and metric fields.
+The retained JFO case is archived at
+`out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80`.
+Its latest time is the converged 2000 rpm field, and
+`VTK/openfoam_jfo_native_256x80_4932.vtk` contains pressure, fill fraction,
+film thickness, surface radius, and metric fields.
 
 Regenerate the tracked diagnostic figures, CSV, MP4, and GIF with:
 

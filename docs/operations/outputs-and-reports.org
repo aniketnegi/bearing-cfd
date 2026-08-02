@@ -20,6 +20,11 @@ The directory is generated data and is ignored by Git.  Selected plots and
 small result tables intended for publication live under
 [[file:../../evidence/conical_journal/][=evidence/conical_journal/=]].
 
+The retained current OpenFOAM case is
+=out/openfoam_oq90_single_phase/=.  Earlier local generations are grouped by
+stage under =out/archive/conical_journal/=.  =MOVED_PATHS.tsv= in that archive
+maps their former top-level names to their current locations.
+
 * =run.json=
 
 Every published generation contains =run.json= with schema version 1.

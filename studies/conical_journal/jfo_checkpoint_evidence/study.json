@@ -25,21 +25,21 @@
       "required": false
     },
     {
-      "path": "out/openfoam_jfo_native_256x80/RUN_RESULTS.md",
+      "path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/RUN_RESULTS.md",
       "sha256": "752cadcc95d882a202c811a56c38809d6967a4f66eef19e5ebce3588164b2607",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/openfoam_jfo_native_256x80/system/blockMeshDict",
+      "path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/system/blockMeshDict",
       "sha256": "9fb2bbdc539de8c31cc254eefb21cc7ec3239b32ade8aaaf9b88d74dd54a45b6",
       "hash_kind": "sha256-file",
       "tracked": false,
       "required": true
     },
     {
-      "path": "out/openfoam_jfo_native_256x80/constant/jfoProperties",
+      "path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/constant/jfoProperties",
       "sha256": "5d82de1ab8bd3d8848d5536ae653df4f6fb1b83ce3f4310a55523fb6d53b138e",
       "hash_kind": "sha256-file",
       "tracked": false,
@@ -50,21 +50,21 @@
     "Copy cases/conical_journal/openfoam/jfo_paper_exact to a fresh case, run blockMesh and jfoBearingFoam under OpenFOAM 14, and repeat the documented 0, 20, 496.563, 1000, and 2000 rpm continuation."
   ],
   "large_artifacts": [
-    {"path": "out/openfoam_jfo_native_256x80/6/p", "sha256": "2e4e6c3e5e1f48cd77d6408db2aa10f261d38e972e04e97b24985948d2578f58"},
-    {"path": "out/openfoam_jfo_native_256x80/6/thetaFill", "sha256": "373b4faa5302ef51e97e85d0fa69125f9831c3e5382aa6be4f9626f9e1e72f87"},
-    {"path": "out/openfoam_jfo_native_256x80/6/surfaceMetric", "sha256": "b18e5b56406810788b69b9035715507561511798d560dcd75afa10a1e2ffccca"},
-    {"path": "out/openfoam_jfo_native_256x80/14.90625/p", "sha256": "a70c32661aae6bbe04cc2d6c86a42264a64d403118600b983f898c6ca47c8c04"},
-    {"path": "out/openfoam_jfo_native_256x80/14.90625/thetaFill", "sha256": "f981935cb32742201822ef70e8f15c26021b2a742c1d47d5ee65a92e17e5718e"},
-    {"path": "out/openfoam_jfo_native_256x80/14.90625/surfaceMetric", "sha256": "c30ebc4941f87be508e1c14c8281525a456de31202943c9cf31b366f5b8fe6e5"},
-    {"path": "out/openfoam_jfo_native_256x80/17.002574820373/p", "sha256": "9c07c85c22853fc64afc698dc60a8de9775aa337700162f4a688a9ab07bb7a76"},
-    {"path": "out/openfoam_jfo_native_256x80/17.002574820373/thetaFill", "sha256": "b4c83c264b8f989f35ebbfe5ed59afdbc76846647e1ebe830f15064a2ba99efe"},
-    {"path": "out/openfoam_jfo_native_256x80/17.002574820373/surfaceMetric", "sha256": "ad11449e81fcd7b17ee41c74b57f37da27dc58f2e69afae3086a9464fc5bcfa2"},
-    {"path": "out/openfoam_jfo_native_256x80/16.061490272848/p", "sha256": "fdd80cfd222b4cd5f7c5f366ca3d8c4c187f02319e8e65efb1fd5496340d25e4"},
-    {"path": "out/openfoam_jfo_native_256x80/16.061490272848/thetaFill", "sha256": "2a04f9476350f1167442b5ecc6f7440e5c1b747845abf2b817113331091ba560"},
-    {"path": "out/openfoam_jfo_native_256x80/16.061490272848/surfaceMetric", "sha256": "7b2061f8639a8831a2658871464918ec17e42749ef6fced1d70160e7679167b7"},
-    {"path": "out/openfoam_jfo_native_256x80/17.261090445375/p", "sha256": "9621894e0f339b421879c38a1a190d6309aed589fccd8a9ecc982ec0836ce8f4"},
-    {"path": "out/openfoam_jfo_native_256x80/17.261090445375/thetaFill", "sha256": "1c52bb687db828210abb03d1120071a7936cf20fe9076896196d0c4ee2349d8b"},
-    {"path": "out/openfoam_jfo_native_256x80/17.261090445375/surfaceMetric", "sha256": "17a78b11eb6f0bd7d44e2ecfc712817218d0b61f0251b0886abb28e045f7d89a"}
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/6/p", "sha256": "2e4e6c3e5e1f48cd77d6408db2aa10f261d38e972e04e97b24985948d2578f58"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/6/thetaFill", "sha256": "373b4faa5302ef51e97e85d0fa69125f9831c3e5382aa6be4f9626f9e1e72f87"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/6/surfaceMetric", "sha256": "b18e5b56406810788b69b9035715507561511798d560dcd75afa10a1e2ffccca"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/14.90625/p", "sha256": "a70c32661aae6bbe04cc2d6c86a42264a64d403118600b983f898c6ca47c8c04"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/14.90625/thetaFill", "sha256": "f981935cb32742201822ef70e8f15c26021b2a742c1d47d5ee65a92e17e5718e"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/14.90625/surfaceMetric", "sha256": "c30ebc4941f87be508e1c14c8281525a456de31202943c9cf31b366f5b8fe6e5"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.002574820373/p", "sha256": "9c07c85c22853fc64afc698dc60a8de9775aa337700162f4a688a9ab07bb7a76"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.002574820373/thetaFill", "sha256": "b4c83c264b8f989f35ebbfe5ed59afdbc76846647e1ebe830f15064a2ba99efe"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.002574820373/surfaceMetric", "sha256": "ad11449e81fcd7b17ee41c74b57f37da27dc58f2e69afae3086a9464fc5bcfa2"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/16.061490272848/p", "sha256": "fdd80cfd222b4cd5f7c5f366ca3d8c4c187f02319e8e65efb1fd5496340d25e4"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/16.061490272848/thetaFill", "sha256": "2a04f9476350f1167442b5ecc6f7440e5c1b747845abf2b817113331091ba560"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/16.061490272848/surfaceMetric", "sha256": "7b2061f8639a8831a2658871464918ec17e42749ef6fced1d70160e7679167b7"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.261090445375/p", "sha256": "9621894e0f339b421879c38a1a190d6309aed589fccd8a9ecc982ec0836ce8f4"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.261090445375/thetaFill", "sha256": "1c52bb687db828210abb03d1120071a7936cf20fe9076896196d0c4ee2349d8b"},
+    {"path": "out/archive/conical_journal/simulation/openfoam/jfo/openfoam_jfo_native_256x80/17.261090445375/surfaceMetric", "sha256": "17a78b11eb6f0bd7d44e2ecfc712817218d0b61f0251b0886abb28e045f7d89a"}
   ],
   "expected_outputs": [
     {"path": "checkpoint_metrics.csv", "role": "checkpoint ledger"},
