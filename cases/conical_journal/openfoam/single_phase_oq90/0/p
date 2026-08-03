@@ -1,0 +1,49 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      p;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [ kinematicPressure];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            zeroGradient;
+    }
+    stationary_wall
+    {
+        type            zeroGradient;
+    }
+    axial_end_z0
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    axial_end_zl
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    pressure_feed
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,41 @@
+#+TITLE: Paper-Input Reynolds--JFO Case
+#+OPTIONS: toc:2 num:nil
+
+* Question
+
+This case tests the native =jfoBearingFoam= implementation with the conical
+bearing geometry, lubricant viscosity, 0.5 MPa gauge feed, and atmospheric
+rupture pressure used for the paper comparison.  It provides an implementation
+cross-check against the independent Python Reynolds--JFO solver; agreement
+between the two does not validate assumptions shared by both.
+
+The unwrapped mesh has 256 circumferential by 80 axial cells.  The thin third
+direction is marked =empty= and has no three-dimensional flow physics.
+
+* Inputs
+
+| Quantity | Value |
+|---+---:|
+| Length | 0.100 m |
+| Mean radius | 0.050 m |
+| Cone semi-angle | 10 degrees |
+| Radial clearance | 50 micrometres |
+| Eccentricity | 30 micrometres toward =-Y= |
+| Feed | 4 mm diameter, 0.5 MPa gauge |
+| Ambient and rupture pressure | 101325 Pa absolute |
+| Dynamic viscosity | 0.0277 Pa s |
+
+* Reproduce
+
+Build and run the zero-speed acceptance check from the repository root:
+
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
+
+For the retained continuation, copy this directory to an ignored work case,
+run =blockMesh=, then set =constant/jfoProperties/rpm= successively to 0, 20,
+496.563, 1000, and 2000 before invoking =jfoBearingFoam=.  Advance only after
+the =JFO_RESULT= line reports =converged=true accepted=true=.
+
+See [[file:RESULTS.org][RESULTS.org]] for the numerical evidence and limits.

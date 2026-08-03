@@ -1,0 +1,42 @@
+FoamFile
+{
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+
+dimensions      [velocity];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    journal_wall
+    {
+        type            rotatingWallVelocity;
+        origin          (0 -3e-05 0);
+        axis            (0 0 1);
+        omega           0 [rpm];
+    }
+
+    stationary_wall
+    {
+        type            noSlip;
+    }
+
+    axial_end_z0
+    {
+        type            pressureInletOutletVelocity;
+    }
+
+    axial_end_zl
+    {
+        type            pressureInletOutletVelocity;
+    }
+
+    pressure_feed
+    {
+        type            pressureInletOutletVelocity;
+    }
+}

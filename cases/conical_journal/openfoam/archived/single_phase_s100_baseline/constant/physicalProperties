@@ -1,0 +1,11 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties;
+}
+
+// Gangrade et al., Table 1: mu = 0.0277 Pa.s, rho = 860 kg/m3.
+viscosityModel  constant;
+nu              3.22093023256e-05;

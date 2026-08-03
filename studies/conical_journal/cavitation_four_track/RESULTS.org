@@ -1,0 +1,12 @@
+#+TITLE: Four-Track Cavitation Results
+#+OPTIONS: toc:2 num:nil
+
+| Track | Status | Retained result |
+|---+---+---|
+| A: Reynolds--JFO | numerically accepted | All five checkpoints pass. At 2000 rpm, maximum gauge pressure is 8.607458 MPa, minimum fill 0.265566, and ruptured area 46.9312%. The model is not physically validated. |
+| B: oil--vapour | unsettled onset screen | Zero and 20 rpm are stable; phase onset is near 24.4 rpm. At 28 rpm, minimum/mean oil fraction is 0.1111669/0.9989990 and mass imbalance is 0.1321%, but the phase field is still changing. |
+| C: non-condensable gas | rejected at zero speed | Stopped at pseudo-step 40 with minimum/mean oil fraction 0.9070867/0.9401456, feed mass flow -0.0011828713 kg/s, net boundary mass flow -2.40724e-5 kg/s, and 2.035% imbalance. Rotation was not run. |
+| D: ventilation | rejected startup | The 20-rpm short screen retained minimum oil fraction 0.999939. At 3500 rpm, absolute pressure spanned -31.7571--21.9133 MPa and minimum oil fraction was 0.9953278 when stopped at 4.368 microseconds. |
+
+Tracks B--D are model-behaviour diagnostics, not accepted bearing-performance
+predictions.

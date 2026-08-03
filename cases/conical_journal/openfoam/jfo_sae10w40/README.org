@@ -1,0 +1,27 @@
+#+TITLE: SAE 10W-40 Reynolds--JFO Sensitivity Case
+#+OPTIONS: toc:2 num:nil
+
+* Question
+
+This case measures how the Reynolds--JFO pressure and fill fields respond when
+the paper geometry is paired with a published SAE 10W-40 simulation-property
+set.  It is a lubricant-property sensitivity, not experimental validation of
+SAE 10W-40 in this bearing.
+
+The geometry and 256 by 80 unwrapped grid match
+[[file:../jfo_paper_exact/README.org][jfo_paper_exact]].  The changed
+properties are dynamic viscosity =0.0125 Pa s=, density =850 kg/m3=, and
+rupture pressure =29185 Pa absolute=.  These values come from Muchammad et al.
+(2024); the source does not identify a commercial oil or operating
+temperature.
+
+* Reproduce
+
+Build =jfoBearingFoam=, copy this directory to an ignored work case, run
+=blockMesh=, and continue through 0, 20, 496.563, 1000, 2000, 3000, and
+4000 rpm.  Set =constant/jfoProperties/rpm= with =foamDictionary= before each
+solve and retain a checkpoint only when =JFO_RESULT= reports both convergence
+and acceptance.
+
+The generated mesh, time fields, logs, and VTK exports remain below =out/=.
+See [[file:RESULTS.org][RESULTS.org]] for the retained sensitivity values.

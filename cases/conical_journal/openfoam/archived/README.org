@@ -1,0 +1,22 @@
+#+TITLE: Archived OpenFOAM Case Definitions
+#+OPTIONS: toc:2 num:nil
+
+These are reproducible inputs from earlier numerical studies.  They are not
+the current baseline.  Copy a definition into a fresh directory below
+=out/conical_journal/simulation/=, generate or import its mesh, and run it with
+OpenFOAM Foundation v14.  Read [[file:RESULTS.org][RESULTS.org]] before reusing a result.
+
+| Directory | Definition and regeneration |
+|---+---|
+| =jfo_body_fitted= | Reynolds--JFO on the 256 by 80 body-fitted surface mesh: 20,640 one-layer Hex8 cells, a 32-segment circular feed rim, and 96 =pressureFeed= cells. Generate it with the JFO surface adapter, install the mesh, then continue 0, 20, 496.563, 1000, and 2000 rpm only after each accepted =JFO_RESULT=. |
+| =jfo_grid_128x40= | Intermediate paper-input Reynolds--JFO grid. Run =blockMesh=, then use the same guarded speed continuation. |
+| =jfo_grid_512x160= | Fine 81,920-cell paper-input Reynolds--JFO grid. It retains only an accepted zero-speed result. |
+| =jfo_grid_512x160_mapped= | Fine grid initialized from the accepted 256 by 80 field at 2000 rpm. Run =blockMesh=, use =mapFields SOURCE_CASE -case TARGET_CASE -consistent -sourceTime latestTime=, regenerate geometry fields, then verify =sha256sum -c MAPPED_FIELDS.sha256=. |
+| =single_phase_paper_exact= | Earlier 983,808-cell, three-dimensional laminar baseline. Generate the paper geometry and body-fitted O-grid with =q 8=, =nTheta 512=, =nAxial 160=, and =nGap 12=; import the Fluent mesh before installing the dictionaries. |
+| =single_phase_s100_baseline= | 294,912-cell S100 startup screen. Generate the 60 mm tensor-warp mesh with =q 4=, =nTheta 256=, =nAxial 96=, and =nGap 12=, then establish the zero-rpm pressure-fed state before rotation. |
+| =multiphase_paper_exact_cavitation= | Schnerr--Sauer compatibility screen on the paper-exact mesh. Map the accepted zero-rpm single-phase fields, verify =MAPPED_FIELDS.sha256=, run the zero-rpm stage, then apply =stages/20rpm=. |
+| =multiphase_s100_cavitation_exploratory= | Schnerr--Sauer startup screen on the S100 mesh. Map the accepted zero-rpm fields, regenerate =pGaugePa= and =p_rgh=, verify =MAPPED_FIELDS.sha256=, and run only as a short compatibility diagnostic. |
+
+The large meshes, mapped fields, numeric times, processor partitions,
+post-processing data, and logs remain ignored.  Retained local generations are
+under =out/archive/conical_journal/simulation/openfoam/=.

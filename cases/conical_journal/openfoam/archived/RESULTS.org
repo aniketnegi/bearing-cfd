@@ -1,0 +1,36 @@
+#+TITLE: Archived OpenFOAM Results
+#+OPTIONS: toc:2 num:nil
+
+These values record the last retained state of each archived definition.  An
+accepted numerical result is not a physical validation.
+
+* Reynolds--JFO
+
+| Case | Status | Terminal result |
+|---+---+---|
+| =jfo_body_fitted= | accepted through 2000 rpm | 20,640 cells; minimum Fluent-equivalent OQ 0.956754; maximum non-orthogonality 7.64865 degrees. At 2000 rpm: maximum absolute pressure 17.594297 MPa, minimum fill 0.255836, ruptured area 64.209%, feed flow 4.519861e-6 m3/s, imbalance 0.017222%, force =(37572.740, 50700.465, -12232.616) N=, torque =-9.711914 N m=. |
+| =jfo_grid_128x40= | accepted through 2000 rpm | Maximum absolute pressure 17.906765 MPa, minimum fill 0.256364, ruptured area 64.4849%, feed flow 4.469268e-6 m3/s, imbalance 3.67e-8, force =(37568.418, 52030.355, -12431.584) N=, torque =-9.709214 N m=. |
+| =jfo_grid_512x160= | incomplete | Zero-rpm result accepted: pressure 101325--601325 Pa, fill 1, feed flow 1.1934463e-6 m3/s, imbalance 4.39e-13. No accepted rotating result survives. |
+| =jfo_grid_512x160_mapped= | accepted at 2000 rpm | Converged in 1,452 steps (2.83594 characteristic revolutions): maximum absolute pressure 17.358535 MPa, minimum fill 0.255445, ruptured area 64.2944%, feed flow 4.431422e-6 m3/s, imbalance 1.71e-7, force =(37031.446, 49767.590, -12012.649) N=, torque =-9.690175 N m=. |
+
+The body-fitted, 128 by 40, and mapped 512 by 160 results are sensitivity
+points; they do not establish asymptotic grid convergence.
+
+* Three-dimensional single phase
+
+| Case | Status | Terminal result |
+|---+---+---|
+| =single_phase_paper_exact= | numerically converged; physically inadmissible under rotation | 983,808 cells; standard =checkMesh= pass; aspect ratio 118.407, non-orthogonality 17.879 degrees, skewness 0.9193; extended determinant criterion fails. At 2000 rpm pressure spans -17.156020--17.414075 MPa, maximum velocity is 11.801576 m/s, feed flow is -1.17571363e-6 m3/s, force is =(116088.774, -801.633, -286.411) N=, and torque is =-13.870541 N m=. |
+| =single_phase_s100_baseline= | zero rpm accepted; 200 rpm rejected | Standard mesh pass with non-orthogonality 9.99988 degrees and skewness 0.440812. At zero rpm: pressure 101360--602383 Pa, maximum velocity 2.51836 m/s, feed flow -1.46629914e-6 m3/s, imbalance 1.252e-9. The first 200-rpm update reached -0.892 MPa absolute. |
+
+* Multiphase screens
+
+| Case | Status | Terminal result |
+|---+---+---|
+| =multiphase_paper_exact_cavitation= | zero rpm accepted; 20 rpm rejected | At zero rpm: fully liquid, pressure 101468--602054 Pa, maximum velocity 1.91205 m/s, net flow -5.00e-12 m3/s. At 20 rpm: minimum pressure -6114 Pa, mean oil fraction 0.948189, imbalance 23.7846%, phase still drifting. |
+| =multiphase_s100_cavitation_exploratory= | rejected | Mapped start after three steps: minimum pressure -7067.9 Pa, oil fraction 0.324920--0.950734, maximum velocity 2.54462 m/s, imbalance 0.505%. At time 20, minimum oil fraction was 0.0557785 and imbalance 43.898%. |
+
+The retained generated sources are the matching directories below
+=out/archive/conical_journal/simulation/openfoam/=; absent generated fields can
+be reproduced from the tracked definitions and the stated mesh or mapping
+procedure.

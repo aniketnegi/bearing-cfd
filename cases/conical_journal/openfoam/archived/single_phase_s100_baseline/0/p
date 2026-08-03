@@ -1,0 +1,43 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      p;
+}
+
+dimensions      [kinematicPressure];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    journal_wall
+    {
+        type            zeroGradient;
+    }
+
+    stationary_wall
+    {
+        type            zeroGradient;
+    }
+
+    axial_end_z0
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+
+    axial_end_zL
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+
+    pressure_feed
+    {
+        type            fixedValue;
+        // 0.5 MPa gauge / 860 kg/m3.
+        value           uniform 581.395348837;
+    }
+}

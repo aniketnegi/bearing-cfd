@@ -1,0 +1,40 @@
+#+TITLE: Native OpenFOAM Support
+#+OPTIONS: toc:2 num:nil
+
+* Reynolds--JFO solver
+
+=solvers/jfoBearingFoam= solves the conservative Reynolds--JFO thin-film
+equation with OpenFOAM finite-volume fields and matrices.  It is independent
+of the Python Reynolds--JFO implementation.
+
+Build the solver and run its zero-speed acceptance check with OpenFOAM
+Foundation v14 active:
+
+#+begin_src sh
+bash openfoam/check_jfoBearingFoam.sh
+#+end_src
+
+The check builds with =wmake=, generates the tracked paper-exact mesh, runs
+the solver, and requires an accepted terminal =JFO_RESULT=.
+
+* Case definitions
+
+Versioned dictionaries and procedures live under
+[[file:../cases/conical_journal/openfoam/README.org][cases/conical_journal/openfoam]].  Copy a case to an ignored directory below
+=out/conical_journal/simulation/= before generating its mesh or running it.
+The [[file:../docs/contributing.org::*Case definitions][case-maintenance guide]]
+defines when to edit a case, create a stage overlay, or add a new definition.
+
+The current three-dimensional single-phase procedure is
+[[file:../cases/conical_journal/openfoam/single_phase_oq90/README.org][single_phase_oq90]].  Run its atmospheric, pressure-fed, 496.563-rpm, and
+2000-rpm stages one at a time.
+
+The native JFO continuation uses
+[[file:../cases/conical_journal/openfoam/jfo_paper_exact/README.org][jfo_paper_exact]].  Set =rpm= successively to 0, 20, 496.563, 1000, and
+2000 and advance only after the solver reports =accepted=true=.
+
+* Generated evidence
+
+Meshes, numeric times, processor partitions, VTK output, and logs remain under
+=out/=.  Compact checkpoint metrics and rendering commands are owned by the
+[[file:../studies/conical_journal/jfo_checkpoint_evidence/study.json][JFO checkpoint-evidence study]].

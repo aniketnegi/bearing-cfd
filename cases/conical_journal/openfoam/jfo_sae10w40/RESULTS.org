@@ -1,0 +1,25 @@
+#+TITLE: SAE 10W-40 Reynolds--JFO Results
+#+OPTIONS: toc:2 num:nil
+
+* Status
+
+All seven continuation points passed the native numerical gates.  The sweep is
+an accepted numerical sensitivity; it is not a validated lubricant prediction.
+
+| Speed (rpm) | Maximum gauge pressure (MPa) | Minimum fill | Ruptured area |
+|---:|---:|---:|---:|
+| 0 | 0.500000 | 1.000000 | 0 percent |
+| 20 | 0.500000 | 1.000000 | 0 percent |
+| 496.563 | 2.206270 | 0.273684 | 32.9129 percent |
+| 1000 | 4.400088 | 0.268618 | 39.6223 percent |
+| 2000 | 8.607458 | 0.265566 | 46.9312 percent |
+| 3000 | 12.626763 | 0.263936 | 51.2572 percent |
+| 4000 | 16.495019 | 0.263152 | 54.1630 percent |
+
+At 4000 rpm the feed flow is =1.00125029e-5 m3/s= and the relative flow
+imbalance is =3.44817e-8=.  The independent Python and native OpenFOAM maximum
+pressures differ by no more than 0.0257 percent over the sweep.
+
+The 256 by 80 grid does not establish mesh independence.  Its represented
+feed area differs from the analytic circular area, and the retained coarse and
+fine grids do not form a monotonic refinement family.

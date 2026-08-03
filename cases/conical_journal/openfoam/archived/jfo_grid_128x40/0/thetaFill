@@ -1,0 +1,37 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      thetaFill;
+}
+
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 1;
+
+boundaryField
+{
+    thetaMin
+    {
+        type cyclic;
+    }
+
+    thetaMax
+    {
+        type cyclic;
+    }
+
+    axialEndZ0
+    {
+        type zeroGradient;
+    }
+
+    axialEndZL
+    {
+        type zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type empty;
+    }
+}

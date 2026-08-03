@@ -1,0 +1,25 @@
+#+TITLE: Four-Track Cavitation Study
+#+OPTIONS: toc:2 num:nil
+
+This study keeps four physically different mechanisms separate:
+
+| Track | Input | Question |
+|---+---+---|
+| A | =inputs/track_a_jfo= | Reynolds--JFO mass-conserving film rupture on the native surface solver. The full case is owned by [[file:../../../cases/conical_journal/openfoam/jfo_paper_exact/README.org][=jfo_paper_exact=]]; this input contains only its checkpoint ledger. |
+| B | =inputs/track_b_vapour= | Schnerr--Sauer oil--vapour phase change on the OQ90 mesh. Run the zero- and 20-rpm overlays before a controlled onset screen. |
+| C | =inputs/track_c_gas= | Isothermal compressible oil--air response representing released non-condensable gas. The zero-speed conservation gate must pass before rotation. |
+| D | =inputs/track_d_ventilation= | Oil--air response with atmospheric access, representing ventilation rather than vapour formation or dissolved-gas release. |
+
+Tracks B--D are complete OpenFOAM Foundation v14 input definitions.  Their
+large mapped fields are omitted from Git and listed by SHA-256 in =study.json=.
+Stop a run when pressure admissibility, phase stability, or the 0.5% global
+conservation gate fails.
+
+Render the compact comparison from the repository root:
+
+#+begin_src sh
+uv run python studies/conical_journal/cavitation_four_track/summarize.py
+#+end_src
+
+The OpenFOAM cases must be run separately, one stage at a time.  See
+[[file:RESULTS.org][RESULTS.org]] for the retained screening outcome.

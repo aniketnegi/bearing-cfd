@@ -1,0 +1,38 @@
+#+TITLE: OpenFOAM Case Definitions
+#+OPTIONS: toc:2 num:nil
+
+This directory contains versioned OpenFOAM inputs.  Current reference cases
+keep their initial fields, physical dictionaries, numerical dictionaries,
+rationale, reproduction procedure, and retained result summary together.
+
+| Case | Model | Purpose |
+|---+---+---|
+| [[file:single_phase_oq90/README.org][single_phase_oq90]] | three-dimensional laminar single liquid | current OQ90 commissioning and load baseline |
+| [[file:jfo_paper_exact/README.org][jfo_paper_exact]] | two-dimensional Reynolds--JFO | paper-input reference and independent Python comparison |
+| [[file:jfo_sae10w40/README.org][jfo_sae10w40]] | two-dimensional Reynolds--JFO | named-oil sensitivity through 4000 rpm |
+
+Study-specific OpenFOAM definitions remain with the study that owns their
+question:
+
+- [[file:../../../studies/conical_journal/hydrodynamic_ramp/inputs/][zero-flow, zero-bias, and controlled continuation inputs]];
+- [[file:../../../studies/conical_journal/cavitation_four_track/inputs/][oil-vapour, non-condensable-gas, and ventilation screens]].
+
+Compact definitions from earlier experiments live under
+[[file:archived/README.org][=archived/=]].  Their status and retained local output
+mapping are in [[file:archived/RESULTS.org][the archive results ledger]].
+
+Instructions for adding a case, creating a stage overlay, or changing an
+existing definition are in
+[[file:../../../docs/contributing.org::*Case definitions][Contributing]].
+
+* Versioning boundary
+
+Commit files required to define or regenerate a case: dictionaries, initial
+uniform fields, source code, run procedures, parameter sources, study
+manifests, and compact results.  Prefer a small stage overlay when only one or
+two dictionaries change; do not duplicate a complete case for a parameter
+toggle.
+
+Do not commit =constant/polyMesh=, mapped or solved fields, numeric time
+directories, =processor*=, =postProcessing=, VTK exports, ordinary logs, or
+ParaView markers.  Case procedures create those below =out/=.

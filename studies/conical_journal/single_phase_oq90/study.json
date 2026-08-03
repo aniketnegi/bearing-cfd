@@ -10,10 +10,20 @@
     "sha256": "7c2902b1b614003d45a2492798ba7e388a23baccb7bed6d2398dc5246ef6cd5a"
   },
   "commands": [
-    ["bearing-cfd", "conical-journal", "study", "single-phase-oq90"]
+    ["bash", "cases/conical_journal/openfoam/single_phase_oq90/run.sh", "prepare", "FLUENT_MESH"],
+    ["bash", "cases/conical_journal/openfoam/single_phase_oq90/run.sh", "atmospheric"],
+    ["bash", "cases/conical_journal/openfoam/single_phase_oq90/run.sh", "pressure-fed"],
+    ["bash", "cases/conical_journal/openfoam/single_phase_oq90/run.sh", "496p563rpm"],
+    ["bash", "cases/conical_journal/openfoam/single_phase_oq90/run.sh", "2000rpm"],
+    ["env", "PYTHONPATH=.", "pvpython", "studies/conical_journal/single_phase_oq90/render.py"]
   ],
-  "required_external_tools": ["ParaView pvpython", "VTK", "FFmpeg"],
+  "required_external_tools": ["OpenFOAM 14", "MPI", "ParaView pvpython", "VTK", "FFmpeg"],
   "source_artifacts": [
+    {
+      "path": "cases/conical_journal/openfoam/single_phase_oq90",
+      "tracked": true,
+      "required": true
+    },
     {
       "path": "out/openfoam_oq90_single_phase/RUN_RESULTS.md",
       "sha256": "1071989ae4c0a87d04240a2d3ba5a0d56f4c8fb977261b506c75a14237aabf17",

@@ -1,0 +1,80 @@
+#+TITLE: Single-Phase OQ90 OpenFOAM Case
+#+OPTIONS: toc:2 num:nil
+
+* Question
+
+This case measures the pressure, flow, load, torque, and convergence response
+of the paper-geometry conical bearing on the accepted body-fitted OQ90 mesh.
+It is a laminar, isothermal, single-liquid commissioning model.  It does not
+represent film rupture or cavitation.
+
+The source geometry follows Gangrade, Phalle, and Mantha (2019): 100 mm
+length, 50 mm mean radius, 10 degree cone semi-angle, 50 micrometre radial
+clearance, eccentricity ratio 0.6 toward =-Y=, and a central 4 mm pressure
+feed.  The oil uses =rho = 860 kg/m3= and =mu = 0.0277 Pa s=.
+
+* Tracked definition
+
+The =0/=, =constant/=, and =system/= directories are the exact compact
+dictionaries used by the retained run.  [[file:run.sh][run.sh]] imports the
+generated Fluent mesh into a fresh ignored work case and exposes one command
+per scientific stage.  It records the source-mesh path, stage marker, logs, and
+checkpoints in that work case.  The retained evidence renderer publishes the
+final =run.json= after the accepted stages have been inspected.
+
+Generated meshes, OpenFOAM time directories, processor partitions,
+post-processing tables, checkpoints, and logs are not versioned.
+
+* Generate the geometry and mesh
+
+From the repository root:
+
+#+begin_src sh
+uv run bearing-cfd conical-journal geometry \
+  --length 100 --mean-radius 50 --semicone-angle-deg 10 \
+  --radial-clearance 0.05 --eccentricity-ratio 0.6 \
+  --eccentricity-angle-deg -90 --hole-diameter 4 \
+  --hole-axial-pos 50 --split-halfwidth 4 \
+  --bushing-wall-thickness 10 --inlet-extension 3 \
+  --axial-cutter-extension 1 --max-face-count 100 \
+  --outdir out/conical_journal/geometry/paper-exact-e06
+
+uv run bearing-cfd conical-journal mesh body-fitted-inlet \
+  --params out/conical_journal/geometry/paper-exact-e06/params.json \
+  --outdir out/conical_journal/meshing/paper-exact-oq90 \
+  --case-name paper_exact_current_circular_ogrid_3d_oq90 \
+  --q 18 --inner-layers 1 --outer-layers 9 \
+  --n-theta 576 --n-axial 180 --n-gap 12 \
+  --quality-optimized-ogrid --control-radius-factor 2.87 \
+  --control-square-blend 0.36 --central-corner-radius-factor 0.9 \
+  --smoothing-iterations 100 --smoothing-damping 0.5 \
+  --smoothing-fixed-nodes background-and-rim \
+  --minimum-fluent-orthogonal-quality 0.9 \
+  --openfoam skip --ansys skip
+#+end_src
+
+The expected Fluent legacy mesh is
+=out/conical_journal/meshing/paper-exact-oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh=
+with SHA-256
+=b75c2fdb0201de822018760d156c6c2d0aeac335a040841d6b37fcaa37923384=.
+
+* Run one stage at a time
+
+With OpenFOAM Foundation v14 active:
+
+#+begin_src sh
+bash cases/conical_journal/openfoam/single_phase_oq90/run.sh prepare \
+  out/conical_journal/meshing/paper-exact-oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh
+
+bash cases/conical_journal/openfoam/single_phase_oq90/run.sh atmospheric
+bash cases/conical_journal/openfoam/single_phase_oq90/run.sh pressure-fed
+bash cases/conical_journal/openfoam/single_phase_oq90/run.sh 496p563rpm
+bash cases/conical_journal/openfoam/single_phase_oq90/run.sh 2000rpm
+#+end_src
+
+Inspect the log, pressure extrema, boundary-flow balance, forces, and torque
+after each command before continuing.  The default work directory is
+=out/conical_journal/simulation/openfoam-single-phase-oq90/=.
+
+See [[file:RESULTS.org][RESULTS.org]] for the retained reference metrics and
+their physical limitation.

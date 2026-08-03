@@ -1,0 +1,94 @@
+#+TITLE: Single-Phase OQ90 Results
+#+OPTIONS: toc:2 num:nil
+
+* Status
+
+The retained OpenFOAM Foundation v14 run converged at all four stages.  The
+two rotating fields crossed zero absolute pressure, so they are numerical
+single-phase baselines rather than physically admissible oil-film results.
+No cavitation calculation belongs to this case.
+
+The source run remains at =out/openfoam_oq90_single_phase/=.  Its source
+Fluent mesh has SHA-256
+=b75c2fdb0201de822018760d156c6c2d0aeac335a040841d6b37fcaa37923384=.
+
+* Mesh
+
+| Metric | Retained value |
+|---+---:|
+| Points | 1,364,688 |
+| Hex8 cells | 1,252,800 |
+| Connected regions | 1 |
+| Fluent-equivalent Orthogonal Quality, minimum | 0.9226601271 |
+| Fluent-equivalent Orthogonal Quality, mean | 0.9701170530 |
+| OpenFOAM maximum non-orthogonality | 13.4529 degrees |
+| OpenFOAM mean non-orthogonality | 8.1081 degrees |
+| OpenFOAM maximum skewness | 0.440811 |
+| OpenFOAM maximum aspect ratio | 124.1925 |
+| Standard =checkMesh= | =Mesh OK= |
+
+The extended audit reports minimum normalized cell determinant
+=5.27354e-8= and 1,234,496 cells below the generic =0.001= threshold.  All
+other extended topology and geometry checks pass.  This is a thin-film
+conditioning caveat, not a full extended-mesh pass.
+
+* Atmospheric equilibrium
+
+The zero-speed, zero-gauge-pressure identity converged in one SIMPLE
+iteration.  Velocity and every boundary flow are zero, and absolute pressure
+is 101,325 Pa throughout.
+
+* Pressure-fed equilibrium
+
+| Metric | Retained value |
+|---+---:|
+| SIMPLE iterations | 127 |
+| Maximum velocity | 2.1280809 m/s |
+| Minimum absolute pressure | 101,458.6 Pa |
+| Maximum absolute pressure | 602,197.9 Pa |
+| Feed flow | -1.20429736e-6 m3/s |
+| Axial discharge, z0 | 6.55596988e-7 m3/s |
+| Axial discharge, zL | 5.48699598e-7 m3/s |
+| Net flow / feed magnitude | 6.40019e-5 percent |
+| Total force | (0.0381, -805.8712, -279.0938) N |
+| Force magnitude | 852.8316 N |
+
+Negative feed flow follows OpenFOAM's outward-normal convention and denotes
+inflow.
+
+* 496.563 rpm
+
+| Metric | Retained value |
+|---+---:|
+| SIMPLE iterations | 138 |
+| Maximum velocity | 2.93052788 m/s |
+| Minimum absolute pressure | -4.1656628 MPa |
+| Maximum absolute pressure | 4.4177872 MPa |
+| Feed flow | -1.20441251e-6 m3/s |
+| Net flow / feed magnitude | 6.31176e-6 percent |
+| Total force | (28817.9256, -809.8998, -279.3772) N |
+| Force magnitude | 28830.6578 N |
+| Shaft-axis torque | -3.44320552 N m |
+| Physical status | rejected: absolute pressure below zero |
+
+* 2000 rpm
+
+| Metric | Retained value |
+|---+---:|
+| SIMPLE iterations | 135 |
+| Maximum velocity | 11.8030261 m/s |
+| Minimum absolute pressure | -17.1600387 MPa |
+| Maximum absolute pressure | 17.4131039 MPa |
+| Feed flow | -1.21506733e-6 m3/s |
+| Axial discharge, z0 | 6.74064524e-7 m3/s |
+| Axial discharge, zL | 5.41281316e-7 m3/s |
+| Net flow / feed magnitude | 0.0229217 percent |
+| Total force | (116077.9501, -844.1044, -292.0295) N |
+| Force magnitude | 116081.3860 N |
+| Shaft-axis torque | -13.8711044 N m |
+| Physical status | rejected: absolute pressure below zero |
+
+The maximum gauge pressure divided by the 0.5 MPa supply pressure is
+=34.6236=.  This is a one-scalar consistency check against the paper figure;
+it does not validate the negative-pressure region, complete pressure curve,
+load, torque, or feed flow.

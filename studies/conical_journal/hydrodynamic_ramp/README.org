@@ -1,0 +1,30 @@
+#+TITLE: Hydrodynamic Speed Ramp
+#+OPTIONS: toc:2 num:nil
+
+This study asks how far the S100 all-liquid branch can be continued without a
+feed-pressure bias before the solution reaches the oil saturation pressure.
+It uses OpenFOAM Foundation v14 and keeps the commissioning case, continuation
+case, guarded overlay, and diagnostic overlays under =inputs/=.
+
+| Input | Purpose |
+|---+---|
+| =zero_flow= | Commission mesh conversion, patches, field dimensions, and solver startup with zero wall speed and zero pressure. |
+| =zero_bias= | Complete oil--vapour case used for the 0, 1, 5, 10, 12, 14, and 15 rpm liquid continuation. |
+| =guarded_ramp= | =controlDict= overlay used after the accepted 15-rpm state. |
+| =diagnostics= | Overlays that isolate the direct 10-to-15 rpm restart failure; each applies to a disposable copy of =zero_bias=, not to an independent case. |
+
+First verify the driver without running OpenFOAM:
+
+#+begin_src sh
+uv run python studies/conical_journal/hydrodynamic_ramp/run.py --self-test
+#+end_src
+
+After reproducing the accepted 15-rpm seed, execute the continuation in the
+foreground:
+
+#+begin_src sh
+uv run python studies/conical_journal/hydrodynamic_ramp/run.py --run
+#+end_src
+
+The driver stops on its first failed pressure, phase, convergence, or
+conservation gate.  See [[file:RESULTS.org][RESULTS.org]].

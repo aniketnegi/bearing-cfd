@@ -19,6 +19,62 @@ Do not weaken a validation tolerance to turn an unexplained result into a pass.
 Record format-specific or solver-specific failure separately from the upstream
 geometry or mesh when their checks remain valid.
 
+* Case definitions
+
+Keep a case with the code that owns its physical question:
+
+- reusable OpenFOAM reference cases belong under
+  [[file:../cases/conical_journal/openfoam/README.org][=cases/conical_journal/openfoam/=]];
+- inputs used only by one study belong under that study's =inputs/= directory;
+- generated meshes, mapped fields, numeric times, processor partitions,
+  post-processing tables, and logs belong under =out/=.
+
+Do not add a complete directory for a parameter toggle.  Put a changed
+=controlDict=, =fvSolution=, or physical-model dictionary under
+=stages/<variant>/= and document which complete case it overlays.  Add a new
+complete case only when its initial fields, physical model, or numerical
+contract must remain independently reproducible.
+
+** Add an OpenFOAM case
+
+1. Create =cases/conical_journal/openfoam/<case>/= with only the required =0/=,
+   =constant/=, and =system/= inputs.  Add =run.sh= only when scientific stage
+   ordering or checkpoint guards require executable policy.
+2. State the question, inputs, mesh source, reproduction command, acceptance
+   checks, and physical limitations in the case =README.org=.  Record compact
+   accepted or rejected metrics in =RESULTS.org=.
+3. Add the case to
+   [[file:../cases/conical_journal/openfoam/README.org][the case index]].  Earlier
+   definitions use the shared =archived/README.org= and =archived/RESULTS.org=
+   ledgers instead of per-directory prose.
+4. Extend =tests/conical_journal/test_openfoam_cases.py= with the files or
+   invariants that make the definition complete.  Never make the test depend
+   on an ignored mesh or solved field.
+
+Modify an existing case in place when correcting its definition.  Invalidate
+or update its recorded results in the same change.  Create a distinct case
+when both old and new definitions remain scientifically meaningful; use a
+model or operating-condition name rather than a sequence number.
+
+** Add a Python study
+
+Create =studies/conical_journal/<study>/run.py= and keep compact parameters in
+=inputs/=.  The script must accept explicit input and output paths, publish its
+output atomically, and label numerical acceptance separately from physical
+validation.  Record its question, command, external tools, external artifact
+hashes, and expected outputs in =study.json=.
+
+Tracked sources are identified by their repository path and Git revision; do
+not duplicate Git by hashing whole tracked directories.  Keep SHA-256 values
+for external PDFs, ignored meshes, mapped fields, retained solver states, and
+other artifacts outside Git.
+
+Run a study directly from the checkout, for example:
+
+#+begin_src sh
+uv run python studies/conical_journal/nanolubricant_isothermal/run.py
+#+end_src
+
 * Tests
 
 Run the focused test first, then the appropriate suite:

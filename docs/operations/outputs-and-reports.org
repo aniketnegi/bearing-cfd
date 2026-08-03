@@ -5,7 +5,8 @@
 
 * Output root
 
-Installed commands write below =out/conical_journal/=:
+Installed commands and repository-local study scripts write below
+=out/conical_journal/=:
 
 #+begin_example
 out/conical_journal/
@@ -22,8 +23,9 @@ small result tables intended for publication live under
 
 The retained current OpenFOAM case is
 =out/openfoam_oq90_single_phase/=.  Earlier local generations are grouped by
-stage under =out/archive/conical_journal/=.  =MOVED_PATHS.tsv= in that archive
-maps their former top-level names to their current locations.
+stage under =out/archive/conical_journal/=.  =MOVED_PATHS.tsv= records their
+original relocation.  The current retained and removed artifact inventory is
+[[file:../../cases/conical_journal/openfoam/archived/RESULTS.org][the archived OpenFOAM results ledger]].
 
 * =run.json=
 
@@ -160,10 +162,15 @@ records the complete generation.
 
 * Study outputs
 
-Study commands write to =out/conical_journal/studies/<study>/=.  Expected files
+Study scripts write to =out/conical_journal/studies/<study>/=.  Expected files
 and external inputs are defined by the corresponding
 [[file:../../studies/conical_journal/][=study.json=]] manifest.  Generated
 figures are not copied into =evidence/= automatically.
+
+OpenFOAM work cases are mutable staged calculations rather than atomically
+published directories.  Their logs, checkpoints, source-mesh hash, and stage
+marker remain with the ignored work case.  A study renderer writes =run.json=
+when it publishes retained figures or compact result tables from that case.
 
 * Failure directories
 

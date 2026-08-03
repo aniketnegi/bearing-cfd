@@ -1,0 +1,7 @@
+**/constant/polyMesh/
+**/processor*/
+**/postProcessing/
+**/VTK/
+**/checkpoints/
+**/log.*
+**/*.foam

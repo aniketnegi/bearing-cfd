@@ -1,0 +1,24 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+solver          incompressibleVoF;
+
+startFrom       latestTime;
+startTime       0;
+stopAt          endTime;
+endTime         120;
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   1;
+purgeWrite      5;
+writeFormat     binary;
+writePrecision  12;
+writeCompression off;
+
+runTimeModifiable true;

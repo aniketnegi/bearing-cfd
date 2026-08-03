@@ -1,0 +1,53 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      mapPressureFunctions;
+}
+
+gaugePressurePa
+{
+    type            pressure;
+    libs            ("libfieldFunctionObjects.so");
+    field           p;
+    result          pGaugePa;
+    calcTotal       no;
+    calcCoeff       no;
+    rho             rhoInf;
+    rhoInf          860;
+    writeControl    timeStep;
+    writeInterval   1;
+}
+
+absolutePressure
+{
+    type            add;
+    libs            ("libfieldFunctionObjects.so");
+    fields          (pGaugePa pAtm);
+    result          p_rgh;
+    writeControl    timeStep;
+    writeInterval   1;
+}
+
+minMappedPressure
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       min;
+    fields          (p_rgh);
+}
+
+maxMappedPressure
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    cellZone        all;
+    operation       max;
+    fields          (p_rgh);
+}

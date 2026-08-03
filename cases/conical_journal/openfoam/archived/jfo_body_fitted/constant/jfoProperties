@@ -1,0 +1,59 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      jfoProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+length          [ 0 1 0 0 0 0 0 ] 0.1;
+
+meanRadius      [ 0 1 0 0 0 0 0 ] 0.05;
+
+semiconeAngleDegrees 10;
+
+radialClearance [ 0 1 0 0 0 0 0 ] 5e-05;
+
+eccentricity    [ 0 1 0 0 0 0 0 ] 3e-05;
+
+eccentricityAngleDegrees -90;
+
+feedDiameter    [ 0 1 0 0 0 0 0 ] 0.004;
+
+feedAxialPosition [ 0 1 0 0 0 0 0 ] 0.05;
+
+feedGaugePressure [ 1 -1 -2 0 0 0 0 ] 500000;
+
+ambientPressure [ 1 -1 -2 0 0 0 0 ] 101325;
+
+cavitationPressure [ 1 -1 -2 0 0 0 0 ] 101325;
+
+dynamicViscosity [ 1 -1 -1 0 0 0 0 ] 0.0277;
+
+rpm             0;
+
+nTheta          256;
+
+maxRevolutions  8;
+
+maxActiveIterations 200;
+
+convergenceTolerance 1e-08;
+
+policyTolerance 1e-07;
+
+logInterval     32;
+
+feedCellZone    pressureFeed;
+
+maxZeroSpeedSteps 50;
+
+
+// ************************************************************************* //

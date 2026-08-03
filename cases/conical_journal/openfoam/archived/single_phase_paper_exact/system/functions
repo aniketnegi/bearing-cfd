@@ -1,0 +1,72 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      functions;
+}
+
+#includeFunc patchFlowRate(name=feedFlowRate, patch=pressure_feed)
+#includeFunc patchFlowRate(name=z0FlowRate, patch=axial_end_z0)
+#includeFunc patchFlowRate(name=zlFlowRate, patch=axial_end_zl)
+
+netBoundaryFlow
+{
+    type            surfaceFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    patches         (pressure_feed axial_end_z0 axial_end_zl);
+    operation       sum;
+    fields          (phi);
+}
+
+maxU
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    writeLocation   true;
+    cellZone        all;
+    operation       maxMag;
+    fields          (U);
+}
+
+maxP
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    writeLocation   true;
+    cellZone        all;
+    operation       max;
+    fields          (p);
+}
+
+minP
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    log             true;
+    writeFields     false;
+    writeLocation   true;
+    cellZone        all;
+    operation       min;
+    fields          (p);
+}
+
+journalForces
+{
+    type            forces;
+    libs            ("libforces.so");
+    writeControl    timeStep;
+    writeInterval   1;
+    log             true;
+    patches         (journal_wall);
+    rho             rhoInf;
+    rhoInf          860;
+    pRef            0;
+    CofR            (0 -3e-05 0.05);
+}

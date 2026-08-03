@@ -1,0 +1,12 @@
+#+TITLE: Hydrodynamic Speed-Ramp Results
+#+OPTIONS: toc:2 num:nil
+
+| Stage | Status | Retained result |
+|---+---+---|
+| Zero-flow commissioning | accepted | Converged in one SIMPLE iteration with zero velocity, pressure, continuity error, and boundary flow. Standard =checkMesh= passed; maximum non-orthogonality is 9.99988 degrees and skewness 0.440812. The extended generic determinant threshold rejects 286,106 thin-film cells although all volumes are positive. Source mesh SHA-256: =3dcd8dcb8c49a31ded67f69a793d64ed608e1fd20920a0a394b780dc7de6058b=. |
+| Zero-bias continuation | accepted through 15 rpm | At 15 rpm, maximum velocity is 0.0830799 m/s, absolute pressure spans 26770.2--175874 Pa, and oil fraction is 1. |
+| Restart diagnostics | explained | The abrupt 10-to-15 rpm restart disturbed flux, pressure, and velocity before the phase field responded. A native wall-speed ramp recovered the all-liquid 15-rpm branch within 0.7% of the independently stepped checkpoint. |
+| Guarded ramp | stopped at first pressure crossing | The 20-rpm hold was accepted at pseudo-time 600: pressure 1836.89--200802.53 Pa, oil fraction 1, corrected local continuity 3.016e-8, and relative opening-flow imbalance 6.951e-6. The first 20.2-rpm update crossed saturation pressure and stopped. |
+
+The result brackets the onset of pressure inadmissibility; it is not a
+converged cavitating solution.

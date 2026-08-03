@@ -1,0 +1,44 @@
+#+TITLE: Paper-Input Reynolds--JFO Results
+#+OPTIONS: toc:2 num:nil
+
+* Status
+
+The native OpenFOAM continuation converged and passed its pressure-floor and
+flow-balance gates at 0, 20, 496.563, 1000, and 2000 rpm on the 256 by 80 grid.
+These are accepted numerical results with physical and grid validation still
+open.
+
+* Mesh
+
+=blockMesh= creates 20,480 two-dimensional finite-volume cells with cyclic
+circumferential boundaries, atmospheric axial boundaries, and an =empty=
+front/back pair.
+
+* 2000 rpm
+
+| Metric | Retained value |
+|---+---:|
+| Minimum absolute pressure | 101325 Pa |
+| Maximum absolute pressure | 17.521898 MPa |
+| Minimum fill fraction | 0.255817 |
+| Ruptured area | 64.455 percent |
+| Feed flow | 4.409971e-6 m3/s |
+| Relative flow imbalance | 4.76e-8 |
+| Total force | (37045.810, 50425.411, -12113.821) N |
+| Journal torque | -9.688458 N m |
+| Gauge =Pmax/Ps= | 34.8411 |
+
+The minimum pressure is the imposed JFO rupture floor, not a negative-pressure
+excursion.  The large rupture area and low fill remain unvalidated physical
+predictions.
+
+* Independent implementation comparison
+
+Against the independent Python solver on the same grid at 2000 rpm, maximum
+absolute pressure differs by -0.0256 percent, pressure RMS by 1.11 kPa, fill
+RMS by =2.03e-4=, feed flow by 0.00018 percent, force components by at most
+0.022 percent, and torque by 0.00022 percent.
+
+The paper figure gives approximate =Pmax/Ps= values of 35.6 for FEA and 32.0
+for Fluent.  This is a comparison of one scalar, not validation of the full
+pressure field, rupture front, load, flow, or torque.
