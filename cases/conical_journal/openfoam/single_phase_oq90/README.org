@@ -56,7 +56,7 @@ uv run bearing-cfd conical-journal mesh body-fitted-inlet \
 The expected Fluent legacy mesh is
 =out/conical_journal/meshing/paper-exact-oq90/fluent/paper_exact_current_circular_ogrid_3d_oq90.msh=
 with SHA-256
-=b75c2fdb0201de822018760d156c6c2d0aeac335a040841d6b37fcaa37923384=.
+=2d107487c768c5f72c7eb676ef2bce1e65764268d42dee942584a4138e3811a4=.
 
 * Run one stage at a time
 

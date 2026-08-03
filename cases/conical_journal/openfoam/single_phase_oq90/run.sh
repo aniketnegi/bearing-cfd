@@ -4,7 +4,7 @@ set -euo pipefail
 template_dir=$(cd "$(dirname "$0")" && pwd)
 repo_dir=$(cd "$template_dir/../../../.." && pwd)
 default_case="$repo_dir/out/conical_journal/simulation/openfoam-single-phase-oq90"
-expected_mesh_sha="b75c2fdb0201de822018760d156c6c2d0aeac335a040841d6b37fcaa37923384"
+expected_mesh_sha="2d107487c768c5f72c7eb676ef2bce1e65764268d42dee942584a4138e3811a4"
 
 usage()
 {
