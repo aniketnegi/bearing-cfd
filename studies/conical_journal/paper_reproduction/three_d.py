@@ -530,7 +530,6 @@ def run_3d_case(spec: tuple[object, ...]) -> dict[str, object]:
 
 def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
     required = (
-        "foamVersion",
         "fluentMeshToFoam",
         "checkMesh",
         "foamDictionary",
@@ -542,8 +541,11 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
     missing = [name for name in required if shutil.which(name) is None]
     if missing:
         raise RuntimeError("missing required commands: " + ", ".join(missing))
-    foam_version = command_output(["foamVersion"])
-    if not foam_version.startswith("OpenFOAM-14"):
+    foam_version = (
+        f"{os.environ.get('WM_PROJECT', '')}-"
+        f"{os.environ.get('WM_PROJECT_VERSION', '')}"
+    ).strip("-")
+    if foam_version != "OpenFOAM-14":
         raise RuntimeError(f"OpenFOAM Foundation v14 required, found {foam_version}")
     if args.jobs < 1 or args.mpi_ranks < 1:
         raise ValueError("3D jobs and MPI ranks must be positive")

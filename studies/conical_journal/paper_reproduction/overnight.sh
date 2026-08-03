@@ -21,7 +21,7 @@ export NUMEXPR_NUM_THREADS=1
 cd "$repo_dir"
 printf 'run directory: %s\n' "$run_dir"
 printf 'commit: %s\n' "$(git rev-parse HEAD)"
-printf 'OpenFOAM: %s\n' "$(foamVersion)"
+printf 'OpenFOAM: %s-%s\n' "$WM_PROJECT" "$WM_PROJECT_VERSION"
 printf 'logical CPUs: %s\n' "$(getconf _NPROCESSORS_ONLN)"
 
 three_d_status=0
