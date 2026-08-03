@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -uo pipefail
+set -o pipefail
+
+export PATH="$HOME/.local/bin:$PATH"
 
 repo_dir=$(cd "$(dirname "$0")/../../.." && pwd)
 stamp=${1:-$(date +%Y%m%d-%H%M%S)}
@@ -9,9 +11,7 @@ run_dir="$repo_dir/out/conical_journal/studies/paper-reproduction/overnight-$sta
 mkdir -p "$run_dir"
 exec > >(tee -a "$run_dir/overnight.log") 2>&1
 
-set +u
 source /opt/openfoam14/etc/bashrc
-set -u
 
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
