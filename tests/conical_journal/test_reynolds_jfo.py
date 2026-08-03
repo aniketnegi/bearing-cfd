@@ -11,6 +11,7 @@ from bearing_cfd.bearings.conical_journal.simulation.reynolds_jfo import (
     Inputs,
     main,
     solve,
+    solve_reynolds,
     summarize,
 )
 
@@ -52,6 +53,22 @@ def test_uniform_stationary_film_stays_full_and_at_ambient() -> None:
     assert np.all(state.pressure_above_cavitation_pa == 0)
     assert result["pressure"]["minimum_absolute_pa"] == 101_325
     assert result["flow"]["net_out_m3_s"] == 0
+
+
+def test_reynolds_boundary_is_nonnegative_and_pressure_only() -> None:
+    inputs = Inputs(
+        rpm=20,
+        n_theta=32,
+        n_axial=8,
+        feed_diameter_m=0,
+        feed_gauge_pressure_pa=0,
+    )
+    _, state = solve_reynolds(inputs)
+
+    assert state.pressure_above_cavitation_pa.min() >= 0
+    assert state.pressure_above_cavitation_pa.max() > 0
+    assert np.any(state.rupture_mask)
+    assert np.all(state.complementarity_slack_m3 >= 0)
 
 
 def test_rotating_jfo_case_cavitates_without_losing_mass() -> None:

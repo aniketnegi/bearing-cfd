@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "study": "paper-reproduction",
+  "question": "How do pressure-only Reynolds boundary conditions and mass-conserving JFO conditions compare with Gangrade et al. Figures 6 and 8 when 0.5 MPa is a scale and the 4 mm replenishment port is held at ambient pressure?",
+  "status": "PLANNED_PAPER_COMPARISON",
+  "source_commit": "61101e06a717da5f4b5e9dfd528df913519d11da",
+  "commands": [
+    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure6", "--jobs", "12"],
+    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure8", "--jobs", "2"]
+  ],
+  "required_external_tools": [],
+  "source_artifacts": [
+    {
+      "path": "studies/conical_journal/paper_reproduction/inputs/paper_graph_read.json",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "../../docs/papers_sorted/conical-journal-bearing/cfd/Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf",
+      "sha256": "501e9ad38d3be3e744ffd4c379ed6f2801bdedb1cd8fe308db64c21a422b6e05",
+      "hash_kind": "sha256-file",
+      "tracked": false,
+      "required": true
+    }
+  ],
+  "expected_outputs": [
+    {"path": "figure6/summary.json", "role": "fixed-eccentricity Reynolds/JFO comparison"},
+    {"path": "figure6/figure6.csv", "role": "compact pressure and load sweep"},
+    {"path": "figure6/figure6.png", "role": "comparison with graph-read paper curves"},
+    {"path": "figure8/summary.json", "role": "separate Reynolds and JFO load equilibria"},
+    {"path": "figure8/figure8_taps.csv", "role": "phase-aligned pressure-tap comparison"},
+    {"path": "figure8/figure8.png", "role": "mid-plane pressure distribution comparison"},
+    {"path": "figure6/run.json and figure8/run.json", "role": "generation provenance and resource record"}
+  ],
+  "limitations": [
+    "The paper's 0.5 MPa value is used only as a nondimensional reference; no 0.5 MPa gauge feed is imposed.",
+    "The retained 4 mm ambient replenishment patch comes from the project geometry. The paper identifies rig port IP1 but does not disclose its diameter or include it in the published FEM mesh.",
+    "Figure values are manual graph reads and do not replace source data supplied by the authors.",
+    "Figure 8 does not disclose the plotted zero-angle mapping to the local coordinates; any fitted circular phase is a diagnostic alignment, not predictive validation.",
+    "The 5 MPa Babbitt pressure ceiling is a provisional supervisor-supplied design gate, not a paper value or numerical gate."
+  ]
+}

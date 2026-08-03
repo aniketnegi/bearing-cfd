@@ -15,6 +15,7 @@ EXPECTED_STUDIES = {
     "jfo_checkpoint_evidence",
     "jfo_feed_geometry",
     "nanolubricant_isothermal",
+    "paper_reproduction",
     "single_phase_oq90",
 }
 SHA256 = re.compile(r"[0-9a-f]{64}")

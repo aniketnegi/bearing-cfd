@@ -11,8 +11,9 @@
   PDF]] presents the full-mesh 2000 rpm convergence, pressure field, bearing
   quantities, and teammate Fluent cross-check.
 - [[file:reynolds-jfo-validation.org][Reynolds--JFO verification and validation]]
-  describes the reduced-film model, published slider check, conical-bearing
-  sensitivity results, and remaining grid and experimental comparisons.
+  describes the reduced-film model, published slider check, the Gangrade
+  Figure 6/8 reproduction protocol, conical-bearing sensitivity results, and
+  remaining grid and experimental comparisons.
 - [[file:cavitation-model-comparison.org][Cavitation and film-rupture model
   comparison]] compares the JFO, oil-vapour, non-condensable-gas, and
   atmospheric-ventilation models on the conical bearing.
@@ -28,6 +29,7 @@
 | Pressure-fed single-phase commissioning | 0 rpm | mesh, patches, units, and stationary conservation checks pass |
 | Single-phase rotation | 496.563 and 2000 rpm | iterations converge, but negative absolute pressure invalidates the full-film result |
 | Reynolds--JFO speed sweep | 4000 rpm | numerical checks pass; grid convergence and full experimental validation remain open |
+| Gangrade Figures 6 and 8 | Reynolds and JFO at ambient replenishment pressure | workstation study; fixed-eccentricity and load-equilibrium stages remain separate |
 | Isothermal TiO2--canola screen | BDL0 vs BDL2 at 2000 rpm | tabulated-property transplant; not a reproduction of the cylindrical source experiment |
 | Oil-vapour screen | 28 rpm hold | phase onset occurs, but the phase field does not plateau |
 | Non-condensable-gas screen | zero speed | conservation error exceeds the 0.5% gate |
@@ -47,6 +49,7 @@
 | OpenFOAM reference cases | [[file:../../../cases/conical_journal/openfoam/][cases/conical_journal/openfoam/]] |
 | Guarded speed continuation | [[file:../../../studies/conical_journal/hydrodynamic_ramp/][hydrodynamic_ramp/]] |
 | Isothermal TiO2--canola screen | [[file:../../../studies/conical_journal/nanolubricant_isothermal/][nanolubricant_isothermal/]] |
+| Gangrade Figure 6/8 reproduction | [[file:../../../studies/conical_journal/paper_reproduction/][paper_reproduction/]] |
 | Cavitation inputs and renderers | [[file:../../../studies/conical_journal/cavitation_four_track/][cavitation_four_track/]] |
 | JFO result renderer | [[file:../../../studies/conical_journal/jfo_checkpoint_evidence/][jfo_checkpoint_evidence/]] |
 | Selected result media | [[file:../../../evidence/conical_journal/][evidence/conical_journal/]] |

@@ -73,29 +73,109 @@ Sources:
 - [[https://doi.org/10.1115/1.4034244][Miraskari et al. (2017)]];
 - [[https://doi.org/10.1115/1.3251669][Elrod (1981)]].
 
-* Conical-bearing inputs
+* Gangrade-paper interpretation
 
-| Quantity | Paper-input case |
-|---+---:|
-| bearing length | 100 mm |
-| mean journal radius | 50 mm |
-| cone semi-angle | 10 degrees |
-| radial clearance | 50 micrometres |
-| eccentricity | 30 micrometres; \(\epsilon=0.6\) |
-| feed | 4 mm diameter at the axial mid-plane |
-| feed pressure | 0.5 MPa gauge |
-| axial and rupture pressure | 101325 Pa absolute |
-| dynamic viscosity | 0.0277 Pa s |
-| grid | 256 circumferential by 80 axial cells |
+The paper supplies enough information to define the bearing dimensions, but
+not one unambiguous pressure-feed boundary condition.
 
-The source paper gives both 2.6 m/s and 2000 rpm.  At a 50 mm radius,
-2.6 m/s equals 496.563 rpm, so the calculations keep these operating points
-separate.
+| Item | Source statement | Reproduction treatment |
+|---+---+---|
+| bearing | 100 mm long, 50 mm mean journal radius, 10-degree semi-cone angle, clearance ratio 0.001 | 50 micrometre radial clearance on the same geometry |
+| lubricant | dynamic viscosity 0.0277 Pa s; density 860 kg/m3 | used directly and isothermally |
+| =p_s= | Table 1 calls 0.5 MPa the supply pressure; pressure is normalized as =p_bar = p/p_s= | 500000 Pa is a reference scale only |
+| axial sides | prose calls them atmospheric; Eq. 9b prints =p_bar=1= | 101325 Pa absolute |
+| rupture | Eq. 9c uses zero pressure and zero pressure gradient | compare Reynolds/Swift--Stieber with JFO at 101325 Pa absolute rupture pressure |
+| oil port | rig Figure 7 labels replenishment port =IP1=; the FEM mesh and boundary equations give no port diameter or feed boundary | retain the project's 4 mm patch at 0 Pa gauge and full liquid; label the diameter as a project assumption |
 
-* Numerical results
+The source boundary statements are internally inconsistent if =p_bar=p/p_s=:
+atmospheric axial edges cannot generally be both =p_bar=1= and a rupture value
+of zero, and Figure 9 plots maxima below 0.5 despite Eq. 9b's printed unit
+boundary value.  The study therefore does not promote 0.5 MPa to a central
+gauge-pressure inlet.
 
-The paper-input continuation =0 -> 20 -> 496.563 -> 1000 -> 2000 rpm=
-converged at each saved point.  At 2000 rpm:
+The normalization remains useful:
+
+#+begin_example
+load scale = p_s * R_j^2 = 500000 * 0.05^2 = 1250 N
+for W_r = 1000 N: W_bar_r = 1000 / 1250 = 0.8
+Figure 9 at W_bar_r = 0.8 and gamma = 10 degrees gives p_bar_max about 0.35
+p_max about 0.35 * 0.5 MPa = 0.175 MPa
+#+end_example
+
+This arithmetic reconciles the paper's roughly 0.17 MPa experimental peak
+with its nondimensional load-controlled results without imposing a 0.5 MPa
+gauge feed.
+
+The source uses two distinct speeds.  Figure 6 and Figure 8 state 2000 rpm,
+whose mean-radius surface speed is 10.472 m/s.  Figures 9 onward state 2.6 m/s,
+which equals 496.563 rpm at 50 mm radius.  These operating points are not
+interchanged.
+
+* Figure 6 versus Figure 8
+
+Figure 6 is a prescribed-position calculation.  It holds the eccentricity
+ratio at each plotted value and reports the resulting normalized maximum
+pressure.  Load is an output.  The local sweep covers eccentricity ratios
+0.4--0.9 for both pressure-only Reynolds and mass-conserving JFO; 0.9 is an
+explicit extrapolation beyond Figure 6's plotted 0.8 endpoint.
+
+Figure 8 is a prescribed-load calculation.  It reports a circumferential
+pressure distribution for 1000 N radial load, 200 N axial load, 2000 rpm,
+V-32 oil, and 50 micrometre clearance.  Eccentricity magnitude and attitude
+cannot be copied from Figure 6: they must be found from equilibrium.  The local
+study solves the two in-plane pressure-force equations separately for Reynolds
+and JFO:
+
+#+begin_example
+F_x = 0 N
+F_y = 1000 N
+#+end_example
+
+The axial pressure force is then compared with the reported 200 N; it is not a
+third fitted target.  The paper does not disclose enough information to map
+its plotted zero circumferential angle to the local coordinate system.  The
+study records the raw profile and a separately labelled best circular phase
+alignment.  The aligned curve is a diagnostic comparison, not predictive
+validation.
+
+Both models use the same 4 mm ambient replenishment patch.  With
+=feed_gauge_pressure_pa=0=, the patch pressure is atmospheric and its JFO fill
+fraction is fixed at one.  This represents oil replacement, not hydrostatic
+pressurization.  The controlled comparison changes only the rupture model:
+
+| Model | Unknowns in the rupture region | Mass-conserving reformation |
+|---+---+---|
+| Reynolds/Swift--Stieber | pressure only; inactive cells remain at rupture pressure | no |
+| JFO/Elrod--Adams | rupture pressure and liquid fill fraction below one | yes |
+
+The machine-readable graph reads, assumptions, and commands are under
+[[file:../../../studies/conical_journal/paper_reproduction/][=paper_reproduction=]].
+
+Run the workstation-sized stages with one BLAS/OpenMP thread per independent
+case:
+
+#+begin_src sh
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  uv run python studies/conical_journal/paper_reproduction/run.py \
+  figure6 --jobs 12
+
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  uv run python studies/conical_journal/paper_reproduction/run.py \
+  figure8 --jobs 2
+#+end_src
+
+Maximum local gauge pressure is also checked against a provisional 5 MPa
+Babbitt-layer design ceiling supplied by the project supervisor.  Exceeding
+that ceiling rejects an operating point for design even when the numerical
+solve converges.  It does not invalidate a deliberately high-pressure
+verification case.
+
+* Retained 0.5 MPa gauge-feed sensitivity
+
+The earlier continuation =0 -> 20 -> 496.563 -> 1000 -> 2000 rpm= imposed a
+4 mm, 0.5 MPa gauge patch at fixed eccentricity ratio 0.6.  It is retained as a
+pressure-fed numerical sensitivity, not identified as a paper reproduction.
+At 2000 rpm:
 
 | Quantity | Value |
 |---+---:|
@@ -109,10 +189,13 @@ converged at each saved point.  At 2000 rpm:
 | total force \((F_x,F_y,F_z)\) | \((37045.810, 50425.411, -12113.821)\) N |
 | journal torque | -9.688458 N m |
 
-Graph-read values from Gangrade et al. at the same reported geometry are about
-35.6 for the FEA curve and 32.0 for the Fluent curve.  The agreement is a
-single peak-pressure comparison; it does not validate the fill field, rupture
-front, load, flow, or torque.
+Graph-read values from Gangrade et al. at eccentricity ratio 0.6 are about 35.5
+for the FEA curve and 32.0 for the Fluent curve.  The similar pressure ratio
+does not repair the unsupported feed boundary or the force mismatch.  It does
+not validate the fill field, rupture front, load, flow, or torque.  The
+separate three-dimensional fixed-eccentricity single-phase case reaches
+17.413 MPa absolute and 116.081 kN radial load; it is physically rejected
+because it also demands negative absolute pressure.
 
 The separate SAE 10W-40 sensitivity uses 0.0125 Pa s viscosity and a 29185 Pa
 absolute rupture pressure:

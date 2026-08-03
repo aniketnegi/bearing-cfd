@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "source": {
+    "citation": "Gangrade, Phalle, and Mantha, Performance Analysis of a Conical Hydrodynamic Journal Bearing",
+    "doi": "10.1007/s40997-018-0217-2",
+    "source_pdf_path_from_repository": "../../docs/papers_sorted/conical-journal-bearing/cfd/Performance Analysis of a Conical Hydrodynamic Journal Bearing.pdf",
+    "source_pdf_sha256": "501e9ad38d3be3e744ffd4c379ed6f2801bdedb1cd8fe308db64c21a422b6e05",
+    "graph_values": "approximate manual reads; use the source figures for authoritative values"
+  },
+  "conditions": {
+    "rpm": 2000.0,
+    "length_m": 0.1,
+    "mean_radius_m": 0.05,
+    "semicone_angle_deg": 10.0,
+    "radial_clearance_m": 0.00005,
+    "dynamic_viscosity_pa_s": 0.0277,
+    "density_kg_m3": 860.0,
+    "ambient_pressure_pa": 101325.0,
+    "cavitation_pressure_abs_pa": 101325.0,
+    "feed_diameter_m": 0.004,
+    "feed_gauge_pressure_pa": 0.0,
+    "paper_reference_pressure_pa": 500000.0
+  },
+  "interpretation": {
+    "paper_reference_pressure": "The tabulated 0.5 MPa is used only to form p_bar = p/p_s and W_bar = W/(p_s R_j^2); it is not imposed as a gauge-pressure feed.",
+    "feed": "The 4 mm project feed patch is retained as an ambient-pressure, fully flooded replenishment boundary. The paper shows rig port IP1 but does not disclose a 4 mm diameter or include a feed patch in its 60-node FEM domain.",
+    "pressure_limit_pa": 5000000.0,
+    "pressure_limit_basis": "provisional local Babbitt-layer design ceiling supplied by the project supervisor; it is a design gate, not a numerical-convergence gate"
+  },
+  "figure6": {
+    "quantity": "maximum gauge pressure divided by 0.5 MPa",
+    "control": "prescribed eccentricity ratio",
+    "graph_read_points": [
+      {"eccentricity_ratio": 0.4, "paper_fea": 15.0, "paper_fluent": 13.0},
+      {"eccentricity_ratio": 0.5, "paper_fea": 23.0, "paper_fluent": 19.5},
+      {"eccentricity_ratio": 0.6, "paper_fea": 35.5, "paper_fluent": 32.0},
+      {"eccentricity_ratio": 0.7, "paper_fea": 59.5, "paper_fluent": 54.0},
+      {"eccentricity_ratio": 0.8, "paper_fea": 90.0, "paper_fluent": 86.0}
+    ]
+  },
+  "figure8": {
+    "quantity": "mid-plane circumferential gauge-pressure distribution in kPa",
+    "control": "radial-load equilibrium",
+    "target_radial_load_n": 1000.0,
+    "reported_axial_load_n": 200.0,
+    "paper_fea_curve_graph_read": [
+      {"angle_deg": 0.0, "pressure_kpa": 35.0},
+      {"angle_deg": 30.0, "pressure_kpa": 0.0},
+      {"angle_deg": 60.0, "pressure_kpa": 0.0},
+      {"angle_deg": 90.0, "pressure_kpa": 0.0},
+      {"angle_deg": 120.0, "pressure_kpa": 0.0},
+      {"angle_deg": 150.0, "pressure_kpa": -3.0},
+      {"angle_deg": 180.0, "pressure_kpa": 36.0},
+      {"angle_deg": 210.0, "pressure_kpa": 99.0},
+      {"angle_deg": 240.0, "pressure_kpa": 148.0},
+      {"angle_deg": 270.0, "pressure_kpa": 174.0},
+      {"angle_deg": 300.0, "pressure_kpa": 150.0},
+      {"angle_deg": 330.0, "pressure_kpa": 99.0},
+      {"angle_deg": 360.0, "pressure_kpa": 35.0}
+    ],
+    "experimental_taps_graph_read": [
+      {"port": "P1", "angle_deg": 30.0, "pressure_kpa": 0.0},
+      {"port": "P2", "angle_deg": 232.0, "pressure_kpa": 137.0},
+      {"port": "P3", "angle_deg": 258.0, "pressure_kpa": 181.0},
+      {"port": "P4", "angle_deg": 278.0, "pressure_kpa": 173.0},
+      {"port": "P5", "angle_deg": 330.0, "pressure_kpa": 82.0}
+    ],
+    "angle_reference": "The source does not state enough information to map its plotted zero angle to the local +X/-Y convention. Circular phase alignment is reported separately and is not treated as predictive validation."
+  }
+}

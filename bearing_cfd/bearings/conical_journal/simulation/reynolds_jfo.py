@@ -69,6 +69,14 @@ class State:
     active_set_iterations_max: int
 
 
+@dataclass
+class ReynoldsState:
+    pressure_above_cavitation_pa: np.ndarray
+    rupture_mask: np.ndarray
+    complementarity_slack_m3: np.ndarray
+    active_set_iterations: int
+
+
 def validate(inputs: Inputs) -> None:
     if inputs.n_theta < 16 or inputs.n_axial < 4:
         raise ValueError("n_theta must be >=16 and n_axial must be >=4")
@@ -253,10 +261,81 @@ def solve_lcp(
             pressure[np.abs(pressure) < 1e-7] = 0
             slack[np.abs(slack) < 1e-18] = 0
             if pressure.min(initial=0) < -1e-5 or slack.min(initial=0) < -1e-18:
-                raise RuntimeError("active-set solve violated JFO complementarity")
+                raise RuntimeError("active-set solve violated complementarity")
             return pressure, slack, free, iteration
         free = next_free
-    raise RuntimeError("JFO active-set solve did not converge")
+    raise RuntimeError("active-set complementarity solve did not converge")
+
+
+def solve_reynolds(inputs: Inputs) -> tuple[Grid, ReynoldsState]:
+    """Solve the steady Reynolds variational inequality.
+
+    The inactive set is held at the declared cavitation pressure.  Unlike the
+    JFO solve below, it has no liquid-content transport and therefore does not
+    conserve mass through rupture and reformation.
+    """
+    grid = make_grid(inputs)
+    omega = inputs.rpm * 2 * math.pi / 60
+    dtheta = 2 * math.pi / inputs.n_theta
+    dt = 1.0 if omega == 0 else 2 * dtheta / abs(omega)
+    matrix, boundary_source = diffusion_matrix(inputs, grid, dt)
+    feed_flat = grid.feed.ravel()
+    unknown = ~feed_flat
+    unknown_indices = np.flatnonzero(unknown)
+    feed_indices = np.flatnonzero(feed_flat)
+    unknown_matrix = matrix[unknown][:, unknown].tocsr()
+    feed_pressure = (
+        inputs.ambient_pressure_pa
+        + inputs.feed_gauge_pressure_pa
+        - inputs.cavitation_pressure_abs_pa
+    )
+    feed_term = (
+        matrix[unknown][:, feed_flat] @ np.full(len(feed_indices), feed_pressure)
+        if len(feed_indices)
+        else np.zeros(len(unknown_indices))
+    )
+    area_h = (grid.area * grid.film_thickness).ravel()
+    advected_area_h = (
+        area_h.reshape(grid.film_thickness.shape)
+        if omega == 0
+        else np.roll(
+            area_h.reshape(grid.film_thickness.shape),
+            1 if omega > 0 else -1,
+            axis=1,
+        )
+    ).ravel()
+    constant = (
+        area_h[unknown_indices]
+        - advected_area_h[unknown_indices]
+        - boundary_source[unknown_indices]
+        + feed_term
+    )
+    pressure_unknown, slack_unknown, free, iterations = solve_lcp(
+        unknown_matrix,
+        constant,
+        pressure_scale=max(
+            inputs.feed_gauge_pressure_pa,
+            abs(omega)
+            * inputs.dynamic_viscosity_pa_s
+            * inputs.mean_radius_m**2
+            / inputs.radial_clearance_m**2,
+            1.0,
+        ),
+        free=None,
+    )
+    pressure = np.zeros_like(grid.film_thickness)
+    pressure.ravel()[unknown_indices] = pressure_unknown
+    pressure.ravel()[feed_indices] = feed_pressure
+    slack = np.zeros_like(grid.film_thickness)
+    slack.ravel()[unknown_indices] = slack_unknown
+    rupture = np.zeros_like(grid.feed)
+    rupture.ravel()[unknown_indices] = ~free
+    return grid, ReynoldsState(
+        pressure_above_cavitation_pa=pressure,
+        rupture_mask=rupture,
+        complementarity_slack_m3=slack,
+        active_set_iterations=iterations,
+    )
 
 
 def solve(
@@ -468,14 +547,17 @@ def flow_metrics(inputs: Inputs, grid: Grid, state: State) -> dict[str, float]:
     }
 
 
-def load_metrics(inputs: Inputs, grid: Grid, state: State) -> dict[str, object]:
+def pressure_force(
+    inputs: Inputs,
+    grid: Grid,
+    pressure_above_cavitation_pa: np.ndarray,
+) -> np.ndarray:
     gamma = math.radians(inputs.semicone_angle_deg)
     dtheta = 2 * math.pi / inputs.n_theta
     dz = inputs.length_m / inputs.n_axial
-    omega = inputs.rpm * 2 * math.pi / 60
     pressure_gauge = (
         inputs.cavitation_pressure_abs_pa
-        + state.pressure_above_cavitation_pa
+        + pressure_above_cavitation_pa
         - inputs.ambient_pressure_pa
     )
     area = grid.journal_radius * dtheta * dz / math.cos(gamma)
@@ -487,9 +569,21 @@ def load_metrics(inputs: Inputs, grid: Grid, state: State) -> dict[str, object]:
         ),
         axis=-1,
     )
-    pressure_force = np.sum(
+    return np.sum(
         -pressure_gauge[..., None] * normal * area[..., None],
         axis=(0, 1),
+    )
+
+
+def load_metrics(inputs: Inputs, grid: Grid, state: State) -> dict[str, object]:
+    dtheta = 2 * math.pi / inputs.n_theta
+    dz = inputs.length_m / inputs.n_axial
+    omega = inputs.rpm * 2 * math.pi / 60
+    pressure_load = pressure_force(
+        inputs, grid, state.pressure_above_cavitation_pa
+    )
+    area = grid.journal_radius * dtheta * dz / math.cos(
+        math.radians(inputs.semicone_angle_deg)
     )
 
     tangent = np.stack(
@@ -508,10 +602,10 @@ def load_metrics(inputs: Inputs, grid: Grid, state: State) -> dict[str, object]:
         - 0.5 * grid.film_thickness * pressure_gradient
     )
     shear_force = np.sum(shear[..., None] * tangent * area[..., None], axis=(0, 1))
-    total_force = pressure_force + shear_force
+    total_force = pressure_load + shear_force
     torque = float(np.sum(shear * grid.journal_radius * area))
     return {
-        "pressure_force_n": pressure_force.tolist(),
+        "pressure_force_n": pressure_load.tolist(),
         "viscous_force_n": shear_force.tolist(),
         "total_force_n": total_force.tolist(),
         "journal_torque_z_nm": torque,
