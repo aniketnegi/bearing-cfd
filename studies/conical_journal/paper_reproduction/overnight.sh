@@ -25,7 +25,7 @@ printf 'OpenFOAM: %s\n' "$(foamVersion)"
 printf 'logical CPUs: %s\n' "$(getconf _NPROCESSORS_ONLN)"
 
 three_d_status=0
-uv run --frozen python studies/conical_journal/paper_reproduction/three_d.py \
+uv run --frozen python -m studies.conical_journal.paper_reproduction.three_d \
   --outdir "$run_dir/three-d" \
   --jobs 4 \
   --mpi-ranks 8 \
@@ -45,7 +45,7 @@ uv run --frozen python studies/conical_journal/paper_reproduction/three_d.py \
 eccentricity_pid=$!
 
 (
-  uv run --frozen python studies/conical_journal/paper_reproduction/section4.py \
+  uv run --frozen python -m studies.conical_journal.paper_reproduction.section4 \
     --outdir "$run_dir/section4" \
     --seed-jobs 8 \
     --jobs 28 \

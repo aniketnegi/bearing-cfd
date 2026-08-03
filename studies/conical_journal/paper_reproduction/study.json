@@ -8,8 +8,8 @@
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure6", "--jobs", "12"],
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure8", "--jobs", "2"],
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure6", "--outdir", "out/conical_journal/studies/paper-reproduction/fixed-eccentricity-sensitivity", "--n-theta", "512", "--n-axial", "160", "--max-revolutions", "24", "--jobs", "12", "--eccentricity-ratios", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90"],
-    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/three_d.py", "--jobs", "4", "--mpi-ranks", "8", "--fixed-eccentricity-ratios", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90"],
-    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/section4.py", "--seed-jobs", "8", "--jobs", "28", "--max-revolutions", "24"],
+    ["uv", "run", "python", "-m", "studies.conical_journal.paper_reproduction.three_d", "--jobs", "4", "--mpi-ranks", "8", "--fixed-eccentricity-ratios", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90"],
+    ["uv", "run", "python", "-m", "studies.conical_journal.paper_reproduction.section4", "--seed-jobs", "8", "--jobs", "28", "--max-revolutions", "24"],
     ["bash", "studies/conical_journal/paper_reproduction/overnight.sh", "RUN_STAMP"]
   ],
   "required_external_tools": ["OpenFOAM Foundation 14", "Open MPI", "tmux for detached workstation execution"],
