@@ -1,0 +1,55 @@
+#+TITLE: Isothermal Nanolubricant Property Screen
+#+OPTIONS: toc:2 num:nil
+
+* Question
+
+This study changes only the lubricant properties in the established conical
+Reynolds--JFO case.  It compares base canola oil (=BDL0=) with the source
+paper's =0.02 vol%= TiO2 mixture (=BDL2=) at 2000 rpm.
+
+It is not a reproduction of the source experiment.  That experiment used a
+cylindrical bearing, 100 micrometre radial clearance, 0.1 MPa supply, applied
+loads, and measured thermal behaviour.  This screen retains the conical model,
+50 micrometre clearance, 0.5 MPa supply, fixed eccentricity, and isothermal
+properties.
+
+* Property source
+
+The viscosity and density values come from Dhanola and Garg,
+"Experimental analysis of the efficacy of vegetable oil-based nanolubricants
+for improving journal-bearing performance",
+[[https://doi.org/10.1177/1350650120981478][doi:10.1177/1350650120981478]].
+
+- =BDL0=: =mu = 0.03462 Pa s= at 40 degrees C and =rho = 918 kg/m3=;
+- =BDL2=: =mu = 0.03782 Pa s= at 40 degrees C and =rho = 979 kg/m3=.
+
+The source reports a TiO2-to-Triton X-100 mass ratio of =1:3=.  The measured
+effective properties are used directly; particles and surfactant are not
+separate phases in this model.  Exact transcription metadata and the source
+PDF hash are in [[file:inputs/lubricants.json][=inputs/lubricants.json=]].
+
+* Run
+
+From the repository root:
+
+#+begin_src sh
+uv run python studies/conical_journal/nanolubricant_isothermal/run.py
+#+end_src
+
+The script writes both solved states, =comparison.json=, =comparison.csv=, and
+=run.json= below
+=out/conical_journal/studies/nanolubricant-isothermal/=.  Publication is atomic;
+a failed solve does not replace the previous result.
+
+* Current numerical screen
+
+Both 128 by 40 solutions meet the solver's convergence, pressure-floor, and
+0.5 percent flow-balance gates.  Relative to =BDL0=, =BDL2= produces about
+8.42 percent higher maximum gauge pressure, 7.64 percent higher total load,
+8.83 percent higher torque, and 3.94 percent lower volumetric feed flow.  The
+ruptured-area fraction increases by about 0.621 percentage points.
+
+These changes are numerical property sensitivity, not validated nanolubricant
+performance.  The model omits the energy equation, temperature-dependent
+viscosity, particle transport, and the source rig's load-controlled operating
+condition.

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "study": "nanolubricant-isothermal",
+  "question": "How does replacing canola oil BDL0 with the tabulated BDL2 TiO2-canola effective properties change the established conical-bearing Reynolds-JFO result at 2000 rpm?",
+  "status": "NUMERICAL_SCREEN_PHYSICALLY_UNVALIDATED",
+  "source_commit": "d94643975a0a9e49b82230d0ba335151fb62695d",
+  "commands": [
+    ["uv", "run", "python", "studies/conical_journal/nanolubricant_isothermal/run.py"]
+  ],
+  "required_external_tools": [],
+  "source_artifacts": [
+    {
+      "path": "studies/conical_journal/nanolubricant_isothermal/inputs/lubricants.json",
+      "tracked": true,
+      "required": true
+    },
+    {
+      "path": "bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py",
+      "tracked": true,
+      "required": true
+    }
+  ],
+  "expected_outputs": [
+    {"path": "bdl0", "role": "base-canola JFO fields and summary"},
+    {"path": "bdl2", "role": "TiO2-canola JFO fields and summary"},
+    {"path": "comparison.json", "role": "machine-readable property and metric comparison"},
+    {"path": "comparison.csv", "role": "compact metric comparison table"},
+    {"path": "run.json", "role": "generation provenance and acceptance status"}
+  ],
+  "limitations": [
+    "The source reports 0.02 vol% TiO2; the screen uses the tabulated mixture properties directly and does not model concentration, particles, or surfactant transport.",
+    "The source experiment used a cylindrical bearing, 0.1 MPa supply, load-controlled eccentricity, and a thermal field; none is reproduced by this property transplant.",
+    "The conical Reynolds-JFO model still requires a declared grid-convergence result and comparison with independent pressure data."
+  ]
+}

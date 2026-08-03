@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "source": {
+    "title": "Experimental analysis of the efficacy of vegetable oil-based nanolubricants for improving journal-bearing performance",
+    "authors": "Anil Dhanola and Hem Chander Garg",
+    "doi": "10.1177/1350650120981478",
+    "tables": [2, 4],
+    "source_pdf_sha256": "96daa9070d30e5e21befe2e6f5561e8a6d35e36cece6c82fdc0a0635f5ffc490"
+  },
+  "interpretation": {
+    "status": "TABULATED_EFFECTIVE_PROPERTIES",
+    "note": "BDL2 denotes the paper's reported 0.02 vol% TiO2 mixture. The solver uses its measured viscosity and density directly; it does not derive mixture properties from concentration.",
+    "preparation": "The paper reports a 1:3 TiO2-to-Triton X-100 mass ratio. Particle and surfactant transport are not modelled separately."
+  },
+  "property_temperature_c": 40.0,
+  "model_scope": [
+    "homogeneous single-fluid effective properties",
+    "isothermal properties fixed at their tabulated 40 C values",
+    "mass-conserving Reynolds-JFO film rupture and reformation",
+    "properties transplanted into the conical reference case; the paper's cylindrical rig geometry, 0.1 MPa supply, load-controlled eccentricity, and thermal field are not reproduced",
+    "no particle transport, energy equation, or thermal-conductivity model"
+  ],
+  "conditions": {
+    "rpm": 2000.0,
+    "n_theta": 128,
+    "n_axial": 40,
+    "max_revolutions": 8,
+    "feed_gauge_pressure_pa": 500000.0,
+    "ambient_pressure_pa": 101325.0,
+    "cavitation_pressure_abs_pa": 101325.0
+  },
+  "property_sets": [
+    {
+      "id": "BDL0",
+      "reported_tio2_volume_percent": 0.0,
+      "dynamic_viscosity_pa_s": 0.03462,
+      "density_kg_m3": 918.0
+    },
+    {
+      "id": "BDL2",
+      "reported_tio2_volume_percent": 0.02,
+      "dynamic_viscosity_pa_s": 0.03782,
+      "density_kg_m3": 979.0
+    }
+  ]
+}
