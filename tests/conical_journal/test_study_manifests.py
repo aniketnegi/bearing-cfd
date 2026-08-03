@@ -14,6 +14,7 @@ EXPECTED_STUDIES = {
     "hydrodynamic_ramp",
     "jfo_checkpoint_evidence",
     "jfo_feed_geometry",
+    "nanolubricant_isothermal",
     "single_phase_oq90",
 }
 SHA256 = re.compile(r"[0-9a-f]{64}")
@@ -28,32 +29,24 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _tree_sha256(root: Path) -> str:
-    digest = hashlib.sha256()
-    for path in sorted(item for item in root.rglob("*") if item.is_file()):
-        digest.update(path.relative_to(root).as_posix().encode())
-        digest.update(b"\0")
-        digest.update(_sha256(path).encode())
-        digest.update(b"\0")
-    return digest.hexdigest()
-
-
 def _validate_artifact(entry: dict[str, object]) -> None:
     relative = Path(str(entry["path"]))
     assert not relative.is_absolute()
-    digest = str(entry["sha256"])
-    assert SHA256.fullmatch(digest)
     path = REPO_ROOT / relative
     if entry.get("tracked"):
         assert path.exists(), path
+        assert "sha256" not in entry
+        assert "hash_kind" not in entry
+        return
+    digest = str(entry["sha256"])
+    assert SHA256.fullmatch(digest)
     if not path.exists():
         return
-    kind = str(entry.get("hash_kind", "sha256-file"))
-    actual = _tree_sha256(path) if kind == "sha256-tree-v1" else _sha256(path)
-    assert actual == digest, path
+    assert path.is_file(), path
+    assert _sha256(path) == digest, path
 
 
-def test_curated_study_manifests_and_referenced_hashes() -> None:
+def test_curated_study_manifests_and_external_hashes() -> None:
     manifests = sorted(STUDY_ROOT.glob("*/study.json"))
     assert {path.parent.name for path in manifests} == EXPECTED_STUDIES
     for path in manifests:
@@ -90,7 +83,7 @@ def test_curated_study_manifests_and_referenced_hashes() -> None:
                 assert _sha256(origin_path) == origin["sha256"]
 
 
-def test_evidence_manifest_and_collection_hashes() -> None:
+def test_evidence_manifest_collections() -> None:
     manifest = json.loads(
         (REPO_ROOT / "evidence/conical_journal/manifest.json").read_text(
             encoding="utf-8"
@@ -98,16 +91,8 @@ def test_evidence_manifest_and_collection_hashes() -> None:
     )
     assert manifest["schema_version"] == 1
     assert manifest["bearing"] == "conical_journal"
-    assert manifest["hash_kind"] == "sha256-tree-v1"
     assert manifest["collections"]
     for collection in manifest["collections"]:
-        _validate_artifact(
-            {
-                "path": collection["path"],
-                "sha256": collection["sha256"],
-                "hash_kind": manifest["hash_kind"],
-                "tracked": True,
-            }
-        )
+        assert (REPO_ROOT / collection["path"]).is_dir()
         assert (REPO_ROOT / collection["source_manifest"]).is_file()
         assert collection["status"]

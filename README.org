@@ -82,7 +82,6 @@ bearing-cfd conical-journal geometry [options]
 bearing-cfd conical-journal mesh <method> [options]
 bearing-cfd conical-journal export central-feed [options]
 bearing-cfd conical-journal simulate reynolds-jfo [options]
-bearing-cfd conical-journal study <study> [options]
 #+end_example
 
 Use =--help= after a complete command to inspect its arguments, for example:
@@ -90,6 +89,10 @@ Use =--help= after a complete command to inspect its arguments, for example:
 #+begin_src sh
 uv run bearing-cfd conical-journal simulate reynolds-jfo --help
 #+end_src
+
+Repository-local studies are direct scripts under =studies/conical_journal/=.
+They are kept outside the installed command because their inputs and retained
+artifacts belong to a particular checkout.
 
 Generated files use =out/conical_journal/<stage>/...=.  Successful generations
 include =run.json= with the resolved inputs, producing source revision, tool

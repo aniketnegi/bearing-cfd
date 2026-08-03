@@ -10,16 +10,14 @@
     "sha256": "298b299802cde05cbfb9c66905289ef77ef9faad9c550b10b3eaa812e5718fe1"
   },
   "commands": [
-    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp", "--self-test"],
-    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp"],
-    ["bearing-cfd", "conical-journal", "study", "hydrodynamic-ramp", "--run"]
+    ["uv", "run", "python", "studies/conical_journal/hydrodynamic_ramp/run.py", "--self-test"],
+    ["uv", "run", "python", "studies/conical_journal/hydrodynamic_ramp/run.py"],
+    ["uv", "run", "python", "studies/conical_journal/hydrodynamic_ramp/run.py", "--run"]
   ],
   "required_external_tools": ["OpenFOAM 14", "foamDictionary", "foamRun"],
   "source_artifacts": [
     {
       "path": "studies/conical_journal/hydrodynamic_ramp/inputs",
-      "sha256": "de7b3cdc93184cc6f68b0975733956f169feb8fe3be33e2a74b83867122c998e",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": true
     },

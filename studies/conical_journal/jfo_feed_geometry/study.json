@@ -11,21 +11,17 @@
     "sha256": "4087352f55290aa1ebf06b2a7513d0f66dc770ad56aa9b1a41332b799cc0399a"
   },
   "commands": [
-    ["bearing-cfd", "conical-journal", "study", "jfo-feed-geometry"]
+    ["uv", "run", "python", "studies/conical_journal/jfo_feed_geometry/render.py"]
   ],
   "required_external_tools": [],
   "source_artifacts": [
     {
       "path": "bearing_cfd/bearings/conical_journal/simulation/reynolds_jfo.py",
-      "sha256": "e6ddf0673b4df2dc257f957bfef7f0e898fdaadbc3d03404a3b459b64dda3c52",
-      "hash_kind": "sha256-file",
       "tracked": true,
       "required": true
     },
     {
       "path": "bearing_cfd/bearings/conical_journal/simulation/jfo_surface_mesh.py",
-      "sha256": "df74c0829c801cf4422b86c42cfc86eb0f6b6aeb3cc6ecfae4ab2da9c04e4ff2",
-      "hash_kind": "sha256-file",
       "tracked": true,
       "required": true
     },

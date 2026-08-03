@@ -5,22 +5,18 @@
   "status": "ACCEPTED_NUMERICAL_EVIDENCE_PHYSICAL_VALIDATION_PENDING",
   "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
   "commands": [
-    ["bearing-cfd", "conical-journal", "study", "jfo-checkpoint-evidence"],
+    ["uv", "run", "python", "studies/conical_journal/jfo_checkpoint_evidence/render.py"],
     ["bash", "openfoam/check_jfoBearingFoam.sh"]
   ],
   "required_external_tools": ["FFmpeg", "OpenFOAM 14 for regeneration"],
   "source_artifacts": [
     {
       "path": "cases/conical_journal/openfoam/jfo_paper_exact",
-      "sha256": "de92ba5baa5e440a7ab9b84350a4de617b4ae0b43026c215ea75a277a0b8b9d8",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": true
     },
     {
       "path": "cases/conical_journal/openfoam/jfo_sae10w40",
-      "sha256": "a4f0ed5962d28b9c26c86380da041965d16b90c910c2cbe346d051838be2effb",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": false
     },

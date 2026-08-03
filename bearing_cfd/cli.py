@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import os
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -18,7 +15,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bearing-cfd", add_help=False)
     parser.add_argument("bearing", choices=("conical-journal",))
     parser.add_argument(
-        "stage", choices=("geometry", "mesh", "export", "simulate", "study")
+        "stage", choices=("geometry", "mesh", "export", "simulate")
     )
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
     return parser
@@ -46,8 +43,6 @@ stages:
             body-fitted-inlet | central-feed
   export    central-feed
   simulate  reynolds-jfo
-  study     body-fitted-mesh | jfo-feed-geometry | jfo-checkpoint-evidence |
-            hydrodynamic-ramp | single-phase-oq90 | cavitation-four-track
 """
 
 
@@ -159,50 +154,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return reynolds_jfo.main(
             _defaults(remaining, outdir=OUTPUT_ROOT / "simulation/reynolds-jfo")
         )
-
-    if namespace.stage == "study":
-        outdir = OUTPUT_ROOT / "studies" / operation
-        if operation == "body-fitted-mesh":
-            from studies.conical_journal.body_fitted_mesh import study
-
-            return study.main(_defaults(remaining, outdir=outdir))
-        if operation == "jfo-feed-geometry":
-            from studies.conical_journal.jfo_feed_geometry import render
-
-            return render.main(_defaults(remaining, outdir=outdir)) or 0
-        if operation == "jfo-checkpoint-evidence":
-            from studies.conical_journal.jfo_checkpoint_evidence import render
-
-            return render.main(_defaults(remaining, output=outdir))
-        if operation == "hydrodynamic-ramp":
-            from studies.conical_journal.hydrodynamic_ramp import run
-
-            return run.main(_defaults(remaining, work_case=outdir))
-        if operation == "single-phase-oq90":
-            from studies.conical_journal import single_phase_oq90
-
-            pvpython = shutil.which("pvpython")
-            if pvpython is None:
-                print("pvpython is required for this study", file=sys.stderr)
-                return 2
-            script = Path(single_phase_oq90.__file__).with_name("render.py")
-            environment = os.environ.copy()
-            package_root = Path(__file__).resolve().parents[1]
-            environment["PYTHONPATH"] = os.pathsep.join(
-                filter(
-                    None,
-                    (str(package_root), environment.get("PYTHONPATH", "")),
-                )
-            )
-            return subprocess.run(
-                [pvpython, str(script), *_defaults(remaining, output=outdir)],
-                env=environment,
-                check=False,
-            ).returncode
-        if operation == "cavitation-four-track":
-            from studies.conical_journal.cavitation_four_track import summarize
-
-            return summarize.main(_defaults(remaining, output=outdir)) or 0
 
     _parser().error(f"unsupported command: {namespace.stage} {operation}")
     return 2

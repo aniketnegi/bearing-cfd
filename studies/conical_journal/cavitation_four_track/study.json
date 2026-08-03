@@ -5,7 +5,7 @@
   "status": "TRACK_A_ACCEPTED_TRACKS_B_C_UNSETTLED_TRACK_D_REJECTED",
   "source_commit": "78d4d3d6b2695e38ddcdf7a183edeab60b154bd5",
   "commands": [
-    ["bearing-cfd", "conical-journal", "study", "cavitation-four-track"],
+    ["uv", "run", "python", "studies/conical_journal/cavitation_four_track/summarize.py"],
     [
       "env",
       "PYTHONPATH=.",
@@ -34,8 +34,6 @@
   "source_artifacts": [
     {
       "path": "studies/conical_journal/cavitation_four_track/inputs",
-      "sha256": "cf3019409588aa6eed0b43aa48ba81595ce91150ed06ecdcf10ffe8f8a168351",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": true
     },

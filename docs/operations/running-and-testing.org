@@ -184,14 +184,15 @@ OpenFOAM fields under =out/=.
 
 | Study | Command | Additional requirement |
 |---+---+---|
-| feed representation | =uv run bearing-cfd conical-journal study jfo-feed-geometry= | none; solved fields are optional |
-| guarded continuation parser | =uv run bearing-cfd conical-journal study hydrodynamic-ramp --self-test= | none |
-| body-fitted mesh gallery | =uv run bearing-cfd conical-journal study body-fitted-mesh --ansys skip= | Gmsh; OpenFOAM optional |
-| JFO checkpoint figures | =uv run bearing-cfd conical-journal study jfo-checkpoint-evidence= | retained OpenFOAM checkpoint fields; FFmpeg for MP4 |
-| single-phase figures | =uv run bearing-cfd conical-journal study single-phase-oq90= | ParaView =pvpython= and retained VTK fields |
-| four-model summary | =uv run bearing-cfd conical-journal study cavitation-four-track= | retained Tracks B--D =postProcessing= tables |
+| feed representation | =uv run python studies/conical_journal/jfo_feed_geometry/render.py= | none; solved fields are optional |
+| guarded continuation parser | =uv run python studies/conical_journal/hydrodynamic_ramp/run.py --self-test= | none |
+| isothermal BDL0--BDL2 screen | =uv run python studies/conical_journal/nanolubricant_isothermal/run.py= | none; uses tabulated 40 °C properties |
+| body-fitted mesh gallery | =uv run python studies/conical_journal/body_fitted_mesh/study.py --ansys skip= | Gmsh; OpenFOAM optional |
+| JFO checkpoint figures | =uv run python studies/conical_journal/jfo_checkpoint_evidence/render.py= | retained OpenFOAM checkpoint fields; FFmpeg for MP4 |
+| single-phase figures | =PYTHONPATH=. pvpython studies/conical_journal/single_phase_oq90/render.py= | ParaView =pvpython= and retained VTK fields |
+| four-model summary | =uv run python studies/conical_journal/cavitation_four_track/summarize.py= | retained Tracks B--D =postProcessing= tables |
 
-Each study's =study.json= lists its exact inputs, source hashes, external tools,
+Each study's =study.json= lists its exact inputs, external artifacts, tools,
 and expected outputs.
 
 * Inspect command options

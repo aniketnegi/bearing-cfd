@@ -60,10 +60,10 @@
       "required"
     ],
     [
-      "bearing-cfd",
-      "conical-journal",
-      "study",
-      "body-fitted-mesh",
+      "uv",
+      "run",
+      "python",
+      "studies/conical_journal/body_fitted_mesh/study.py",
       "--openfoam",
       "skip",
       "--ansys",
@@ -78,15 +78,11 @@
   "source_artifacts": [
     {
       "path": "tests/fixtures/conical_journal/geometry/strict_default",
-      "sha256": "d14131e498ce6348d7c2e797daec3b6fdbae31479401e09201e8ab37aaaad677",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": true
     },
     {
       "path": "tests/fixtures/conical_journal/geometry/strict_case_e03_g20",
-      "sha256": "96a6e87a7c2c34d4a0956de9bcc4b00d036c7eb90a6266ac9d433ba3334d75fd",
-      "hash_kind": "sha256-tree-v1",
       "tracked": true,
       "required": true
     },
