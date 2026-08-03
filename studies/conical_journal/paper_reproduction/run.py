@@ -331,9 +331,18 @@ def write_figure6(
 
 
 def equilibrium_case(
-    spec: tuple[str, dict[str, object], int, int, int, float, float],
+    spec: tuple[str, dict[str, object], int, int, int, float, float, float],
 ) -> dict[str, object]:
-    model, conditions, n_theta, n_axial, max_revolutions, target_load, initial_e = spec
+    (
+        model,
+        conditions,
+        n_theta,
+        n_axial,
+        max_revolutions,
+        target_load,
+        initial_e,
+        initial_angle,
+    ) = spec
     target = np.array((0.0, target_load))
     cache: dict[tuple[float, float], dict[str, object]] = {}
 
@@ -372,7 +381,7 @@ def equilibrium_case(
 
     fit = least_squares(
         residual,
-        x0=np.array((initial_e, -90.0)),
+        x0=np.array((initial_e, initial_angle)),
         bounds=(np.array((1e-5, -270.0)), np.array((0.95, 90.0))),
         x_scale=np.array((0.02, 90.0)),
         diff_step=np.array((0.02, 0.001)),
@@ -639,6 +648,7 @@ def run_figure8(args: argparse.Namespace, values: Sequence[str]) -> int:
             args.max_revolutions,
             target_load,
             args.initial_eccentricity_ratio,
+            -90.0,
         )
         for model in MODELS
     ]

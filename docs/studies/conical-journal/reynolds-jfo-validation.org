@@ -170,6 +170,64 @@ that ceiling rejects an operating point for design even when the numerical
 solve converges.  It does not invalidate a deliberately high-pressure
 verification case.
 
+* Overnight 3D and Sections 4.1--4.8 matrix
+
+The tracked overnight launcher runs two different experiments in sequence:
+
+1. Four full-volume, 1,252,800-cell OpenFOAM cases are generated and solved.
+   The two operating points are Figure 8 at 2000 rpm and the Section 4
+   γ=10-degree, \(\bar W_r=0.5\) point at 2.6 m/s.  Each point is meshed at
+   the independently computed Reynolds and JFO equilibrium position.  These
+   geometry seeds use the 448 by 140 surface grid, whose represented 4 mm
+   feed area is within 3% of nominal.
+2. The midsurface solver then evaluates Reynolds and JFO at semi-cone angles
+   5, 10, 20, and 30 degrees and \(\bar W_r=0.1,0.3,0.5,0.7,0.9\).  The main
+   512 by 160 grid is accompanied by 448 by 140 and 704 by 220 feed-area
+   sensitivities.
+
+The Section 4 calculation is load controlled at every point: it solves
+\(F_x=0\) and \(F_y=W_r\) before reporting maximum pressure, axial load, and
+minimum film thickness.  Stiffness is the central difference
+
+\[
+S_{ij}=-\frac{\partial F_i}{\partial q_j}
+\]
+
+at two displacement increments, 0.001 and 0.002 times radial clearance.  The
+damping matrix uses a frozen-cavity instantaneous linearization,
+\(C_{ij}=-\partial F_i/\partial\dot q_j\).  This is a declared local model,
+not exact method parity: the paper does not state its perturbation amplitude
+or how its Reynolds rupture boundary moves during perturbation.
+
+For a two-degree-of-freedom isotropic rotor mass, the recorded critical mass
+uses the Routh boundary of
+\(\det(Ms^2I+Cs+S)=0\).  The output retains all Routh terms and rejects the
+threshold value when their stability signs are not satisfied.  It reports
+the paper's resultant-force interpretation of \(\bar F_0\) and a radial-force
+sensitivity separately.
+
+The labels =reynolds= and =jfo= on the 3D cases identify only the 2D position
+used to build the geometry.  Both volume cases solve the same laminar,
+single-phase Navier--Stokes equations with the 4 mm port and axial ends at
+zero gauge pressure.  They impose neither a 3D Reynolds rupture boundary nor
+a 3D JFO free boundary.  A converged case containing a tensile pressure zone
+therefore remains a numerical diagnostic and is not accepted as a physical
+cavitation prediction.
+
+Run the complete sequence with:
+
+#+begin_src sh
+bash studies/conical_journal/paper_reproduction/overnight.sh RUN_STAMP
+#+end_src
+
+The launcher explicitly sources =/opt/openfoam14/etc/bashrc=, restricts each
+independent Python process to one BLAS thread, uses four 8-rank OpenFOAM jobs,
+and then uses 28 worker processes for the Section 4 matrix.  Outputs and live
+logs are written below
+=out/conical_journal/studies/paper-reproduction/overnight-RUN_STAMP/=.  The 3D
+stage continuing to the 2D stage after an individual rejection is deliberate:
+each stage records its own nonzero status and retained diagnostic logs.
+
 * Retained 0.5 MPa gauge-feed sensitivity
 
 The earlier continuation =0 -> 20 -> 496.563 -> 1000 -> 2000 rpm= imposed a
