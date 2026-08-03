@@ -223,6 +223,9 @@ def write_figure6(
         float(point["eccentricity_ratio"]): point
         for point in figure6["graph_read_points"]
     }
+    extended_sensitivity = any(
+        float(result["eccentricity_ratio"]) not in paper for result in results
+    )
     pressure_limit = float(interpretation["pressure_limit_pa"])
 
     with (stage / "figure6.csv").open("w", encoding="utf-8", newline="") as stream:
@@ -297,7 +300,11 @@ def write_figure6(
     ax.set(
         xlabel="eccentricity ratio",
         ylabel="maximum gauge pressure / 0.5 MPa",
-        title="Figure 6 interpretation: prescribed eccentricity at 2000 rpm",
+        title=(
+            "Fixed-eccentricity sensitivity at 2000 rpm"
+            if extended_sensitivity
+            else "Figure 6 interpretation: prescribed eccentricity at 2000 rpm"
+        ),
     )
     ax.grid(alpha=0.25)
     ax.legend()
@@ -318,6 +325,12 @@ def write_figure6(
     )
     summary = {
         "status": status,
+        "scope": (
+            "extended_fixed_eccentricity_sensitivity"
+            if extended_sensitivity
+            else "paper_figure6_comparison"
+        ),
+        "paper_graph_eccentricity_ratios": sorted(paper),
         "control": figure6["control"],
         "conditions": conditions,
         "interpretation": interpretation,
@@ -574,7 +587,9 @@ def write_figure8(
 def run_figure6(args: argparse.Namespace, values: Sequence[str]) -> int:
     study = load_study(args.input)
     conditions = study["conditions"]
+    figure6 = study["figure6"]
     assert isinstance(conditions, dict)
+    assert isinstance(figure6, dict)
     if not args.eccentricity_ratios or any(
         not 0 < value < 1 for value in args.eccentricity_ratios
     ):
@@ -597,11 +612,21 @@ def run_figure6(args: argparse.Namespace, values: Sequence[str]) -> int:
             with ProcessPoolExecutor(max_workers=jobs) as executor:
                 results = list(executor.map(fixed_case, specs))
         status, _ = write_figure6(stage, study, results, jobs, started)
+        paper_ratios = {
+            float(point["eccentricity_ratio"]) for point in figure6["graph_read_points"]
+        }
+        extended_sensitivity = any(
+            value not in paper_ratios for value in args.eccentricity_ratios
+        )
         publish_generation(
             stage,
             target,
             stage="study",
-            operation="paper-reproduction-figure6",
+            operation=(
+                "paper-reproduction-fixed-eccentricity-sensitivity"
+                if extended_sensitivity
+                else "paper-reproduction-figure6"
+            ),
             status=status,
             argv=values,
             resolved_inputs={
@@ -611,6 +636,11 @@ def run_figure6(args: argparse.Namespace, values: Sequence[str]) -> int:
                 "n_axial": args.n_axial,
                 "max_revolutions": args.max_revolutions,
                 "jobs": jobs,
+                "scope": (
+                    "extended_fixed_eccentricity_sensitivity"
+                    if extended_sensitivity
+                    else "paper_figure6_comparison"
+                ),
                 "conditions": conditions,
             },
             input_units={

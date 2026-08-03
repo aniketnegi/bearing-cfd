@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run 3D single-phase OpenFOAM diagnostics at Reynolds/JFO seed positions."""
+"""Run 3D single-phase diagnostics at equilibrium and prescribed positions."""
 
 from __future__ import annotations
 
@@ -31,6 +31,7 @@ from studies.conical_journal.paper_reproduction.run import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE = REPO_ROOT / "cases/conical_journal/openfoam/single_phase_oq90"
 DEFAULT_OUTPUT = Path("out/conical_journal/studies/paper-reproduction/three-d")
+DEFAULT_FIXED_ECCENTRICITY_RATIOS = tuple(value / 100 for value in range(40, 91, 5))
 FLOAT = r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?"
 NUMBER_RE = re.compile(FLOAT)
 
@@ -177,15 +178,32 @@ def parse_metrics(
     probe_gauge_pa = rho * np.asarray(probe_values)
     seed_result = seed["result"]
     assert isinstance(seed_result, dict)
-    seed_profile_pa = 1000 * periodic_values(
-        np.asarray(seed_result["profile_theta_deg"], dtype=float),
-        np.asarray(seed_result["profile_pressure_kpa"], dtype=float),
-        np.asarray(probe_theta_deg),
+    has_seed_profile = {
+        "profile_theta_deg",
+        "profile_pressure_kpa",
+    }.issubset(seed_result)
+    seed_profile_pa = (
+        1000
+        * periodic_values(
+            np.asarray(seed_result["profile_theta_deg"], dtype=float),
+            np.asarray(seed_result["profile_pressure_kpa"], dtype=float),
+            np.asarray(probe_theta_deg),
+        )
+        if has_seed_profile
+        else None
     )
-    profile_rmse = float(np.sqrt(np.mean((probe_gauge_pa - seed_profile_pa) ** 2)))
+    profile_rmse = (
+        float(np.sqrt(np.mean((probe_gauge_pa - seed_profile_pa) ** 2)))
+        if seed_profile_pa is not None
+        else None
+    )
     pmax_gauge = rho * pmax_kinematic
     pmin_gauge = rho * pmin_kinematic
-    target_load = float(seed["target_radial_load_n"])
+    target_load = (
+        float(seed["target_radial_load_n"])
+        if seed.get("target_radial_load_n") is not None
+        else None
+    )
     numerical_pass = bool(converged and mesh_ok and imbalance <= 0.005)
     return {
         "numerical_status": "PASS" if numerical_pass else "FAIL",
@@ -215,15 +233,20 @@ def parse_metrics(
             "total_force_n": total_force.tolist(),
             "pressure_radial_magnitude_n": float(np.linalg.norm(pressure_force[:2])),
             "target_radial_load_n": target_load,
-            "radial_magnitude_over_target": float(np.linalg.norm(pressure_force[:2]))
-            / target_load,
+            "radial_magnitude_over_target": (
+                float(np.linalg.norm(pressure_force[:2])) / target_load
+                if target_load is not None
+                else None
+            ),
             "pressure_axial_magnitude_n": abs(float(pressure_force[2])),
         },
         "velocity": {"maximum_m_s": umax},
         "midplane_profile": {
             "theta_deg": probe_theta_deg,
             "pressure_gauge_pa": probe_gauge_pa.tolist(),
-            "seed_pressure_gauge_pa": seed_profile_pa.tolist(),
+            "seed_pressure_gauge_pa": (
+                seed_profile_pa.tolist() if seed_profile_pa is not None else None
+            ),
             "rmse_against_2d_seed_pa": profile_rmse,
         },
         "physical_validation": {
@@ -235,11 +258,11 @@ def parse_metrics(
 
 
 def case_key(seed: dict[str, object]) -> str:
-    return f"{seed['operating_point']}-{seed['model']}"
+    return str(seed.get("case", f"{seed['operating_point']}-{seed['model']}"))
 
 
 def run_3d_case(spec: tuple[object, ...]) -> dict[str, object]:
-    seed, conditions_in, output_text, ranks, cpu_first = spec
+    seed, conditions_in, output_text, ranks = spec
     assert isinstance(seed, dict)
     conditions = dict(conditions_in)
     key = case_key(seed)
@@ -420,14 +443,10 @@ def run_3d_case(spec: tuple[object, ...]) -> dict[str, object]:
             ["decomposePar", "-case", str(case), "-force"],
             log_dir / "decomposePar.log",
         )
-        cpu_last = int(cpu_first) + int(ranks) - 1
         solver_log = log_dir / "foamRun.log"
-        print(f"[{key}] OpenFOAM on CPUs {cpu_first}-{cpu_last}", flush=True)
+        print(f"[{key}] OpenFOAM with {ranks} MPI ranks", flush=True)
         run_command(
             [
-                "taskset",
-                "--cpu-list",
-                f"{cpu_first}-{cpu_last}",
                 "mpirun",
                 "--bind-to",
                 "none",
@@ -482,7 +501,7 @@ def run_3d_case(spec: tuple[object, ...]) -> dict[str, object]:
                 "turbulence_model": "laminar",
                 "cells": 1_252_800,
                 "mpi_ranks": ranks,
-                "cpu_list": f"{cpu_first}-{cpu_last}",
+                "mpi_binding": "none; scheduled across the workstation by the OS",
             },
             "provenance": {
                 "mesh_path": str(mesh_path),
@@ -519,7 +538,6 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
         "foamRun",
         "reconstructPar",
         "mpirun",
-        "taskset",
     )
     missing = [name for name in required if shutil.which(name) is None]
     if missing:
@@ -531,6 +549,8 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
         raise ValueError("3D jobs and MPI ranks must be positive")
     if args.seed_n_theta < 16 or args.seed_n_axial < 4:
         raise ValueError("2D seed grid is below the solver minimum")
+    if any(not 0 < value < 0.95 for value in args.fixed_eccentricity_ratios):
+        raise ValueError("fixed 3D eccentricity ratios must lie inside (0, 0.95)")
     cpu_count = os.cpu_count() or 1
     if args.jobs * args.mpi_ranks > cpu_count:
         raise ValueError("3D jobs times MPI ranks exceeds logical CPU count")
@@ -582,13 +602,29 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
     seeds_path = output / "seeds.json"
     seeds_path.write_text(json.dumps(seeds, indent=2) + "\n", encoding="utf-8")
     valid = [seed for seed in seeds if seed["status"] == "PASS"]
+    fixed_conditions = dict(base) | {"rpm": 2000.0, "semicone_angle_deg": 10.0}
+    fixed_cases = [
+        {
+            "status": "PASS",
+            "case": f"fixed-eccentricity-e{round(epsilon * 100):03d}",
+            "operating_point": "fixed-eccentricity-sensitivity",
+            "model": "prescribed",
+            "target_radial_load_n": None,
+            "result": {
+                "eccentricity_ratio": epsilon,
+                "eccentricity_angle_deg": -90.0,
+            },
+        }
+        for epsilon in args.fixed_eccentricity_ratios
+    ]
     specs = []
-    for index, seed in enumerate(valid):
+    for seed in valid:
         label = str(seed["operating_point"])
         conditions = operating_points[label][0]
-        specs.append(
-            (seed, conditions, str(output), args.mpi_ranks, index * args.mpi_ranks)
-        )
+        specs.append((seed, conditions, str(output), args.mpi_ranks))
+    specs.extend(
+        (case, fixed_conditions, str(output), args.mpi_ranks) for case in fixed_cases
+    )
     started = time.perf_counter()
     jobs = min(args.jobs, len(specs)) if specs else 0
     if specs:
@@ -608,14 +644,16 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                 }
             )
     results.sort(key=lambda value: str(value["case"]))
+    expected_cases = len(seeds) + len(fixed_cases)
     status = (
         "NUMERICAL_PASS_PHYSICAL_MODEL_INCOMPLETE"
-        if len(results) == 4 and all(item["status"] == "PASS" for item in results)
+        if len(results) == expected_cases
+        and all(item["status"] == "PASS" for item in results)
         else "PARTIAL_OR_FAILED"
     )
     summary = {
         "status": status,
-        "purpose": "fixed-geometry 3D single-phase diagnostics at independently computed Reynolds and JFO equilibrium positions",
+        "purpose": "3D single-phase diagnostics at load-equilibrium seed positions and prescribed eccentricities",
         "not_claimed": [
             "a 3D Reynolds boundary-condition solve",
             "a 3D JFO solve",
@@ -627,6 +665,9 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
         "wall_seconds": time.perf_counter() - started,
         "worker_cases": jobs,
         "mpi_ranks_per_case": args.mpi_ranks,
+        "load_equilibrium_seed_case_count": len(seeds),
+        "fixed_eccentricity_case_count": len(fixed_cases),
+        "fixed_eccentricity_ratios": args.fixed_eccentricity_ratios,
         "results": results,
     }
     summary_path = output / "summary.json"
@@ -641,6 +682,9 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
             "input": args.input,
             "surface_speed_m_s": args.surface_speed_m_s,
             "seed_grid": [args.seed_n_theta, args.seed_n_axial],
+            "fixed_eccentricity_ratios": args.fixed_eccentricity_ratios,
+            "fixed_eccentricity_angle_deg": -90.0,
+            "fixed_eccentricity_rpm": 2000.0,
             "jobs": jobs,
             "mpi_ranks": args.mpi_ranks,
             "mesh": {
@@ -676,6 +720,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--surface-speed-m-s", type=float, default=2.6)
     parser.add_argument("--seed-n-theta", type=int, default=448)
     parser.add_argument("--seed-n-axial", type=int, default=140)
+    parser.add_argument(
+        "--fixed-eccentricity-ratios",
+        type=float,
+        nargs="+",
+        default=list(DEFAULT_FIXED_ECCENTRICITY_RATIOS),
+    )
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--mpi-ranks", type=int, default=8)
     args = parser.parse_args(values)

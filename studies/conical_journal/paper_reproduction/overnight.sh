@@ -31,15 +31,36 @@ uv run --frozen python studies/conical_journal/paper_reproduction/three_d.py \
   --mpi-ranks 8 \
   2>&1 | tee "$run_dir/three-d.log" || three_d_status=${PIPESTATUS[0]}
 
-section4_status=0
-uv run --frozen python studies/conical_journal/paper_reproduction/section4.py \
-  --outdir "$run_dir/section4" \
-  --seed-jobs 8 \
-  --jobs 28 \
-  --max-revolutions 24 \
-  2>&1 | tee "$run_dir/section4.log" || section4_status=${PIPESTATUS[0]}
+(
+  uv run --frozen python studies/conical_journal/paper_reproduction/run.py \
+    figure6 \
+    --outdir "$run_dir/fixed-eccentricity-sensitivity" \
+    --n-theta 512 \
+    --n-axial 160 \
+    --max-revolutions 24 \
+    --jobs 12 \
+    --eccentricity-ratios 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 \
+    2>&1 | tee "$run_dir/fixed-eccentricity-sensitivity.log"
+) &
+eccentricity_pid=$!
 
-printf 'three_d_status=%s\nsection4_status=%s\n' \
-  "$three_d_status" "$section4_status" | tee "$run_dir/status.txt"
+(
+  uv run --frozen python studies/conical_journal/paper_reproduction/section4.py \
+    --outdir "$run_dir/section4" \
+    --seed-jobs 8 \
+    --jobs 28 \
+    --max-revolutions 24 \
+    2>&1 | tee "$run_dir/section4.log"
+) &
+section4_pid=$!
 
-(( three_d_status == 0 && section4_status == 0 ))
+wait "$eccentricity_pid"
+eccentricity_status=$?
+wait "$section4_pid"
+section4_status=$?
+
+printf 'three_d_status=%s\neccentricity_status=%s\nsection4_status=%s\n' \
+  "$three_d_status" "$eccentricity_status" "$section4_status" \
+  | tee "$run_dir/status.txt"
+
+(( three_d_status == 0 && eccentricity_status == 0 && section4_status == 0 ))

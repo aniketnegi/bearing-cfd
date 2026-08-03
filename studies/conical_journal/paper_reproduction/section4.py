@@ -36,7 +36,7 @@ from studies.conical_journal.paper_reproduction.run import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT = Path("out/conical_journal/studies/paper-reproduction/section4")
 DEFAULT_ANGLES = (5.0, 10.0, 20.0, 30.0)
-DEFAULT_LOAD_RATIOS = (0.1, 0.3, 0.5, 0.7, 0.9)
+DEFAULT_LOAD_RATIOS = tuple(value / 10 for value in range(1, 10))
 DEFAULT_GRIDS = ((448, 140), (512, 160), (704, 220))
 
 

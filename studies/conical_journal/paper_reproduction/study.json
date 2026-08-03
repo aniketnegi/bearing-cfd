@@ -1,13 +1,14 @@
 {
   "schema_version": 1,
   "study": "paper-reproduction",
-  "question": "How do pressure-only Reynolds boundary conditions and mass-conserving JFO conditions compare with Gangrade et al. Figures 6 and 8 when 0.5 MPa is a scale and the 4 mm replenishment port is held at ambient pressure?",
+  "question": "How do pressure-only Reynolds and mass-conserving JFO predictions compare with Gangrade et al. and with extended load and fixed-eccentricity sensitivities when 0.5 MPa is only a scale and the 4 mm replenishment port is held at ambient pressure?",
   "status": "OVERNIGHT_MATRIX_CONFIGURED",
   "source_commit": "61101e06a717da5f4b5e9dfd528df913519d11da",
   "commands": [
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure6", "--jobs", "12"],
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure8", "--jobs", "2"],
-    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/three_d.py", "--jobs", "4", "--mpi-ranks", "8"],
+    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/run.py", "figure6", "--outdir", "out/conical_journal/studies/paper-reproduction/fixed-eccentricity-sensitivity", "--n-theta", "512", "--n-axial", "160", "--max-revolutions", "24", "--jobs", "12", "--eccentricity-ratios", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90"],
+    ["uv", "run", "python", "studies/conical_journal/paper_reproduction/three_d.py", "--jobs", "4", "--mpi-ranks", "8", "--fixed-eccentricity-ratios", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90"],
     ["uv", "run", "python", "studies/conical_journal/paper_reproduction/section4.py", "--seed-jobs", "8", "--jobs", "28", "--max-revolutions", "24"],
     ["bash", "studies/conical_journal/paper_reproduction/overnight.sh", "RUN_STAMP"]
   ],
@@ -38,8 +39,9 @@
     {"path": "figure8/summary.json", "role": "separate Reynolds and JFO load equilibria"},
     {"path": "figure8/figure8_taps.csv", "role": "phase-aligned pressure-tap comparison"},
     {"path": "figure8/figure8.png", "role": "mid-plane pressure distribution comparison"},
-    {"path": "three-d/summary.json", "role": "four fixed-geometry 3D single-phase diagnostics seeded by 2D Reynolds and JFO equilibria"},
+    {"path": "three-d/summary.json", "role": "four load-equilibrium-seeded and eleven prescribed-eccentricity 3D single-phase diagnostics"},
     {"path": "three-d/cases/*/case_summary.json", "role": "per-case pressure, flow, load, mesh, and convergence evidence"},
+    {"path": "fixed-eccentricity-sensitivity/figure6.csv", "role": "separate Reynolds/JFO fixed-position sweep from eccentricity ratio 0.40 through 0.90 by 0.05"},
     {"path": "section4/summary.json", "role": "Sections 4.1 through 4.8 load-controlled matrix"},
     {"path": "section4/section4.csv", "role": "compact static, dynamic, and stability coefficients"},
     {"path": "*/run.json", "role": "generation provenance and resource record"}
@@ -51,7 +53,9 @@
     "Figure 8 does not disclose the plotted zero-angle mapping to the local coordinates; any fitted circular phase is a diagnostic alignment, not predictive validation.",
     "The 5 MPa Babbitt pressure ceiling is a provisional supervisor-supplied design gate, not a paper value or numerical gate.",
     "The 3D runs are single-phase Navier-Stokes diagnostics at fixed geometry. Reynolds and JFO label the 2D seed position; neither boundary condition is imposed on the 3D volume solve.",
+    "Each prescribed eccentricity has one 3D case because Reynolds and JFO do not define different geometry at fixed position; duplicating the single-phase volume solve by 2D model label would be identical.",
     "The stiffness coefficients use two central-difference amplitudes. Damping uses a frozen-cavity instantaneous linearization because the paper does not disclose perturbation amplitude or moving rupture-boundary details.",
-    "The three declared surface grids test feed-patch discretization sensitivity and are not presented as a formal grid-convergence-index sequence."
+    "The three declared surface grids test feed-patch discretization sensitivity and are not presented as a formal grid-convergence-index sequence.",
+    "Eccentricity ratios between and beyond the paper's plotted points are a separate fixed-position sensitivity; they are not attributed to the paper."
   ]
 }

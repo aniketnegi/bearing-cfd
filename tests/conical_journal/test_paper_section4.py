@@ -3,18 +3,24 @@ import pytest
 
 from bearing_cfd.bearings.conical_journal.simulation import reynolds_jfo as film
 from studies.conical_journal.paper_reproduction.section4 import (
+    DEFAULT_LOAD_RATIOS,
     critical_mass,
     damping_matrix,
     inputs_at_xy,
     parse_grid,
 )
 from studies.conical_journal.paper_reproduction.three_d import (
+    DEFAULT_FIXED_ECCENTRICITY_RATIOS,
     last_numeric_row,
     probe_block,
 )
 
 
 def test_grid_and_xy_inputs() -> None:
+    assert DEFAULT_LOAD_RATIOS == tuple(value / 10 for value in range(1, 10))
+    assert DEFAULT_FIXED_ECCENTRICITY_RATIOS == tuple(
+        value / 100 for value in range(40, 91, 5)
+    )
     assert parse_grid("512x160") == (512, 160)
     inputs = inputs_at_xy(film.Inputs(), 3e-6, 4e-6)
     assert inputs.eccentricity_m == pytest.approx(5e-6)

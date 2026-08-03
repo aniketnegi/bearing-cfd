@@ -172,18 +172,26 @@ verification case.
 
 * Overnight 3D and Sections 4.1--4.8 matrix
 
-The tracked overnight launcher runs two different experiments in sequence:
+The tracked overnight launcher runs three distinct experiments:
 
-1. Four full-volume, 1,252,800-cell OpenFOAM cases are generated and solved.
-   The two operating points are Figure 8 at 2000 rpm and the Section 4
-   γ=10-degree, \(\bar W_r=0.5\) point at 2.6 m/s.  Each point is meshed at
-   the independently computed Reynolds and JFO equilibrium position.  These
-   geometry seeds use the 448 by 140 surface grid, whose represented 4 mm
-   feed area is within 3% of nominal.
-2. The midsurface solver then evaluates Reynolds and JFO at semi-cone angles
-   5, 10, 20, and 30 degrees and \(\bar W_r=0.1,0.3,0.5,0.7,0.9\).  The main
-   512 by 160 grid is accompanied by 448 by 140 and 704 by 220 feed-area
-   sensitivities.
+1. Fifteen full-volume, 1,252,800-cell OpenFOAM cases are generated and
+   solved.  Four use the independently computed Reynolds and JFO equilibrium
+   positions for Figure 8 at 2000 rpm and the Section 4 γ=10-degree,
+   \(\bar W_r=0.5\) point at 2.6 m/s.  These geometry seeds use the 448 by 140
+   surface grid, whose represented 4 mm feed area is within 3% of nominal.
+   The other eleven prescribe \(\epsilon=0.40,0.45,\ldots,0.90\), attitude
+   -90 degrees, and 2000 rpm.  There is one 3D case per prescribed position:
+   duplicating it under Reynolds and JFO labels would run the identical
+   single-phase volume problem twice.
+2. A separate fixed-position sensitivity evaluates Reynolds and JFO at 2000
+   rpm for eccentricity ratios 0.40 through 0.90 in increments of 0.05.  The
+   intermediate and 0.90 points are local sensitivity data, not values
+   attributed to Figure 6.
+3. The load-controlled midsurface study evaluates Reynolds and JFO at
+   semi-cone angles 5, 10, 20, and 30 degrees and every normalized radial load
+   from \(\bar W_r=0.1\) through 0.9 in increments of 0.1.  The main 512 by
+   160 grid is accompanied by 448 by 140 and 704 by 220 feed-area
+   sensitivities, giving 216 high-resolution operating points.
 
 The Section 4 calculation is load controlled at every point: it solves
 \(F_x=0\) and \(F_y=W_r\) before reporting maximum pressure, axial load, and
@@ -221,12 +229,13 @@ bash studies/conical_journal/paper_reproduction/overnight.sh RUN_STAMP
 #+end_src
 
 The launcher explicitly sources =/opt/openfoam14/etc/bashrc=, restricts each
-independent Python process to one BLAS thread, uses four 8-rank OpenFOAM jobs,
-and then uses 28 worker processes for the Section 4 matrix.  Outputs and live
-logs are written below
+independent Python process to one BLAS thread, and uses four 8-rank OpenFOAM
+jobs.  After the 3D stage, the 12-worker eccentricity sensitivity and
+28-worker Section 4 matrix run concurrently.  Outputs and live logs are written below
 =out/conical_journal/studies/paper-reproduction/overnight-RUN_STAMP/=.  The 3D
-stage continuing to the 2D stage after an individual rejection is deliberate:
-each stage records its own nonzero status and retained diagnostic logs.
+stage continuing to both 2D studies after an individual rejection is
+deliberate: each stage records its own nonzero status and retained diagnostic
+logs.
 
 * Retained 0.5 MPa gauge-feed sensitivity
 
