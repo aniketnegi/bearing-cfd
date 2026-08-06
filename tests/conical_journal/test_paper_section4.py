@@ -8,6 +8,7 @@ from studies.conical_journal.paper_reproduction.section4 import (
     critical_mass,
     damping_matrix,
     inputs_at_xy,
+    model_conditions,
     parse_grid,
     write_partial,
 )
@@ -47,6 +48,12 @@ def test_boundary_cases_and_partial_checkpoint(tmp_path) -> None:
     assert path.read_text(encoding="utf-8").startswith(
         '{\n  "kind": "test",\n  "completed_count": 1'
     )
+    conditions = model_conditions(
+        {"feed_diameter_m": 0.004, "feed_gauge_pressure_pa": 0.0},
+        ("reynolds", "jfo"),
+    )
+    assert conditions["reynolds"]["feed_diameter_m"] == 0
+    assert conditions["jfo"]["feed_diameter_m"] == 0.004
 
 
 def test_frozen_cavity_damping_has_positive_direct_terms() -> None:

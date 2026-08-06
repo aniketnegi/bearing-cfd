@@ -29,7 +29,7 @@
 | Pressure-fed single-phase commissioning | 0 rpm | mesh, patches, units, and stationary conservation checks pass |
 | Single-phase rotation | 496.563 and 2000 rpm | iterations converge, but negative absolute pressure invalidates the full-film result |
 | Reynolds--JFO speed sweep | 4000 rpm | numerical checks pass; grid convergence and full experimental validation remain open |
-| Gangrade Figures 6, 8, and Sections 4.1--4.8 | 3D diagnostics, a 0.05-step eccentricity sensitivity, and the Reynolds/JFO load matrix | tracked workstation run configured; paper comparisons and added sensitivities remain separate |
+| Gangrade Figures 6, 8, and Sections 4.1--4.8 | 3D diagnostics, a 0.05-step eccentricity sensitivity, a Reynolds paper-track load matrix, and a separate JFO supply audit | tracked workstation runs configured; paper comparisons and added sensitivities remain separate |
 | Isothermal TiO2--canola screen | BDL0 vs BDL2 at 2000 rpm | tabulated-property transplant; not a reproduction of the cylindrical source experiment |
 | Oil-vapour screen | 28 rpm hold | phase onset occurs, but the phase field does not plateau |
 | Non-condensable-gas screen | zero speed | conservation error exceeds the 0.5% gate |

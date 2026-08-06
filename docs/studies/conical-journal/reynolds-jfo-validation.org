@@ -209,11 +209,14 @@ The tracked overnight launcher runs three distinct experiments:
    rpm for eccentricity ratios 0.40 through 0.90 in increments of 0.05.  The
    intermediate and 0.90 points are local sensitivity data, not values
    attributed to Figure 6.
-3. The load-controlled midsurface study evaluates Reynolds and JFO at
-   semi-cone angles 5, 10, 20, and 30 degrees and every normalized radial load
-   from \(\bar W_r=0.1\) through 0.9 in increments of 0.1.  The main 512 by
-   160 grid is accompanied by 448 by 140 and 704 by 220 feed-area
-   sensitivities, giving 216 high-resolution operating points.
+3. The paper-track load-controlled midsurface study evaluates pressure-only
+   Reynolds at semi-cone angles 5, 10, 20, and 30 degrees and every normalized
+   radial load from \(\bar W_r=0.1\) through 0.9 in increments of 0.1.  It uses
+   no internal feed patch, matching the boundary information available for the
+   paper's FEM domain.  The main 512 by 160 grid is accompanied by 448 by 140
+   and 704 by 220 sensitivities, giving 108 high-resolution operating points.
+   JFO must be requested explicitly with =--models jfo= and remains tied to
+   the separately declared feed boundary in the input file.
 
 The Section 4 calculation is load controlled at every point: it solves
 \(F_x=0\) and \(F_y=W_r\) before reporting maximum pressure, axial load, and
@@ -235,6 +238,12 @@ uses the Routh boundary of
 threshold value when their stability signs are not satisfied.  It reports
 the paper's resultant-force interpretation of \(\bar F_0\) and a radial-force
 sensitivity separately.
+
+Completed seed chains and high-resolution cases are written atomically to
+=seeds.partial.json= and =results.partial.json= in the staging directory.
+These checkpoints retain computed values if an unattended run is terminated;
+the final generation is still published only after the full requested matrix
+finishes.
 
 The labels =reynolds= and =jfo= on the 3D cases identify only the 2D position
 used to build the geometry.  Both volume cases solve the same laminar,

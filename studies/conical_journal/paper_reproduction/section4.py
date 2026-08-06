@@ -53,6 +53,21 @@ def write_partial(path: Path, kind: str, values: list[dict[str, object]]) -> Non
     temporary.replace(path)
 
 
+def model_conditions(
+    conditions: dict[str, object], models: Sequence[str]
+) -> dict[str, dict[str, object]]:
+    resolved: dict[str, dict[str, object]] = {}
+    for model in models:
+        values = dict(conditions)
+        if model == "reynolds":
+            values["feed_diameter_m"] = 0.0
+            values["feed_gauge_pressure_pa"] = 0.0
+        elif float(values["feed_diameter_m"]) <= 0:
+            raise ValueError("JFO Section 4 sensitivity requires an explicit feed")
+        resolved[model] = values
+    return resolved
+
+
 def parse_grid(value: str) -> tuple[int, int]:
     try:
         n_theta, n_axial = (int(item) for item in value.lower().split("x", 1))
@@ -547,6 +562,8 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
     conditions = dict(base_conditions)
     radius = float(conditions["mean_radius_m"])
     conditions["rpm"] = args.surface_speed_m_s / (2 * math.pi * radius) * 60
+    models = tuple(dict.fromkeys(args.models))
+    conditions_by_model = model_conditions(conditions, models)
     grids = tuple(args.grids)
     main_grid = args.main_grid
     if main_grid not in grids:
@@ -567,12 +584,12 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                 model,
                 angle,
                 tuple(args.load_ratios),
-                conditions,
+                conditions_by_model[model],
                 args.seed_grid[0],
                 args.seed_grid[1],
                 args.max_revolutions,
             )
-            for model in MODELS
+            for model in models
             for angle in args.semicone_angles_deg
         ]
         seed_jobs = min(args.seed_jobs, len(seed_specs), os.cpu_count() or 1)
@@ -599,7 +616,7 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
         }
         specs = []
         skipped: list[dict[str, object]] = []
-        for model in MODELS:
+        for model in models:
             for angle in args.semicone_angles_deg:
                 for load_ratio in args.load_ratios:
                     seed = seed_lookup.get((model, float(angle), float(load_ratio)))
@@ -624,7 +641,7 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                                 model,
                                 angle,
                                 load_ratio,
-                                conditions,
+                                conditions_by_model[model],
                                 grid[0],
                                 grid[1],
                                 args.max_revolutions,
@@ -661,7 +678,9 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
         summary = {
             "status": summary_status,
             "paper_sections": ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8"],
-            "conditions": conditions,
+            "base_conditions": conditions,
+            "conditions_by_model": conditions_by_model,
+            "models": models,
             "load_ratios": args.load_ratios,
             "semicone_angles_deg": args.semicone_angles_deg,
             "grids": [list(value) for value in grids],
@@ -671,7 +690,7 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                 "equilibrium": "Fx=0 and Fy=target radial load at every point",
                 "stiffness": "central differences at fixed journal-center coordinates",
                 "damping": "frozen-cavity instantaneous pressure linearization; the paper does not disclose its perturbation amplitude or moving-boundary implementation",
-                "grid_comparison": "feed-patch discretization sensitivity, not a formal GCI sequence",
+                "grid_comparison": "three-grid numerical sensitivity, not a formal GCI sequence",
                 "paper_parity": False,
             },
             "results": results,
@@ -694,7 +713,9 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
             argv=argv,
             resolved_inputs={
                 "input": args.input,
-                "conditions": conditions,
+                "base_conditions": conditions,
+                "conditions_by_model": conditions_by_model,
+                "models": models,
                 "load_ratios": args.load_ratios,
                 "semicone_angles_deg": args.semicone_angles_deg,
                 "grids": grids,
@@ -732,6 +753,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--outdir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--surface-speed-m-s", type=float, default=2.6)
+    parser.add_argument(
+        "--models", choices=MODELS, nargs="+", default=["reynolds"]
+    )
     parser.add_argument(
         "--semicone-angles-deg", type=float, nargs="+", default=list(DEFAULT_ANGLES)
     )

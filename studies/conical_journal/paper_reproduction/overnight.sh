@@ -47,6 +47,7 @@ eccentricity_pid=$!
 (
   uv run --frozen python -m studies.conical_journal.paper_reproduction.section4 \
     --outdir "$run_dir/section4" \
+    --models reynolds \
     --seed-jobs 8 \
     --jobs 28 \
     --max-revolutions 24 \
