@@ -171,6 +171,12 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 The audit is diagnostic.  It does not infer an undisclosed port condition by
 fitting Figure 8, and no JFO supply case is promoted as the paper's condition.
 
+The 256x80 workstation audit at producer commit =cd8efe6= held the journal at
+=epsilon=0.0135431= and =-1.53244 degrees=.  Its 4 mm, 500 kPa gauge JFO case
+gave 500.000 kPa maximum gauge pressure and 670.762 N radial force, with
+relative mass imbalance =3.05e-7=.  The case passed the numerical gates but
+still missed the 1 kN target while exceeding the Figure 8 pressure peak.
+
 The machine-readable graph reads, assumptions, and commands are under
 [[file:../../../studies/conical_journal/paper_reproduction/][=paper_reproduction=]].
 
