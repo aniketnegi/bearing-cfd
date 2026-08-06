@@ -33,7 +33,7 @@ def test_grid_and_xy_inputs() -> None:
 
 
 def test_boundary_cases_and_partial_checkpoint(tmp_path) -> None:
-    assert supply_cases([2.0, 4.0, 8.0], [25.0, 50.0], 4.0) == [
+    assert supply_cases([2.0, 4.0, 8.0], [25.0, 50.0, 500.0], 4.0) == [
         ("reynolds", 0.0, 0.0),
         ("reynolds", 4.0, 0.0),
         ("jfo", 0.0, 0.0),
@@ -42,6 +42,7 @@ def test_boundary_cases_and_partial_checkpoint(tmp_path) -> None:
         ("jfo", 8.0, 0.0),
         ("jfo", 4.0, 25.0),
         ("jfo", 4.0, 50.0),
+        ("jfo", 4.0, 500.0),
     ]
     path = tmp_path / "results.partial.json"
     write_partial(path, "test", [{"status": "PASS"}])

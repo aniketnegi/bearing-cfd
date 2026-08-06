@@ -221,14 +221,6 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                 "internal_feed_port": False,
                 "axial_edges": "atmospheric pressure",
             },
-            "literal_0_5mpa_feed_check": {
-                "simulated": False,
-                "reason": (
-                    "a 500 kPa gauge Dirichlet feed makes maximum gauge pressure "
-                    "at least 500 kPa, already above the approximately 181 kPa "
-                    "Figure 8 measurement"
-                ),
-            },
             "results": results,
             "unexpected_failures": unexpected_failures,
             "resources": resource_record(started, jobs),
@@ -294,7 +286,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--feed-gauge-pressures-kpa",
         type=float,
         nargs="+",
-        default=[25.0, 50.0, 100.0, 150.0],
+        default=[25.0, 50.0, 100.0, 150.0, 500.0],
     )
     parser.add_argument("--jobs", type=int, default=8)
     args = parser.parse_args(values)

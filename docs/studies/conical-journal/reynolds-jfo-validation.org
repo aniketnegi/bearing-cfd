@@ -157,9 +157,10 @@ but the paper gives neither its diameter nor its boundary pressure or flow.
 The supply-boundary audit therefore solves the paper-method, no-port Reynolds
 equilibrium first and holds that journal position fixed.  It then changes only
 the candidate supply boundary: no feed, 2/4/8 mm ambient ports, and a 4 mm port
-at 25/50/100/150 kPa gauge.  The literal 0.5 MPa gauge case is not simulated:
-its Dirichlet patch alone would force the maximum gauge pressure above the
-approximately 181 kPa Figure 8 measurement.
+at 25/50/100/150/500 kPa gauge.  The 500 kPa case is a literal-boundary
+sensitivity, not a Figure 8 candidate: its Dirichlet patch alone forces the
+maximum gauge pressure to at least 500 kPa, above the approximately 181 kPa
+measurement.
 
 #+begin_src sh
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
