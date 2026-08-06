@@ -186,6 +186,13 @@ the nominal 2 and 4 mm port areas by 98.4% and 23.8%, respectively; the force
 ordering is therefore a grid-dependent diagnostic, not a resolved diameter
 trend.
 
+The 1 mm port selected no cells at 256x80 and was rejected before solving.  At
+512x160, producer commit =6de2d7a= represented it with four cells and 1.558
+mm2 of feed area, 98.4% above the nominal 0.785 mm2.  The 500 kPa gauge case
+gave 500.000 kPa maximum gauge pressure, 660.272 N radial force, relative mass
+imbalance =6.02e-7=, and 43.30% ruptured area.  It passed the numerical gates
+but remains geometrically under-resolved and is not a diameter-trend point.
+
 The machine-readable graph reads, assumptions, and commands are under
 [[file:../../../studies/conical_journal/paper_reproduction/][=paper_reproduction=]].
 
