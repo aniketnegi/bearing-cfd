@@ -11,7 +11,7 @@ import os
 import shutil
 import sys
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import replace
 from pathlib import Path
 from typing import Sequence
@@ -38,6 +38,19 @@ DEFAULT_OUTPUT = Path("out/conical_journal/studies/paper-reproduction/section4")
 DEFAULT_ANGLES = (5.0, 10.0, 20.0, 30.0)
 DEFAULT_LOAD_RATIOS = tuple(value / 10 for value in range(1, 10))
 DEFAULT_GRIDS = ((448, 140), (512, 160), (704, 220))
+
+
+def write_partial(path: Path, kind: str, values: list[dict[str, object]]) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(
+        json.dumps(
+            {"kind": kind, "completed_count": len(values), "results": values},
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
 
 
 def parse_grid(value: str) -> tuple[int, int]:
@@ -563,11 +576,18 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
             for angle in args.semicone_angles_deg
         ]
         seed_jobs = min(args.seed_jobs, len(seed_specs), os.cpu_count() or 1)
+        seeds: list[dict[str, object]] = []
+        seed_partial = stage / "seeds.partial.json"
         with ProcessPoolExecutor(max_workers=seed_jobs) as executor:
-            seeds = list(executor.map(seed_chain, seed_specs))
+            futures = [executor.submit(seed_chain, spec) for spec in seed_specs]
+            for future in as_completed(futures):
+                seeds.append(future.result())
+                write_partial(seed_partial, "coarse equilibrium seeds", seeds)
+        seeds.sort(key=lambda item: (str(item["model"]), item["semicone_angle_deg"]))
         (stage / "seeds.json").write_text(
             json.dumps(seeds, indent=2) + "\n", encoding="utf-8"
         )
+        seed_partial.unlink()
         seed_lookup = {
             (
                 item["model"],
@@ -615,11 +635,15 @@ def run(args: argparse.Namespace, argv: Sequence[str]) -> int:
                             )
                         )
         jobs = min(args.jobs, len(specs), os.cpu_count() or 1) if specs else 0
+        results: list[dict[str, object]] = []
+        result_partial = stage / "results.partial.json"
         if specs:
             with ProcessPoolExecutor(max_workers=jobs) as executor:
-                results = list(executor.map(section4_case, specs))
-        else:
-            results = []
+                futures = [executor.submit(section4_case, spec) for spec in specs]
+                for future in as_completed(futures):
+                    results.append(future.result())
+                    write_partial(result_partial, "section 4 cases", results)
+            result_partial.unlink()
         results.extend(skipped)
         results.sort(
             key=lambda item: (

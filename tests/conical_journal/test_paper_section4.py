@@ -2,12 +2,14 @@ import numpy as np
 import pytest
 
 from bearing_cfd.bearings.conical_journal.simulation import reynolds_jfo as film
+from studies.conical_journal.paper_reproduction.boundary_audit import supply_cases
 from studies.conical_journal.paper_reproduction.section4 import (
     DEFAULT_LOAD_RATIOS,
     critical_mass,
     damping_matrix,
     inputs_at_xy,
     parse_grid,
+    write_partial,
 )
 from studies.conical_journal.paper_reproduction.three_d import (
     DEFAULT_FIXED_ECCENTRICITY_RATIOS,
@@ -27,6 +29,24 @@ def test_grid_and_xy_inputs() -> None:
     assert inputs.eccentricity_angle_deg == pytest.approx(53.1301023542)
     with pytest.raises(RuntimeError, match="eccentricity domain"):
         inputs_at_xy(film.Inputs(), 49e-6, 0)
+
+
+def test_boundary_cases_and_partial_checkpoint(tmp_path) -> None:
+    assert supply_cases([2.0, 4.0, 8.0], [25.0, 50.0], 4.0) == [
+        ("reynolds", 0.0, 0.0),
+        ("reynolds", 4.0, 0.0),
+        ("jfo", 0.0, 0.0),
+        ("jfo", 2.0, 0.0),
+        ("jfo", 4.0, 0.0),
+        ("jfo", 8.0, 0.0),
+        ("jfo", 4.0, 25.0),
+        ("jfo", 4.0, 50.0),
+    ]
+    path = tmp_path / "results.partial.json"
+    write_partial(path, "test", [{"status": "PASS"}])
+    assert path.read_text(encoding="utf-8").startswith(
+        '{\n  "kind": "test",\n  "completed_count": 1'
+    )
 
 
 def test_frozen_cavity_damping_has_positive_direct_terms() -> None:
