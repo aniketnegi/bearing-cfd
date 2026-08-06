@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from bearing_cfd.interchange import fluent_legacy
 from bearing_cfd.bearings.conical_journal.simulation import jfo_surface_mesh
@@ -10,6 +11,7 @@ from bearing_cfd.bearings.conical_journal.meshing.surface_inlet import InletSpec
 from bearing_cfd.bearings.conical_journal.simulation.reynolds_jfo import (
     Inputs,
     main,
+    make_grid,
     solve,
     solve_reynolds,
     summarize,
@@ -35,6 +37,9 @@ def test_cli_rejects_a_feed_grid_that_is_too_coarse(
     ) == 2
     assert "grid is too coarse to resolve the 4 mm feed patch" in capsys.readouterr().err
     assert not outdir.exists()
+
+    with pytest.raises(ValueError, match="resolve the 1 mm feed patch"):
+        make_grid(Inputs(n_theta=256, n_axial=80, feed_diameter_m=0.001))
 
 
 def test_uniform_stationary_film_stays_full_and_at_ambient() -> None:
@@ -82,6 +87,7 @@ def test_rotating_jfo_case_cavitates_without_losing_mass() -> None:
     result = summarize(inputs, grid, state)
 
     assert result["acceptance"]["accepted"]
+    assert result["model"]["feed_representation"].startswith("8 mm ")
     assert state.fill_fraction.min() < 1
     assert result["pressure"]["minimum_absolute_pa"] == 101_325
     assert result["flow"]["relative_imbalance"] < 1e-6

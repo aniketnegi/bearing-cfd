@@ -130,7 +130,10 @@ def make_grid(inputs: Inputs) -> Grid:
     )
     feed = feed_distance <= inputs.feed_diameter_m / 2
     if inputs.feed_diameter_m > 0 and not np.any(feed):
-        raise ValueError("grid is too coarse to resolve the 4 mm feed patch")
+        diameter_mm = inputs.feed_diameter_m * 1000
+        raise ValueError(
+            f"grid is too coarse to resolve the {diameter_mm:g} mm feed patch"
+        )
 
     x = journal_ray_radius * np.sin(theta)[None, :]
     y = -journal_ray_radius * np.cos(theta)[None, :]
@@ -630,7 +633,10 @@ def summarize(inputs: Inputs, grid: Grid, state: State) -> dict[str, object]:
         "model": {
             "equation": "Reynolds thin-film equation",
             "cavitation": "mass-conserving JFO/Elrod-Adams complementarity",
-            "feed_representation": "4 mm geodesic fixed-pressure surface patch",
+            "feed_representation": (
+                f"{inputs.feed_diameter_m * 1000:g} mm geodesic "
+                "fixed-pressure surface patch"
+            ),
             "pressure_floor_abs_pa": inputs.cavitation_pressure_abs_pa,
         },
         "convergence": {
